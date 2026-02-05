@@ -1,48 +1,17 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
-import { Word } from '../types';
+import { Word, FeedbackQuality } from '../types';
 import { 
-  ChevronLeft, 
-  Sparkles, 
-  Zap, 
-  ArrowRightLeft, 
-  CloudRain, 
-  Smile, 
-  PartyPopper, 
-  BookOpen, 
-  Layers, 
-  HelpCircle, 
-  Map, 
-  Eye, 
-  Heart 
+  ChevronLeft, Sparkles, Zap, ArrowRightLeft, CloudRain, 
+  Smile, PartyPopper, BookOpen, Layers, HelpCircle, 
+  Map, Eye, Heart, Trophy, CheckCircle2, ArrowRight,
+  Sprout, Leaf, Sparkle
 } from 'lucide-react';
 
-interface StudyViewProps {
-  words: Word[];
-  onFinish: () => void;
-  onFeedback: (wordId: string, quality: 'forgot' | 'hard' | 'good' | 'easy') => void;
-}
-
-const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [showAnswer, setShowAnswer] = useState(false);
-
-  const word = words[currentIndex];
-  const progressPercent = useMemo(() => ((currentIndex) / words.length) * 100, [currentIndex, words.length]);
-
-  const handleNext = useCallback(() => {
-    if (currentIndex < words.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setShowAnswer(false);
-    } else {
-      onFinish();
-    }
-  }, [currentIndex, words.length, onFinish]);
-
-  const handleFeedbackClick = (quality: 'forgot' | 'hard' | 'good' | 'easy') => {
-    onFeedback(word.id, quality);
-    handleNext();
-  };
+// Sub-component: Grammar Pocket
+const GrammarPocket: React.FC<{ word: Word }> = ({ word }) => {
+  const conjugationList = word.forms ? word.forms.split(', ') : [];
+  const pronouns = ['Yo', 'Tú', 'Él/Ella', 'Nos.', 'Vos.', 'Ellos'];
 
   const renderFormText = (text: string) => {
     if (!text) return null;
@@ -59,14 +28,202 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback }) =>
     });
   };
 
+  return (
+    <section className="bg-[#fffdf2] p-5 rounded-[2.5rem] border-4 border-[#e0d9b4] relative overflow-hidden shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Layers size={16} className="text-[#ffa600]" />
+          <h4 className="text-[11px] font-black text-[#4b7d78] uppercase tracking-tighter">Grammar Pocket</h4>
+        </div>
+        {word.reg === false && (
+          <span className="text-[8px] font-black text-[#e91e63] bg-[#fce4ec] px-2 py-0.5 rounded border border-[#f8bbd0] uppercase tracking-widest">
+            Pink = Irregular
+          </span>
+        )}
+      </div>
+      
+      {conjugationList.length > 0 && (
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          {pronouns.map((p, i) => (
+            <div key={p} className="bg-white/80 p-2 rounded-xl border border-[#e0d9b4] text-center">
+              <span className="text-[8px] text-[#8d99ae] font-black uppercase block mb-0.5">{p}</span>
+              <span className="text-sm font-black truncate block text-[#4b7d78]">
+                {renderFormText(conjugationList[i])}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-2 text-xs font-bold text-[#5d4037] leading-snug">
+        <Sparkles size={14} className="text-[#fbc02d] shrink-0 mt-0.5" />
+        <p>{word.grammarTip}</p>
+      </div>
+    </section>
+  );
+};
+
+// Sub-component: Usage Examples
+const UsageExamples: React.FC<{ word: Word }> = ({ word }) => (
+  <section className="bg-[#e3f2fd] p-6 rounded-[3rem] border-b-[8px] border-[#90caf9] relative overflow-hidden">
+    <div className="flex items-center gap-2 mb-4">
+      <BookOpen size={16} className="text-[#1565c0]" />
+      <h4 className="text-[11px] font-black text-[#1565c0] uppercase tracking-tighter">Usage Examples</h4>
+    </div>
+
+    <div className="space-y-4 mb-4">
+      {word.examples.map((ex, i) => (
+        <div key={i} className="pl-3 border-l-3 border-[#90caf9]">
+          <p className="text-[#1565c0] text-lg font-black italic leading-tight">"{ex.txt}"</p>
+          <p className="text-[#1565c0]/60 text-[10px] font-bold uppercase">{ex.eng}</p>
+        </div>
+      ))}
+    </div>
+    
+    <div className="bg-white/70 p-4 rounded-2xl border-2 border-dashed border-[#90caf9]">
+      <div className="flex items-center gap-1.5 mb-1">
+        <Map size={12} className="text-[#8bc34a]" />
+        <span className="text-[9px] text-[#4b7d78] font-black uppercase tracking-wider">Vocab Note</span>
+      </div>
+      <p className="text-[#4b7d78] text-[11px] font-bold">{word.nounNotes}</p>
+    </div>
+  </section>
+);
+
+// Sub-component: Session Summary
+const SessionSummary: React.FC<{ 
+  words: Word[], 
+  onFinish: () => void, 
+  extraAvailable: Word[],
+  onStartExtra: (selected: Word[]) => void
+}> = ({ words, onFinish, extraAvailable, onStartExtra }) => {
+  const suggestedBonus = useMemo(() => extraAvailable.slice(0, 10), [extraAvailable]);
+
+  return (
+    <div className="flex-1 flex flex-col items-center p-6 text-center animate-zoomIn overflow-y-auto no-scrollbar pb-32 bg-[#f7f9e4]">
+      {/* Achievement Card - Unified Green Theme */}
+      <div className="bg-white p-8 rounded-[4rem] border-[8px] border-[#8bc34a] shadow-[0_15px_0_#689f38] max-w-sm w-full relative mb-12 shrink-0 mt-8 z-10">
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-[#ffeb3b] p-6 rounded-[2.5rem] shadow-[0_8px_0_#fbc02d] border-4 border-white animate-bounce">
+          <Trophy size={48} className="text-[#f57c00] fill-current" />
+        </div>
+        
+        <div className="mt-10 space-y-6">
+          <div>
+            <h2 className="text-3xl font-black text-[#4b7d78] uppercase tracking-tighter italic">¡Victoria en la isla!</h2>
+            <p className="text-[#8d99ae] font-bold text-sm mt-1 uppercase tracking-widest">Seeds successfully tended</p>
+          </div>
+
+          <div className="py-6 border-y-4 border-dashed border-[#e0d9b4] flex flex-col items-center">
+            <span className="text-6xl font-black text-[#8bc34a] drop-shadow-sm">{words.length}</span>
+            <span className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.3em] mt-1">Harvested Today</span>
+          </div>
+
+          <button 
+            onClick={onFinish}
+            className="w-full bg-[#f1f8e9] text-[#2e7d32] py-5 rounded-[2.5rem] font-black text-xl shadow-[0_8px_0_#c5e1a5] border-4 border-[#c5e1a5] bubble-button flex items-center justify-center gap-3 mt-4 relative z-20"
+          >
+            Back Home <ArrowRight size={24} />
+          </button>
+        </div>
+      </div>
+
+      {/* Bonus Box - Clearer Action and Unified Language */}
+      {suggestedBonus.length > 0 && (
+        <div className="w-full max-w-md bg-[#e8f5e9] p-8 rounded-[4rem] border-[6px] border-[#8bc34a] shadow-[0_12px_0_#689f38] mb-12 relative overflow-hidden group z-10">
+          <div className="absolute -top-10 -right-10 opacity-10 rotate-12 transition-transform group-hover:rotate-45 duration-1000 pointer-events-none">
+            <Sparkle size={180} className="fill-current text-[#2e7d32]" />
+          </div>
+          
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="bg-white p-4 rounded-[2.5rem] border-4 border-[#8bc34a] shadow-sm mb-6 animate-pulse">
+               <Leaf size={40} className="text-[#8bc34a] fill-current" />
+            </div>
+            
+            <h3 className="text-2xl font-black text-[#1b5e20] uppercase tracking-tighter mb-2 italic">Still Energetic?</h3>
+            <p className="text-sm font-bold text-[#2e7d32] mb-8 max-w-[260px] leading-snug">
+              Grow your island even further!<br/>
+              <span className="text-[#d32f2f] font-black uppercase tracking-tight">Plant 10 extra seeds</span> right now.
+            </p>
+
+            <button
+              onClick={() => onStartExtra(suggestedBonus)}
+              className="group w-full bg-[#8bc34a] text-white py-6 rounded-[2.5rem] font-black text-xl shadow-[0_12px_0_#5a9a3b] border-4 border-white bubble-button flex flex-col items-center justify-center gap-1 hover:bg-[#96e072] transition-colors relative z-20"
+            >
+              <div className="flex items-center gap-3">
+                <Leaf size={32} className="fill-current group-hover:rotate-12 transition-transform" />
+                <span>Learn 10 More</span>
+              </div>
+              <span className="text-[10px] opacity-70 font-black uppercase tracking-[0.1em]">Instant Expansion Pack</span>
+            </button>
+            
+            <p className="mt-6 text-[9px] font-black text-[#2e7d32]/40 uppercase tracking-[0.3em]">
+              Next: High-frequency essentials
+            </p>
+          </div>
+        </div>
+      )}
+      
+      <div className="mt-4 flex flex-col items-center opacity-20 gap-1 grayscale pb-12 shrink-0 pointer-events-none">
+          <span className="text-[8px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">Island Progress Saved</span>
+          <Heart size={8} className="text-[#ff7b72] fill-current" />
+      </div>
+    </div>
+  );
+};
+
+interface StudyViewProps {
+  words: Word[];
+  unlearnedExtra: Word[];
+  onFinish: () => void;
+  onFeedback: (wordId: string, quality: FeedbackQuality) => void;
+  onStartExtra: (selected: Word[]) => void;
+}
+
+const StudyView: React.FC<StudyViewProps> = ({ words, unlearnedExtra, onFinish, onFeedback, onStartExtra }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [isSummaryView, setIsSummaryView] = useState(false);
+
+  const word = words[currentIndex];
+  
+  const progressPercent = useMemo(() => {
+    if (words.length === 0) return 0;
+    return (currentIndex / words.length) * 100;
+  }, [currentIndex, words.length]);
+
+  const handleNext = useCallback(() => {
+    if (currentIndex < words.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+      setShowAnswer(false);
+    } else {
+      setIsSummaryView(true);
+    }
+  }, [currentIndex, words.length]);
+
+  const handleFeedbackClick = (quality: FeedbackQuality) => {
+    onFeedback(word.id, quality);
+    handleNext();
+  };
+
+  if (isSummaryView) {
+    return (
+      <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full bg-[#f7f9e4] overflow-hidden">
+        <SessionSummary 
+          words={words} 
+          onFinish={onFinish} 
+          extraAvailable={unlearnedExtra}
+          onStartExtra={onStartExtra}
+        />
+      </div>
+    );
+  }
+
   if (!word) return null;
-  const conjugationList = word.forms ? word.forms.split(', ') : [];
-  const pronouns = ['Yo', 'Tú', 'Él/Ella', 'Nos.', 'Vos.', 'Ellos'];
 
   return (
     <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full bg-[#f7f9e4] overflow-hidden animate-fadeIn relative">
-      {/* Top Header & Progress */}
-      <div className="px-4 pt-6 pb-2 shrink-0">
+      {/* Header & Progress */}
+      <div className="px-4 pt-6 pb-2 shrink-0 z-20 bg-[#f7f9e4]">
         <div className="flex justify-between items-center mb-4">
           <button onClick={onFinish} className="p-3 bg-white rounded-2xl shadow-[0_4px_0_#d0d0d0] border-2 border-[#f0f0f0] text-[#4b7d78] bubble-button">
             <ChevronLeft size={24} strokeWidth={3} />
@@ -86,7 +243,8 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback }) =>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-48">
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-64">
         <div className={`bg-white w-full rounded-[3.5rem] border-[8px] transition-all duration-500 p-6 flex flex-col items-center shadow-[0_12px_0_rgba(0,0,0,0.08)] relative ${showAnswer ? 'border-[#ffe082]' : 'border-dashed border-[#8bc34a] min-h-[400px] justify-center'}`}>
           
           <div className="flex gap-2 mb-4">
@@ -123,40 +281,10 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback }) =>
                   </p>
               </section>
 
-              <section className="bg-[#fffdf2] p-5 rounded-[2.5rem] border-4 border-[#e0d9b4] relative overflow-hidden shadow-sm">
-                  <div className="flex items-center justify-between mb-4">
-                     <div className="flex items-center gap-2">
-                        <Layers size={16} className="text-[#ffa600]" />
-                        <h4 className="text-[11px] font-black text-[#4b7d78] uppercase tracking-tighter">Grammar Pocket</h4>
-                     </div>
-                     {word.reg === false && (
-                       <span className="text-[8px] font-black text-[#e91e63] bg-[#fce4ec] px-2 py-0.5 rounded border border-[#f8bbd0] uppercase tracking-widest">
-                         Pink = Irregular
-                       </span>
-                     )}
-                  </div>
-                  
-                  {conjugationList.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2 mb-4">
-                      {pronouns.map((p, i) => (
-                          <div key={p} className="bg-white/80 p-2 rounded-xl border border-[#e0d9b4] text-center">
-                              <span className="text-[8px] text-[#8d99ae] font-black uppercase block mb-0.5">{p}</span>
-                              <span className="text-sm font-black truncate block text-[#4b7d78]">
-                                {renderFormText(conjugationList[i])}
-                              </span>
-                          </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex gap-2 text-xs font-bold text-[#5d4037] leading-snug">
-                     <Sparkles size={14} className="text-[#fbc02d] shrink-0 mt-0.5" />
-                     <p>{word.grammarTip}</p>
-                  </div>
-              </section>
+              <GrammarPocket word={word} />
 
               {word.type === 'adj' && word.ant && (
-                <div className="bg-[#f3e5f5] p-5 rounded-[2rem] border-4 border-[#ce93d8] flex items-center justify-between">
+                <div className="bg-[#f3e5f5] p-5 rounded-[2rem] border-4 border-[#ce93d8] flex items-center justify-between shadow-sm">
                   <div className="flex items-center gap-3">
                     <ArrowRightLeft size={18} className="text-[#9c27b0]" />
                     <div>
@@ -168,29 +296,7 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback }) =>
                 </div>
               )}
 
-              <section className="bg-[#e3f2fd] p-6 rounded-[3rem] border-b-[8px] border-[#90caf9] relative overflow-hidden">
-                  <div className="flex items-center gap-2 mb-4">
-                    <BookOpen size={16} className="text-[#1565c0]" />
-                    <h4 className="text-[11px] font-black text-[#1565c0] uppercase tracking-tighter">Usage Examples</h4>
-                  </div>
-
-                  <div className="space-y-4 mb-4">
-                    {word.examples.map((ex, i) => (
-                      <div key={i} className="pl-3 border-l-3 border-[#90caf9]">
-                        <p className="text-[#1565c0] text-lg font-black italic leading-tight">"{ex.txt}"</p>
-                        <p className="text-[#1565c0]/60 text-[10px] font-bold uppercase">{ex.eng}</p>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="bg-white/70 p-4 rounded-2xl border-2 border-dashed border-[#90caf9]">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <Map size={12} className="text-[#8bc34a]" />
-                      <span className="text-[9px] text-[#4b7d78] font-black uppercase tracking-wider">Vocab Note</span>
-                    </div>
-                    <p className="text-[#4b7d78] text-[11px] font-bold">{word.nounNotes}</p>
-                  </div>
-              </section>
+              <UsageExamples word={word} />
 
               <div className="pt-8 pb-4 flex flex-col items-center opacity-10 gap-1 pointer-events-none">
                 <span className="text-[8px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">Made By SHELLY</span>
@@ -201,9 +307,8 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback }) =>
         </div>
       </div>
 
-      {/* Persistent Bottom Feedback Controls */}
       {showAnswer && (
-        <div className="fixed bottom-0 left-0 right-0 bg-[#f7f9e4] p-4 pb-8 border-t-4 border-[#e0d9b4] animate-slideUp z-50">
+        <div className="fixed bottom-0 left-0 right-0 bg-[#f7f9e4]/80 backdrop-blur-md p-4 pb-8 border-t-4 border-[#e0d9b4] animate-slideUp z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
           <div className="max-w-2xl mx-auto">
             <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.25em] mb-4 text-center">How well did you recall it?</p>
             <div className="grid grid-cols-4 gap-3">
@@ -215,7 +320,7 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback }) =>
               ].map((btn) => (
                 <button 
                   key={btn.id}
-                  onClick={() => handleFeedbackClick(btn.id as any)} 
+                  onClick={() => handleFeedbackClick(btn.id as FeedbackQuality)} 
                   className={`p-3 rounded-2xl flex flex-col items-center border-4 bubble-button transition-all active:translate-y-1 active:shadow-none`}
                   style={{ 
                     backgroundColor: btn.bg, 

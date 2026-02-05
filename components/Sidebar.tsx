@@ -1,16 +1,14 @@
 
 import React from 'react';
 import { AppView } from '../types';
-import { Home, Briefcase, Leaf, Sun, Star, Heart } from 'lucide-react';
+import { Home, Briefcase, Leaf, Heart } from 'lucide-react';
 
 interface SidebarProps {
   currentView: AppView;
   setView: (view: AppView) => void;
-  onStreakClick: () => void;
-  streak: number;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, onStreakClick, streak }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
   const navItems = [
     { id: AppView.DASHBOARD, icon: Home, label: 'Island Home', color: '#ff7b72' },
     { id: AppView.VOCABULARY, icon: Briefcase, label: 'My Pocket', color: '#ffb74d' },
@@ -49,25 +47,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, onStreakClick, 
       </nav>
 
       <div className="p-4 space-y-6">
-        <div 
-          onClick={onStreakClick}
-          className="bg-[#88d068] rounded-[2rem] p-5 border-b-8 border-[#66a04e] flex flex-col items-center shadow-md cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all"
-        >
-          <p className="text-[9px] font-black text-white/90 uppercase tracking-[0.2em] mb-2">Daily Streak</p>
-          <div className="flex items-center gap-2 mb-3">
-             <div className="bg-[#ffeb3b] p-2 rounded-full shadow-md border-2 border-white animate-pulse">
-               <Star className="text-[#f57c00] w-5 h-5 fill-current" />
-             </div>
-             <span className="text-xl font-black text-white drop-shadow-sm">{streak} Days</span>
-          </div>
-          <div className="w-full bg-black/10 h-3 rounded-full overflow-hidden shadow-inner border border-white/20">
-            <div 
-              className="bg-white h-full rounded-full transition-all duration-1000" 
-              style={{ width: `${Math.min(100, (streak / 30) * 100)}%` }}
-            ></div>
-          </div>
-        </div>
-
         <div className="flex flex-col items-center opacity-30 gap-1 pb-4">
           <div className="flex items-center gap-1.5 text-[8px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">
             Made By SHELLY
