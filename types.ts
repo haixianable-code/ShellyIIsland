@@ -4,6 +4,8 @@ export interface WordExample {
   eng: string;
 }
 
+export type FeedbackQuality = 'forgot' | 'hard' | 'good' | 'easy';
+
 export interface Word {
   id: string;
   s: string; // Spanish
