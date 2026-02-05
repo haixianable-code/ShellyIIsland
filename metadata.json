@@ -1,7 +1,4 @@
 {
-  "name": "ShellySpainshIsland - Spanish Master",
-  "description": "A sophisticated Spanish vocabulary review application with AI-powered context generation and progress tracking.",
-  "requestFramePermissions": [
-    "microphone"
-  ]
+  "name": "Shelly Spanish Island (Local)",
+  "description": "A sophisticated Spanish vocabulary review application with local progress tracking."
 }

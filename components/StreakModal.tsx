@@ -1,7 +1,8 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { X, Flame, Sparkles, Star, Trophy, Heart, Languages } from 'lucide-react';
 import { Word } from '../types';
+import { playFanfare, playClick } from '../utils/sfx';
 
 interface StreakModalProps {
   onClose: () => void;
@@ -10,6 +11,10 @@ interface StreakModalProps {
 }
 
 const StreakModal: React.FC<StreakModalProps> = ({ onClose, streak, words }) => {
+  useEffect(() => {
+    playFanfare();
+  }, []);
+
   // Select a random sample of words to "pile up"
   const wordPile = useMemo(() => {
     return [...words].sort(() => 0.5 - Math.random()).slice(0, 12);
@@ -21,7 +26,7 @@ const StreakModal: React.FC<StreakModalProps> = ({ onClose, streak, words }) => 
         
         {/* Close Button */}
         <button 
-          onClick={onClose}
+          onClick={() => { playClick(); onClose(); }}
           className="absolute top-6 right-6 z-30 bg-white/90 backdrop-blur p-3 rounded-2xl text-[#4b7d78] hover:bg-white transition-all shadow-md active:scale-90"
         >
           <X size={20} strokeWidth={3} />
@@ -89,7 +94,7 @@ const StreakModal: React.FC<StreakModalProps> = ({ onClose, streak, words }) => 
             </div>
 
             <button 
-              onClick={onClose}
+              onClick={() => { playClick(); onClose(); }}
               className="w-full bg-[#88d068] text-white py-5 rounded-[2.5rem] font-black text-xl shadow-[0_8px_0_#5a9a3b] border-4 border-white bubble-button"
             >
               Back to Island

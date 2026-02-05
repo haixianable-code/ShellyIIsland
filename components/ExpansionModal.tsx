@@ -1,19 +1,56 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Word } from '../types';
-import { X, Check, Sprout, Leaf, PackagePlus } from 'lucide-react';
+import { 
+  X, Check, Sprout, Leaf, ArrowRight, PartyPopper, 
+  PackagePlus, Link, Clock, Compass, Zap, HelpCircle, 
+  TreePalm, Dice5, Sparkles
+} from 'lucide-react';
+import confetti from 'canvas-confetti';
+import { playClick, playSparkle, playSwish } from '../utils/sfx';
 
 interface ExpansionModalProps {
   availableWords: Word[];
   onClose: () => void;
   onAddWords: (selectedWords: Word[]) => void;
+  onStudyNow: (selectedWords: Word[]) => void;
 }
 
-const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose, onAddWords }) => {
+const CATEGORIES = [
+  { id: 'all', label: 'All Seeds', icon: PackagePlus, color: 'text-gray-500', bg: 'bg-gray-100' },
+  { id: 'island', label: 'Island Life', icon: TreePalm, color: 'text-[#8bc34a]', bg: 'bg-[#f1f8e9]' },
+  { id: 'connector', label: 'The Glue', icon: Link, color: 'text-[#ab47bc]', bg: 'bg-[#f3e5f5]' },
+  { id: 'time', label: 'Time Machine', icon: Clock, color: 'text-[#ffa726]', bg: 'bg-[#fff3e0]' },
+  { id: 'preposition', label: 'Navigators', icon: Compass, color: 'text-[#29b6f6]', bg: 'bg-[#e1f5fe]' },
+  { id: 'quantity', label: 'Quantifiers', icon: Zap, color: 'text-[#ff7043]', bg: 'bg-[#fbe9e7]' },
+  { id: 'interrogative', label: 'Power Tools', icon: HelpCircle, color: 'text-[#ef5350]', bg: 'bg-[#ffebee]' },
+];
+
+const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose, onAddWords, onStudyNow }) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [plantedWords, setPlantedWords] = useState<Word[] | null>(null);
+  const [activeCategory, setActiveCategory] = useState('all');
   const MAX_SELECTION = 10;
 
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    CATEGORIES.forEach(cat => counts[cat.id] = 0);
+    counts['all'] = availableWords.length;
+    
+    availableWords.forEach(w => {
+      const cat = w.category || 'island';
+      counts[cat] = (counts[cat] || 0) + 1;
+    });
+    return counts;
+  }, [availableWords]);
+
+  const filteredWords = useMemo(() => {
+    if (activeCategory === 'all') return availableWords;
+    return availableWords.filter(w => (w.category || 'island') === activeCategory);
+  }, [availableWords, activeCategory]);
+
   const handleToggle = (wordId: string) => {
+    playClick();
     const newSelected = new Set(selected);
     if (newSelected.has(wordId)) {
       newSelected.delete(wordId);
@@ -25,85 +62,220 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
     setSelected(newSelected);
   };
 
+  const handleSurpriseMe = () => {
+    playSparkle();
+    const needed = MAX_SELECTION - selected.size;
+    if (needed <= 0) return;
+
+    // Filter out already selected
+    const pool = filteredWords.filter(w => !selected.has(w.id));
+    // Shuffle and pick
+    const randomPicks = pool.sort(() => 0.5 - Math.random()).slice(0, needed);
+    
+    const newSelected = new Set(selected);
+    randomPicks.forEach(w => newSelected.add(w.id));
+    setSelected(newSelected);
+  };
+
   const handleConfirm = () => {
     const selectedWords = availableWords.filter(w => selected.has(w.id));
     onAddWords(selectedWords);
+    setPlantedWords(selectedWords);
+    
+    // Confetti burst
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#8bc34a', '#ffa600', '#ffffff']
+    });
   };
+
+  if (plantedWords) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fadeIn">
+        <div className="relative w-full max-w-sm bg-[#f7f9e4] rounded-[3.5rem] border-[8px] border-white shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col items-center p-8 text-center animate-zoomIn">
+           
+           <div className="bg-[#8bc34a] p-6 rounded-[2.5rem] shadow-[0_10px_0_#5a9a3b] border-4 border-white mb-6 animate-bounce">
+              <PartyPopper size={48} className="text-white fill-current" />
+           </div>
+
+           <h2 className="text-3xl font-black text-[#4b7d78] mb-2 leading-tight">Seeds Planted!</h2>
+           <p className="text-[#8d99ae] font-bold mb-8 text-sm">
+             You've added <strong className="text-[#ffa600]">{plantedWords.length} new words</strong> to your garden. They are ready to grow.
+           </p>
+
+           <div className="w-full space-y-3">
+             <button 
+               onClick={() => onStudyNow(plantedWords)}
+               className="w-full bg-[#ffa600] text-white py-4 rounded-[2rem] font-black text-lg shadow-[0_8px_0_#e65100] border-4 border-white bubble-button flex items-center justify-center gap-2 hover:bg-[#ffb74d]"
+             >
+               Start Watering Now <ArrowRight size={20} />
+             </button>
+
+             <button 
+               onClick={onClose}
+               className="w-full bg-transparent text-[#8d99ae] py-4 rounded-[2rem] font-black text-sm hover:bg-[#e0e0e0]/20 transition-colors"
+             >
+               Keep Exploring Pocket
+             </button>
+           </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-2xl bg-[#f7f9e4] rounded-[3.5rem] border-[8px] border-white shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col h-[90vh]">
+      <div className="relative w-full max-w-4xl bg-[#f7f9e4] rounded-[3rem] md:rounded-[4rem] border-[8px] border-white shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col h-[90vh]">
         
-        {/* Header */}
-        <div className="p-6 md:p-8 shrink-0 border-b-4 border-[#e0d9b4] flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="bg-[#8bc34a] p-3 rounded-2xl shadow-sm border-2 border-white">
-              <PackagePlus className="text-white" size={24} />
-            </div>
+        {/* Header Section */}
+        <div className="shrink-0 border-b-4 border-[#e0d9b4] bg-white relative z-20">
+          <div className="flex items-center justify-between p-6 md:px-8 md:pt-8 md:pb-4">
             <div>
-              <h2 className="text-2xl font-black text-[#4b7d78]">Choose Your Seeds</h2>
-              <p className="text-sm font-bold text-[#8d99ae]">Select up to {MAX_SELECTION} new words to plant.</p>
+              <h2 className="text-3xl font-black text-[#4b7d78] tracking-tight">Seed Catalog</h2>
+              <p className="text-sm font-bold text-[#8d99ae]">Pick up to <span className="text-[#ffa600]">{MAX_SELECTION - selected.size}</span> more seeds</p>
             </div>
+            <button onClick={onClose} className="p-3 bg-[#f7f9e4] rounded-2xl shadow-sm hover:bg-[#e0e0e0] transition-all active:scale-90 text-[#4b7d78]">
+              <X size={24} strokeWidth={3} />
+            </button>
           </div>
-          <button onClick={onClose} className="p-3 bg-white rounded-2xl shadow-md hover:bg-[#f1f8e9] transition-all active:scale-90 text-[#4b7d78]">
-            <X size={24} strokeWidth={3} />
-          </button>
+
+          {/* Category Tabs */}
+          <div className="flex overflow-x-auto no-scrollbar gap-2 px-6 md:px-8 pb-4">
+            {CATEGORIES.map(cat => {
+              const isActive = activeCategory === cat.id;
+              const count = categoryCounts[cat.id] || 0;
+              const Icon = cat.icon;
+              
+              if (count === 0 && cat.id !== 'all') return null; // Hide empty categories
+
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => { playSwish(); setActiveCategory(cat.id); }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 font-black text-xs uppercase tracking-wider transition-all whitespace-nowrap active:scale-95 ${
+                    isActive 
+                    ? `bg-[#4b7d78] text-white border-[#4b7d78] shadow-md` 
+                    : `bg-white text-[#8d99ae] border-[#f0f0f0] hover:border-[#b0bec5]`
+                  }`}
+                >
+                  <Icon size={14} className={isActive ? 'text-white' : cat.color} />
+                  {cat.label}
+                  <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${isActive ? 'bg-black/20' : cat.bg + ' ' + cat.color}`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Word List */}
-        <div className="flex-1 overflow-y-auto no-scrollbar p-6 md:p-8">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {availableWords.map(word => {
+        {/* Word Grid */}
+        <div className="flex-1 overflow-y-auto no-scrollbar p-6 md:p-8 bg-[#f9fbe7] relative">
+          
+          {/* Surprise Me Floater */}
+          <div className="absolute top-4 right-6 z-10">
+             <button 
+                onClick={handleSurpriseMe}
+                disabled={selected.size >= MAX_SELECTION || filteredWords.length === 0}
+                className="bg-[#ffa600] text-white px-4 py-2 rounded-xl shadow-md border-2 border-white font-black text-xs flex items-center gap-2 hover:bg-[#ffb74d] active:scale-90 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+             >
+               <Dice5 size={16} /> Surprise Me
+             </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mt-8 md:mt-0">
+            {filteredWords.map((word, idx) => {
               const isSelected = selected.has(word.id);
               const isFull = selected.size >= MAX_SELECTION && !isSelected;
+              const isMisc = word.type === 'misc';
+              
+              // Map legacy categories for styling if needed
+              const catLabel = word.category === 'connector' ? 'CONN' :
+                               word.category === 'time' ? 'TIME' :
+                               word.category === 'preposition' ? 'PREP' :
+                               word.category === 'quantity' ? 'QTY' :
+                               word.category === 'interrogative' ? 'Q&A' :
+                               word.type.toUpperCase();
+
               return (
                 <button
                   key={word.id}
                   onClick={() => handleToggle(word.id)}
                   disabled={isFull}
-                  className={`p-4 rounded-3xl border-4 text-left transition-all relative overflow-hidden group ${
+                  className={`relative p-4 rounded-[2rem] border-[3px] text-left transition-all group active:scale-95 ${
                     isSelected
-                      ? 'bg-[#e8f5e9] border-[#8bc34a] shadow-[0_6px_0_#689f38]'
-                      : 'bg-white border-[#f0f0f0] hover:border-[#c5e1a5]'
-                  } ${isFull ? 'opacity-50 cursor-not-allowed' : 'active:translate-y-1 active:shadow-none'}`}
+                      ? 'bg-[#e8f5e9] border-[#8bc34a] shadow-none ring-2 ring-[#8bc34a] ring-offset-2'
+                      : isMisc 
+                        ? 'bg-[#f3e5f5] border-[#ce93d8] hover:border-[#ab47bc] shadow-[0_4px_0_#e1bee7]' 
+                        : 'bg-white border-[#f0f0f0] hover:border-[#c5e1a5] shadow-[0_4px_0_#e0e0e0]'
+                  } ${isFull ? 'opacity-40 grayscale cursor-not-allowed' : ''}`}
                 >
                   {isSelected && (
-                    <div className="absolute top-2 right-2 bg-white p-1 rounded-full border-2 border-[#8bc34a]">
-                      <Check size={12} className="text-[#8bc34a]" strokeWidth={4} />
+                    <div className="absolute -top-2 -right-2 bg-[#8bc34a] text-white p-1 rounded-full border-2 border-white shadow-sm z-10">
+                      <Check size={12} strokeWidth={4} />
                     </div>
                   )}
-                  <div className="flex items-center gap-2 mb-1">
-                     <Sprout size={12} className={isSelected ? 'text-[#8bc34a]' : 'text-[#c5e1a5]'} />
-                     <h4 className="font-black text-lg text-[#4b7d78]">{word.s}</h4>
+                  
+                  {/* Type Label */}
+                  <div className={`absolute top-3 right-3 text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${isMisc ? 'bg-[#e1bee7] text-[#8e24aa]' : 'bg-[#f1f8e9] text-[#558b2f]'}`}>
+                    {catLabel}
                   </div>
-                  <p className="text-sm font-bold text-[#8d99ae]">{word.t}</p>
+
+                  <div className="flex flex-col h-full justify-between">
+                    <div>
+                       <h4 className={`font-black text-xl mb-0.5 ${isMisc ? 'text-[#6a1b9a]' : 'text-[#4b7d78]'}`}>{word.s}</h4>
+                       <p className="text-xs font-bold text-[#8d99ae] leading-tight">{word.t}</p>
+                    </div>
+                    
+                    {/* Golden Rule Preview for Misc words */}
+                    {isMisc && (
+                      <div className="mt-3 pt-2 border-t border-[#e1bee7] flex items-start gap-1">
+                        <Sparkles size={10} className="text-[#ab47bc] shrink-0 mt-0.5" />
+                        <p className="text-[9px] text-[#7b1fa2] font-bold line-clamp-2 leading-tight opacity-80">
+                          {word.grammarTip}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {!isMisc && (
+                       <div className="mt-3">
+                         <Sprout size={14} className={isSelected ? 'text-[#8bc34a]' : 'text-[#dcedc8]'} />
+                       </div>
+                    )}
+                  </div>
                 </button>
               );
             })}
-             {availableWords.length === 0 && (
-              <div className="col-span-full text-center py-24 bg-white/50 rounded-[3rem] border-4 border-dashed border-[#e0d9b4]">
-                 <div className="bg-[#a5d6a7] w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-white border-4 border-white shadow-inner">
-                    <PackagePlus size={48} />
-                 </div>
-                 <p className="text-[#8d99ae] font-black uppercase tracking-[0.2em] text-md">Expansion Complete!</p>
-                 <p className="text-[#8d99ae] font-bold mt-2 opacity-60">You've planted all available seeds.</p>
+            
+            {filteredWords.length === 0 && (
+              <div className="col-span-full text-center py-20 opacity-50">
+                 <p className="font-black text-[#8d99ae] uppercase tracking-widest">No seeds found in this section.</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-6 md:p-8 shrink-0 border-t-4 border-[#e0d9b4] bg-[#f9f5da]">
-          <div className="flex items-center justify-between">
-            <div className="text-lg font-black text-[#4b7d78]">
-              <span className={selected.size > 0 ? 'text-[#8bc34a]' : ''}>{selected.size}</span> / {MAX_SELECTION} Selected
+        <div className="p-4 md:p-6 shrink-0 border-t-4 border-[#e0d9b4] bg-[#f9f5da] relative z-20">
+          <div className="flex items-center justify-between max-w-3xl mx-auto">
+            <div className="flex flex-col">
+               <span className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest">Cart</span>
+               <div className="text-2xl font-black text-[#4b7d78] leading-none">
+                 <span className={selected.size > 0 ? 'text-[#8bc34a]' : ''}>{selected.size}</span>
+                 <span className="text-lg opacity-40 mx-1">/</span>
+                 <span className="text-lg opacity-60">{MAX_SELECTION}</span>
+               </div>
             </div>
+            
             <button
               onClick={handleConfirm}
               disabled={selected.size === 0}
-              className="px-8 py-5 rounded-[2rem] font-black text-lg text-white bg-[#88d068] shadow-[0_8px_0_#5a9a3b] flex items-center gap-2 bubble-button disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
+              className="px-8 py-4 rounded-[2rem] font-black text-lg text-white bg-[#88d068] shadow-[0_6px_0_#5a9a3b] flex items-center gap-2 bubble-button disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed hover:bg-[#7cb342] active:translate-y-1"
             >
-              <Leaf size={20} /> Plant {selected.size} Seeds
+              <Leaf size={20} className="fill-current" /> 
+              <span>Plant Seeds</span>
             </button>
           </div>
         </div>

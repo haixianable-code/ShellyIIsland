@@ -1,20 +1,27 @@
-
-import React, { useState, useCallback, useMemo } from 'react';
-import { AppView, Word, FeedbackQuality } from './types';
-import Sidebar from './components/Sidebar';
-import Dashboard from './components/Dashboard';
-import StudyView from './components/StudyView';
-import VocabularyView from './components/VocabularyView';
-import WordDetailModal from './components/WordDetailModal';
-import { useSRS } from './hooks/useSRS';
-import { Heart, Home, ShoppingBag } from 'lucide-react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { AppView, Word, FeedbackQuality } from './types.ts';
+import Sidebar from './components/Sidebar.tsx';
+import Dashboard from './components/Dashboard.tsx';
+import StudyView from './components/StudyView.tsx';
+import VocabularyView from './components/VocabularyView.tsx';
+import WordDetailModal from './components/WordDetailModal.tsx';
+import StreakModal from './components/StreakModal.tsx';
+import DailyHarvestModal from './components/DailyHarvestModal.tsx';
+// import AuthView from './components/AuthView.tsx'; // REMOVED
+import { useSRS } from './hooks/useSRS.ts';
+import { useUserStats } from './hooks/useUserStats.ts';
+// import { isSupabaseConfigured } from './services/supabaseClient.ts'; // REMOVED
+import { Heart, Home, ShoppingBag, Leaf, AlertTriangle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.DASHBOARD);
   const [sessionWords, setSessionWords] = useState<Word[]>([]);
   const [selectedWord, setSelectedWord] = useState<Word | null>(null);
-  // Version counter to force fresh component mounting
+  const [showHarvestModal, setShowHarvestModal] = useState(false);
   const [sessionVersion, setSessionVersion] = useState(0);
+  const [isBlitzMode, setIsBlitzMode] = useState(false);
+  
+  // Removed forceReady state and useEffect
   
   const { 
     progress, 
@@ -25,11 +32,20 @@ const App: React.FC = () => {
     learnedToday,
     updateProgress,
     wordMap,
-    addExtraWordsToProgress
+    addExtraWordsToProgress,
+    // Removed loadingSrs, authChecking, user
+    // hasLocalData // This will still exist from useSRS
   } = useSRS();
+
+  const { stats, showStreakModal, setShowStreakModal } = useUserStats(progress);
+
+  const learnedWords = useMemo(() => {
+    return allAvailableWords.filter(w => progress[w.id]);
+  }, [allAvailableWords, progress]);
 
   const handleStartStudy = useCallback(() => {
     if (newWordsForToday.length === 0) return;
+    setIsBlitzMode(false);
     setSessionVersion(v => v + 1);
     setSessionWords([...newWordsForToday]);
     setView(AppView.STUDY);
@@ -37,55 +53,67 @@ const App: React.FC = () => {
 
   const handleStartReview = useCallback(() => {
     if (reviewWords.length === 0) return;
+    setIsBlitzMode(false);
     setSessionVersion(v => v + 1);
     setSessionWords([...reviewWords]);
-    setView(AppView.REVIEW);
+    setView(AppView.STUDY); // Consistent view for all session types
   }, [reviewWords]);
 
   const handleStartExtraStudy = useCallback((selected: Word[]) => {
     if (selected.length === 0) return;
-    // Increment version to force StudyView to remount and reset internal isSummaryView state
+    setIsBlitzMode(false);
     setSessionVersion(v => v + 1);
+    addExtraWordsToProgress(selected);
     setSessionWords([...selected]);
     setView(AppView.STUDY);
-  }, []);
+  }, [addExtraWordsToProgress]);
+
+  const handleStartBlitz = useCallback(() => {
+    if (learnedToday.length === 0) return;
+    setIsBlitzMode(true);
+    setSessionVersion(v => v + 1);
+    setSessionWords([...learnedToday].sort(() => 0.5 - Math.random()));
+    setShowHarvestModal(false);
+    setView(AppView.STUDY);
+  }, [learnedToday]);
+
+  const handleGetSeedPack = useCallback(() => {
+    if (unlearnedExtraWords.length === 0) return;
+    const pack = unlearnedExtraWords.slice(0, 10);
+    addExtraWordsToProgress(pack);
+  }, [unlearnedExtraWords, addExtraWordsToProgress]);
 
   const handleFinishSession = useCallback(() => {
     setView(AppView.DASHBOARD);
+    setIsBlitzMode(false);
   }, []);
 
-  const handleFeedback = useCallback((wordId: string, quality: FeedbackQuality) => {
-    const needsRetry = updateProgress(wordId, quality);
+  const handleFeedback = useCallback(async (wordId: string, quality: FeedbackQuality) => {
+    if (isBlitzMode) return;
+    const needsRetry = await updateProgress(wordId, quality);
     if (needsRetry) {
       const word = wordMap.get(wordId);
       if (word) setSessionWords(prev => [...prev, word]);
     }
-  }, [updateProgress, wordMap]);
+  }, [updateProgress, wordMap, isBlitzMode]);
 
   const openWordDetail = useCallback((word: Word) => {
     setSelectedWord(word);
   }, []);
 
-  // Use sessionVersion in key to ensure component is fully replaced
-  const studySessionKey = useMemo(() => 
-    `session-${sessionVersion}`, 
-    [sessionVersion]
-  );
+  const studySessionKey = useMemo(() => `session-${sessionVersion}`, [sessionVersion]);
+
+  // Removed isWaiting, showAuth, and corresponding JSX
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row selection:bg-[#ffd3b6] selection:text-[#e67e22]">
-      <Sidebar 
-        currentView={view} 
-        setView={setView} 
-      />
+      <Sidebar currentView={view} setView={setView} />
       
-      {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-4 border-[#e0d9b4] flex justify-around items-center p-3 pb-5 z-40 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
         <button onClick={() => setView(AppView.DASHBOARD)} className={`flex flex-col items-center gap-1 transition-all ${view === AppView.DASHBOARD ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
           <Home size={22} className={view === AppView.DASHBOARD ? 'fill-current' : ''} />
           <span className="text-[9px] font-black uppercase">Home</span>
         </button>
-        
         <button onClick={() => setView(AppView.VOCABULARY)} className={`flex flex-col items-center gap-1 transition-all ${view === AppView.VOCABULARY ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
           <ShoppingBag size={22} className={view === AppView.VOCABULARY ? 'fill-current' : ''} />
           <span className="text-[9px] font-black uppercase">Pocket</span>
@@ -93,40 +121,43 @@ const App: React.FC = () => {
       </div>
 
       <main className="flex-1 md:ml-64 p-4 md:p-12 overflow-y-auto mb-24 md:mb-0 flex flex-col">
+        {/* Removed Guest Mode Alert */}
+
         <div className="max-w-4xl mx-auto w-full flex-1">
-          {view === AppView.DASHBOARD && (
+          {view === AppView.DASHBOARD ? (
             <Dashboard 
               progress={progress}
+              stats={stats}
               wordsDue={reviewWords.length}
               newWordsAvailable={newWordsForToday.length}
+              unlearnedExtraCount={unlearnedExtraWords.length}
               newWordsList={newWordsForToday}
               learnedToday={learnedToday}
               onStartStudy={handleStartStudy}
               onStartReview={handleStartReview}
+              onGetSeedPack={handleGetSeedPack}
               onWordClick={openWordDetail}
+              onViewAllHarvest={() => setShowHarvestModal(true)}
             />
-          )}
-          {view === AppView.VOCABULARY && (
+          ) : view === AppView.VOCABULARY ? (
             <VocabularyView 
               words={allAvailableWords} 
               progress={progress} 
               onWordClick={openWordDetail}
               onAddExtraWords={addExtraWordsToProgress}
+              onStartExtraStudy={handleStartExtraStudy}
             />
-          )}
+          ) : null}
         </div>
         
-        <footer className="mt-20 py-8 flex flex-col items-center justify-center space-y-2 opacity-30 grayscale hover:grayscale-0 transition-all">
-           <div className="flex items-center gap-2 text-[10px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">
-              Made By SHELLY
-           </div>
+        <footer className="mt-8 py-8 flex flex-col items-center justify-center space-y-2 opacity-30 grayscale hover:grayscale-0 transition-all">
+           <div className="flex items-center gap-2 text-[10px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">Made By SHELLY</div>
            <Heart size={10} className="text-[#ff7b72] fill-current" />
         </footer>
       </main>
 
-      {/* Overlays */}
-      {(view === AppView.STUDY || view === AppView.REVIEW) && (
-        <div className="fixed inset-0 bg-[#f7f9e4] z-50 overflow-hidden flex flex-col">
+      {(view === AppView.STUDY || view === AppView.REVIEW) && sessionWords.length > 0 && (
+        <div className={`fixed inset-0 z-50 overflow-hidden flex flex-col ${isBlitzMode ? 'bg-[#f3e5f5]' : 'bg-[#f7f9e4]'}`}>
           <StudyView 
             key={studySessionKey}
             words={sessionWords}
@@ -134,15 +165,31 @@ const App: React.FC = () => {
             onFinish={handleFinishSession}
             onFeedback={handleFeedback}
             onStartExtra={handleStartExtraStudy}
+            isBlitz={isBlitzMode}
           />
         </div>
       )}
 
-      {selectedWord && (
-        <WordDetailModal 
-          word={selectedWord} 
-          onClose={() => setSelectedWord(null)} 
+      {showStreakModal && stats && stats.current_streak > 1 && (
+        <StreakModal 
+          streak={stats.current_streak}
+          words={learnedWords}
+          onClose={() => setShowStreakModal(false)}
         />
+      )}
+
+      {showHarvestModal && (
+        <DailyHarvestModal 
+          words={learnedToday}
+          progress={progress}
+          onClose={() => setShowHarvestModal(false)}
+          onWordClick={openWordDetail}
+          onStartBlitz={handleStartBlitz}
+        />
+      )}
+
+      {selectedWord && (
+        <WordDetailModal word={selectedWord} onClose={() => setSelectedWord(null)} />
       )}
 
       <style>{`
