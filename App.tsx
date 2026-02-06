@@ -1,17 +1,18 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { AppView, Word, FeedbackQuality } from './types.ts';
-import Sidebar from './components/Sidebar.tsx';
-import Dashboard from './components/Dashboard.tsx';
-import StudyView from './components/StudyView.tsx';
-import VocabularyView from './components/VocabularyView.tsx';
-import WordDetailModal from './components/WordDetailModal.tsx';
-import StreakModal from './components/StreakModal.tsx';
-import DailyHarvestModal from './components/DailyHarvestModal.tsx';
-// import AuthView from './components/AuthView.tsx'; // REMOVED
-import { useSRS } from './hooks/useSRS.ts';
-import { useUserStats } from './hooks/useUserStats.ts';
-// import { isSupabaseConfigured } from './services/supabaseClient.ts'; // REMOVED
-import { Heart, Home, ShoppingBag, Leaf, AlertTriangle } from 'lucide-react';
+import { AppView, Word, FeedbackQuality } from './types';
+import Sidebar from './components/Sidebar';
+import Dashboard from './components/Dashboard';
+import StudyView from './components/StudyView';
+import VocabularyView from './components/VocabularyView';
+import WordDetailModal from './components/WordDetailModal';
+import StreakModal from './components/StreakModal';
+import DailyHarvestModal from './components/DailyHarvestModal';
+import AuthView from './components/AuthView';
+import { useSRS } from './hooks/useSRS';
+import { useUserStats } from './hooks/useUserStats';
+import { Heart, Home, ShoppingBag, Leaf, Loader2, Cloud, CloudOff } from 'lucide-react';
+import { useAuth } from './hooks/useAuth';
+import { isSupabaseConfigured } from './services/supabaseClient';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.DASHBOARD);
@@ -20,9 +21,9 @@ const App: React.FC = () => {
   const [showHarvestModal, setShowHarvestModal] = useState(false);
   const [sessionVersion, setSessionVersion] = useState(0);
   const [isBlitzMode, setIsBlitzMode] = useState(false);
-  
-  // Removed forceReady state and useEffect
-  
+
+  // --- Auth & Data Hooks Integration ---
+  const { user, authChecking } = useAuth();
   const { 
     progress, 
     allAvailableWords, 
@@ -33,11 +34,11 @@ const App: React.FC = () => {
     updateProgress,
     wordMap,
     addExtraWordsToProgress,
-    // Removed loadingSrs, authChecking, user
-    // hasLocalData // This will still exist from useSRS
-  } = useSRS();
+    loadingSrs,
+    syncStatus 
+  } = useSRS(user); 
 
-  const { stats, showStreakModal, setShowStreakModal } = useUserStats(progress);
+  const { stats, showStreakModal, setShowStreakModal, loadingStats } = useUserStats(progress);
 
   const learnedWords = useMemo(() => {
     return allAvailableWords.filter(w => progress[w.id]);
@@ -56,7 +57,7 @@ const App: React.FC = () => {
     setIsBlitzMode(false);
     setSessionVersion(v => v + 1);
     setSessionWords([...reviewWords]);
-    setView(AppView.STUDY); // Consistent view for all session types
+    setView(AppView.REVIEW);
   }, [reviewWords]);
 
   const handleStartExtraStudy = useCallback((selected: Word[]) => {
@@ -89,7 +90,9 @@ const App: React.FC = () => {
   }, []);
 
   const handleFeedback = useCallback(async (wordId: string, quality: FeedbackQuality) => {
-    if (isBlitzMode) return;
+    if (isBlitzMode) {
+      return; 
+    }
     const needsRetry = await updateProgress(wordId, quality);
     if (needsRetry) {
       const word = wordMap.get(wordId);
@@ -103,7 +106,45 @@ const App: React.FC = () => {
 
   const studySessionKey = useMemo(() => `session-${sessionVersion}`, [sessionVersion]);
 
-  // Removed isWaiting, showAuth, and corresponding JSX
+  // --- 1. Loading State for Authentication Check ---
+  if (authChecking) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f9e4] text-center">
+        <div className="bg-white p-6 rounded-[2.5rem] shadow-lg border-4 border-[#e0d9b4] animate-bounce">
+          <Leaf className="text-[#8bc34a] w-12 h-12 fill-current" />
+        </div>
+        <div className="mt-6 flex items-center gap-2 text-[#4b7d78] font-black uppercase tracking-[0.2em]">
+           <Loader2 className="animate-spin" /> Connecting to Island...
+        </div>
+      </div>
+    );
+  }
+
+  // --- 2. Authentication View (if Supabase is on but no user) ---
+  if (isSupabaseConfigured && !user) {
+    return <AuthView />;
+  }
+
+  // --- 3. Loading State for SRS Data ---
+  if (loadingSrs) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f9e4] text-center">
+        <div className="bg-white p-6 rounded-[2.5rem] shadow-lg border-4 border-[#e0d9b4]">
+          <Leaf className="text-[#8bc34a] w-12 h-12 animate-pulse fill-current" />
+        </div>
+        <p className="mt-6 text-lg font-black text-[#4b7d78] uppercase tracking-[0.2em]">Waking up the island...</p>
+      </div>
+    );
+  }
+
+  const SyncIndicator = () => {
+    switch (syncStatus) {
+      case 'syncing': return <span title="Syncing..."><Loader2 size={12} className="animate-spin text-blue-500" /></span>;
+      case 'synced': return <span title="Synced"><Cloud size={12} className="text-green-500" /></span>;
+      case 'error': return <span title="Sync failed, offline mode."><CloudOff size={12} className="text-red-500" /></span>;
+      default: return null;
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row selection:bg-[#ffd3b6] selection:text-[#e67e22]">
@@ -121,7 +162,12 @@ const App: React.FC = () => {
       </div>
 
       <main className="flex-1 md:ml-64 p-4 md:p-12 overflow-y-auto mb-24 md:mb-0 flex flex-col">
-        {/* Removed Guest Mode Alert */}
+        {user && (
+          <div className="hidden md:flex absolute top-4 right-4 bg-white/50 px-3 py-1 rounded-full text-[10px] text-[#4b7d78] font-black border border-[#e0d9b4] items-center gap-2">
+             <SyncIndicator />
+             <span>{user.email}</span>
+          </div>
+        )}
 
         <div className="max-w-4xl mx-auto w-full flex-1">
           {view === AppView.DASHBOARD ? (
@@ -156,7 +202,7 @@ const App: React.FC = () => {
         </footer>
       </main>
 
-      {(view === AppView.STUDY || view === AppView.REVIEW) && sessionWords.length > 0 && (
+      {(view === AppView.STUDY || view === AppView.REVIEW) && (
         <div className={`fixed inset-0 z-50 overflow-hidden flex flex-col ${isBlitzMode ? 'bg-[#f3e5f5]' : 'bg-[#f7f9e4]'}`}>
           <StudyView 
             key={studySessionKey}

@@ -1,3 +1,4 @@
+
 // Organic & Tactile Sound Synthesizer
 // 100% Code-generated Web Audio API. No external assets.
 
@@ -6,25 +7,12 @@ let isMuted = false;
 let noiseBuffer: AudioBuffer | null = null;
 
 const initAudio = () => {
-  if (typeof window === 'undefined') return null;
-
-  if (!audioCtx) {
-    // Check if we already have one attached to window to survive hot reloads
-    if ((window as any)._ISLAND_AUDIO_CTX) {
-      audioCtx = (window as any)._ISLAND_AUDIO_CTX;
-    } else {
-      const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext);
-      if (AudioContextClass) {
-        audioCtx = new AudioContextClass();
-        (window as any)._ISLAND_AUDIO_CTX = audioCtx;
-      }
-    }
+  if (!audioCtx && typeof window !== 'undefined') {
+    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
   }
-
   if (audioCtx?.state === 'suspended') {
     audioCtx.resume().catch(() => {});
   }
-  
   // Generate White Noise Buffer once
   if (audioCtx && !noiseBuffer) {
     const bufferSize = audioCtx.sampleRate * 2; // 2 seconds

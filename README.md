@@ -1,20 +1,29 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Shelly Spanish Island
 
-# Run and deploy your AI Studio app
+A sophisticated Spanish vocabulary review application with AI-powered context generation and progress tracking.
 
-This contains everything you need to run your app locally.
+## Setup Instructions
 
-View your app in AI Studio: https://ai.studio/apps/drive/1OdnWr9ddCIlzRi1sE2hXDfuGH-lslfML
+1.  **Install Dependencies**
+    ```bash
+    npm install
+    ```
 
-## Run Locally
+2.  **Start Development Server**
+    ```bash
+    npm run dev
+    ```
 
-**Prerequisites:**  Node.js
+## Supabase Configuration (Optional)
 
+This app supports Supabase for authentication and data sync. If you do not provide these credentials, the app will run in **Offline Mode** using LocalStorage.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1.  Create a file named `.env.local` in the root directory.
+2.  Add your Supabase credentials:
+
+    ```env
+    VITE_SUPABASE_URL=your_project_url
+    VITE_SUPABASE_ANON_KEY=your_anon_key
+    ```
+
+3.  Restart the dev server (`npm run dev`) for changes to take effect.
