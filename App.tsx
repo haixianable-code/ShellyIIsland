@@ -7,10 +7,8 @@ import VocabularyView from './components/VocabularyView';
 import WordDetailModal from './components/WordDetailModal';
 import StreakModal from './components/StreakModal';
 import DailyHarvestModal from './components/DailyHarvestModal';
-// FIX: Changed AuthView from default to named import to resolve "Module has no default export" error.
 import { AuthView } from './components/AuthView';
-import WelcomeView from './components/WelcomeView'; // New Welcome Screen
-import AuthCallback from './components/AuthCallback'; // NEW
+import WelcomeView from './components/WelcomeView';
 import { useSRS } from './hooks/useSRS';
 import { useUserStats } from './hooks/useUserStats';
 import { Heart, Home, ShoppingBag, Leaf, Loader2, Cloud, CloudOff, User } from 'lucide-react';
@@ -127,11 +125,6 @@ const App: React.FC = () => {
   }, []);
 
   const studySessionKey = useMemo(() => `session-${sessionVersion}`, [sessionVersion]);
-
-  // --- NEW: Handle auth callback route ---
-  if (isSupabaseConfigured && window.location.pathname === '/auth/callback') {
-    return <AuthCallback />;
-  }
 
   // --- 1. Loading State for Authentication Check ---
   if (authChecking) {

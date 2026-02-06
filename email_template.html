@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your login code for Shelly Spanish Island</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap');
+    body {
+      font-family: 'Quicksand', sans-serif;
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; width: 100%; background-color: #f7f9e4;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f7f9e4;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #ffffff; border-radius: 40px; border: 4px solid #e0d9b4; box-shadow: 0 10px 0 #d0d0d0;">
+          <tr>
+            <td align="center" style="padding: 40px 30px;">
+              
+              <table border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
+                <tr>
+                  <td align="center" style="width: 80px; height: 80px; background-color: #78c850; border-radius: 32px; border: 4px solid white;">
+                    <span style="font-size: 40px; line-height: 72px;">🔑</span>
+                  </td>
+                </tr>
+              </table>
+              
+              <h1 style="font-family: 'Quicksand', sans-serif; font-size: 28px; font-weight: 900; color: #4b7d78; margin: 0 0 12px;">
+                Your Login Code
+              </h1>
+              
+              <p style="font-family: 'Quicksand', sans-serif; font-size: 16px; color: #6d7c8e; line-height: 1.5; margin: 0 0 30px;">
+                Enter this code in the app to log in to Shelly Spanish Island.
+              </p>
+              
+              <!-- OTP Code -->
+              <table border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 30px;">
+                <tr>
+                  <td align="center" style="border-radius: 24px; background-color: #f1f8e9; border: 2px dashed #c5e1a5;">
+                    <!-- The {{ .Token }} variable is replaced by Supabase with the 6-digit code -->
+                    <p style="padding: 15px 30px; font-family: 'Quicksand', monospace; font-size: 40px; font-weight: 900; color: #2e7d32; text-decoration: none; letter-spacing: 10px; margin: 0;">
+                      {{ .Token }}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="font-family: 'Quicksand', sans-serif; font-size: 12px; color: #8d99ae; line-height: 1.5; margin-top: 30px; border-top: 2px dashed #e0d9b4; padding-top: 20px; margin-bottom: 0;">
+                This code expires in 5 minutes. If you didn't request this login, you can safely ignore this email.
+                <br><br>
+                &copy; Shelly Spanish Island
+              </p>
+              
+            </td>
+          </tr>
+        </table>
+        
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
