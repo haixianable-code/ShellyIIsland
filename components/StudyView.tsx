@@ -1,7 +1,8 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Word, FeedbackQuality } from '../types';
+import { Word, FeedbackQuality, UserStats } from '../types';
 import { playAudio } from '../utils/audio';
+import { User } from '@supabase/supabase-js';
 import { 
   playClick, 
   playSwish, 
@@ -16,7 +17,8 @@ import {
   PartyPopper, BookOpen, Layers, 
   Map, Heart, Trophy, ArrowRight,
   FastForward, Pickaxe, Sun, Volume2,
-  Globe, Star
+  Globe, Star, ShieldCheck, Flame, UserPlus,
+  Share2, CheckCircle2, Ticket
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -24,7 +26,6 @@ import confetti from 'canvas-confetti';
 const GrammarPocket: React.FC<{ word: Word }> = ({ word }) => {
   const conjugationList = word.forms ? word.forms.split(', ') : [];
   
-  // If it's a Misc word, we show a "Golden Rule" card instead of a conjugation grid
   if (word.type === 'misc') {
     return (
       <section className="bg-[#f3e5f5] p-5 rounded-[2.5rem] border-4 border-[#ce93d8] relative overflow-hidden shadow-sm">
@@ -39,7 +40,6 @@ const GrammarPocket: React.FC<{ word: Word }> = ({ word }) => {
     );
   }
   
-  // Dynamic headers based on type
   let labels: string[] = [];
   if (word.type === 'verb') {
     labels = ['Yo', 'Tú', 'Él/Ella', 'Nos.', 'Vos.', 'Ellos'];
@@ -136,84 +136,155 @@ const UsageExamples: React.FC<{ word: Word }> = ({ word }) => (
   </section>
 );
 
-// Sub-component: Session Summary
+// P1: High Conversion Session Summary & P2: Social Share
 const SessionSummary: React.FC<{ 
   words: Word[], 
   onFinish: () => void, 
-  isBlitz?: boolean
-}> = ({ words, onFinish, isBlitz }) => {
+  isBlitz?: boolean,
+  isGuest: boolean,
+  onLoginRequest: () => void,
+  userStats: UserStats | null,
+  user: User | null
+}> = ({ words, onFinish, isBlitz, isGuest, onLoginRequest, userStats, user }) => {
   
-  // Trigger confetti and celebration sound on mount
   useEffect(() => {
-    playFanfare(); // SFX: WIN!
+    playFanfare();
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+  }, []);
+
+  const handleShare = async () => {
+    playClick();
+    const streak = userStats?.current_streak || 0;
+    const inviterName = user?.email?.split('@')[0] || 'Friend';
+    const totalWords = userStats?.total_words_learned || words.length;
+
+    // Create Viral Link
+    const shareUrl = new URL(window.location.origin);
+    shareUrl.searchParams.set('invitedBy', inviterName);
+    shareUrl.searchParams.set('s', streak.toString());
+    shareUrl.searchParams.set('w', totalWords.toString());
+
+    const text = `🏝️ I just harvested ${words.length} words on Shelly Spanish Island!\n🔥 Current Streak: ${streak} Days\n\nJoin me in building your vocabulary island! 🇪🇸`;
     
-    const duration = 3000;
-    const end = Date.now() + duration;
-
-    const frame = () => {
-      confetti({
-        particleCount: 5,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 },
-        colors: isBlitz ? ['#9c27b0', '#e1bee7', '#ffffff'] : ['#8bc34a', '#ffa600', '#29b6f6', '#e91e63']
-      });
-      confetti({
-        particleCount: 5,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 },
-        colors: isBlitz ? ['#9c27b0', '#e1bee7', '#ffffff'] : ['#8bc34a', '#ffa600', '#29b6f6', '#e91e63']
-      });
-
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Shelly Spanish Island Harvest',
+          text: text,
+          url: shareUrl.toString() // Use the proper viral URL
+        });
+      } catch (err) {
+        console.log('Share canceled');
       }
-    };
+    } else {
+      // Fallback: Copy full text + link
+      navigator.clipboard.writeText(`${text}\n${shareUrl.toString()}`);
+      alert('Harvest report and link copied!');
+    }
+  };
 
-    frame();
-  }, [isBlitz]);
+  const receiptWords = words.slice(0, 5);
 
   return (
-    <div className={`flex-1 flex flex-col items-center justify-center p-6 text-center animate-zoomIn overflow-y-auto no-scrollbar pb-32 ${isBlitz ? 'bg-[#f3e5f5]' : 'bg-[#f7f9e4]'}`}>
-      {/* Achievement Card */}
-      <div className={`bg-white p-8 rounded-[4rem] border-[8px] shadow-[0_15px_0_rgba(0,0,0,0.1)] max-w-sm w-full relative z-10 overflow-visible ${isBlitz ? 'border-[#9c27b0]' : 'border-[#8bc34a]'}`}>
-        <div className={`absolute -top-12 left-1/2 -translate-x-1/2 p-6 rounded-[2.5rem] border-4 border-white animate-bounce z-20 ${isBlitz ? 'bg-[#e1bee7] shadow-[0_8px_0_#ba68c8]' : 'bg-[#ffeb3b] shadow-[0_8px_0_#fbc02d]'}`}>
-          <Trophy size={48} className={isBlitz ? 'text-[#7b1fa2] fill-current' : 'text-[#f57c00] fill-current'} />
-        </div>
-        
-        <div className="mt-10 space-y-6">
-          <div>
-            <h2 className={`text-3xl font-black uppercase tracking-tighter italic ${isBlitz ? 'text-[#7b1fa2]' : 'text-[#4b7d78]'}`}>
-              {isBlitz ? '¡Velocidad Extrema!' : '¡Victoria en la isla!'}
-            </h2>
-            <p className="text-[#8d99ae] font-bold text-sm mt-1 uppercase tracking-widest">
-              {isBlitz ? 'Practice session complete' : 'Seeds successfully tended'}
-            </p>
-          </div>
-
-          <div className="py-6 border-y-4 border-dashed border-[#e0d9b4] flex flex-col items-center">
-            <span className={`text-6xl font-black drop-shadow-sm ${isBlitz ? 'text-[#ab47bc]' : 'text-[#8bc34a]'}`}>{words.length}</span>
-            <span className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.3em] mt-1">Words Reviewed</span>
-          </div>
-
-          <button 
-            onClick={() => { playClick(); onFinish(); }}
-            className={`w-full py-5 rounded-[2.5rem] font-black text-xl border-4 bubble-button flex items-center justify-center gap-3 mt-4 relative z-20 group transition-colors ${
-              isBlitz 
-              ? 'bg-[#f3e5f5] text-[#7b1fa2] border-[#e1bee7] shadow-[0_8px_0_#e1bee7] hover:bg-[#9c27b0] hover:text-white' 
-              : 'bg-[#f1f8e9] text-[#2e7d32] border-[#c5e1a5] shadow-[0_8px_0_#c5e1a5] hover:bg-[#8bc34a] hover:text-white'
-            }`}
-          >
-            <span>Back Home</span> <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
-          </button>
-        </div>
-      </div>
+    <div className={`flex-1 flex flex-col items-center justify-start pt-12 px-6 text-center animate-zoomIn overflow-y-auto no-scrollbar pb-32 ${isBlitz ? 'bg-[#f3e5f5]' : 'bg-[#f7f9e4]'}`}>
       
-      <div className="mt-8 flex flex-col items-center opacity-20 gap-1 grayscale pointer-events-none">
-          <span className="text-[8px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">Island Progress Saved</span>
-          <Heart size={8} className="text-[#ff7b72] fill-current" />
+      {/* Trophy Section */}
+      <div className={`relative mb-6 ${isBlitz ? 'text-[#9c27b0]' : 'text-[#f57c00]'}`}>
+         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-white/50 rounded-full blur-2xl" />
+         <Trophy size={80} className="relative z-10 fill-current animate-bounce-slight" />
       </div>
+
+      <h2 className={`text-3xl font-black uppercase tracking-tighter italic mb-1 ${isBlitz ? 'text-[#7b1fa2]' : 'text-[#4b7d78]'}`}>
+        {isBlitz ? 'Fast & Furious!' : 'Session Complete!'}
+      </h2>
+      <p className="text-[#8d99ae] font-bold mb-6 text-sm">
+        You just watered <strong className="text-[#ffa600]">{words.length}</strong> words.
+      </p>
+
+      {/* SHAREABLE HARVEST RECEIPT */}
+      <div className="bg-white p-5 rounded-[2rem] shadow-[0_15px_30px_-10px_rgba(0,0,0,0.1)] border border-[#e0e0e0] w-full max-w-xs mb-8 transform rotate-1 hover:rotate-0 transition-transform duration-500 relative">
+        {/* Receipt Teeth top */}
+        <div className="absolute -top-1.5 left-2 right-2 h-3 bg-white" style={{ clipPath: 'polygon(0% 100%, 5% 0%, 10% 100%, 15% 0%, 20% 100%, 25% 0%, 30% 100%, 35% 0%, 40% 100%, 45% 0%, 50% 100%, 55% 0%, 60% 100%, 65% 0%, 70% 100%, 75% 0%, 80% 100%, 85% 0%, 90% 100%, 95% 0%, 100% 100%)' }}></div>
+        
+        <div className="flex items-center justify-between mb-4 border-b-2 border-dashed border-[#e0e0e0] pb-2">
+            <div className="flex items-center gap-2">
+               <Ticket size={18} className="text-[#4b7d78]" />
+               <span className="text-[10px] font-black uppercase tracking-widest text-[#4b7d78]">Harvest Report</span>
+            </div>
+            <div className="text-[10px] font-mono text-[#8d99ae]">{new Date().toLocaleDateString()}</div>
+        </div>
+
+        <div className="space-y-2 mb-4">
+           {receiptWords.map(w => (
+             <div key={w.id} className="flex justify-between items-center text-xs font-bold text-[#5d4037]">
+                <span>{w.s}</span>
+                <CheckCircle2 size={12} className="text-[#8bc34a]" />
+             </div>
+           ))}
+           {words.length > 5 && (
+             <div className="text-center text-[10px] text-[#8d99ae] italic pt-1">
+               ...and {words.length - 5} more
+             </div>
+           )}
+        </div>
+
+        <div className="bg-[#f1f8e9] p-3 rounded-xl flex items-center justify-between mb-4">
+           <div className="text-left">
+              <span className="text-[9px] font-black uppercase text-[#689f38] block">Island Streak</span>
+              <div className="flex items-center gap-1">
+                 <Flame size={12} className="text-[#ffa600] fill-current" />
+                 <span className="text-lg font-black text-[#4b7d78]">{userStats?.current_streak || 0}</span>
+              </div>
+           </div>
+           <div className="text-right">
+              <span className="text-[9px] font-black uppercase text-[#689f38] block">XP Gained</span>
+              <span className="text-lg font-black text-[#4b7d78]">+{words.length * 10}</span>
+           </div>
+        </div>
+
+        <button 
+           onClick={handleShare}
+           className="w-full bg-[#4b7d78] text-white py-3 rounded-xl font-black text-sm flex items-center justify-center gap-2 hover:bg-[#3d6662] transition-colors"
+        >
+           <Share2 size={16} /> Share Harvest
+        </button>
+
+        {/* Receipt Teeth bottom */}
+        <div className="absolute -bottom-1.5 left-2 right-2 h-3 bg-white" style={{ clipPath: 'polygon(0% 0%, 5% 100%, 10% 0%, 15% 100%, 20% 0%, 25% 100%, 30% 0%, 35% 100%, 40% 0%, 45% 100%, 50% 0%, 55% 100%, 60% 0%, 65% 100%, 70% 0%, 75% 100%, 80% 0%, 85% 100%, 90% 0%, 95% 100%, 100% 0%)' }}></div>
+      </div>
+
+      {/* CONVERSION CARD */}
+      {isGuest && (
+        <div className="w-full max-w-sm bg-[#e3f2fd] p-5 rounded-[2.5rem] border-[6px] border-[#90caf9] shadow-sm mb-6 relative overflow-hidden animate-slideUp">
+           <div className="absolute -right-6 -top-6 text-[#bbdefb] opacity-50 rotate-12">
+              <ShieldCheck size={100} />
+           </div>
+           
+           <div className="relative z-10 text-left">
+              <h3 className="text-[#1565c0] font-black text-lg leading-tight mb-1">Don't lose your XP!</h3>
+              <p className="text-[#1e88e5] text-xs font-bold mb-3 pr-8">
+                You're making great progress. Save it permanently to the cloud.
+              </p>
+              
+              <button 
+                onClick={() => { playClick(); onLoginRequest(); }}
+                className="w-full bg-[#1976d2] text-white py-3 rounded-xl font-black flex items-center justify-center gap-2 shadow-md hover:bg-[#1565c0] active:scale-95 transition-all text-sm"
+              >
+                <UserPlus size={16} />
+                <span>Save My Progress</span>
+              </button>
+           </div>
+        </div>
+      )}
+
+      {/* Footer Action */}
+      <button 
+        onClick={() => { playClick(); onFinish(); }}
+        className="text-[#8d99ae] font-black uppercase tracking-widest text-xs hover:text-[#4b7d78] transition-colors py-4"
+      >
+        {isGuest ? 'Skip & Return Home' : 'Back to Island'}
+      </button>
+      
     </div>
   );
 };
@@ -225,22 +296,32 @@ interface StudyViewProps {
   onFeedback: (wordId: string, quality: FeedbackQuality) => void;
   onStartExtra: (selected: Word[]) => void;
   isBlitz?: boolean;
+  isGuest: boolean;
+  onLoginRequest: () => void;
+  userStats: UserStats | null;
+  user: User | null; // Added prop
 }
 
-const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBlitz = false }) => {
+const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBlitz = false, isGuest, onLoginRequest, userStats, user }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [isSummaryView, setIsSummaryView] = useState(false);
-  
-  // Reverse Mode State: false = Span -> Eng (Normal), true = Eng -> Span (Hard)
   const [isReverseMode, setIsReverseMode] = useState(false);
+  const [isVibrating, setIsVibrating] = useState(false);
 
   const word = words[currentIndex];
   
-  // Auto-play audio when answer is shown
+  // Audio Visual Feedback Logic
+  const handlePlayAudio = (text: string) => {
+    playAudio(text);
+    // Trigger vibration effect
+    setIsVibrating(true);
+    setTimeout(() => setIsVibrating(false), 300); // 300ms wiggle
+  };
+
   useEffect(() => {
     if (showAnswer && word) {
-      setTimeout(() => playAudio(word.s), 400); // Increased delay for SFX clarity
+      setTimeout(() => handlePlayAudio(word.s), 400); 
     }
   }, [showAnswer, word]);
 
@@ -250,7 +331,7 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBl
   }, [currentIndex, words.length]);
 
   const handleNext = useCallback(() => {
-    playClick(); // SFX: Mechanical click
+    playClick(); 
     if (currentIndex < words.length - 1) {
       setCurrentIndex(currentIndex + 1);
       setShowAnswer(false);
@@ -260,12 +341,10 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBl
   }, [currentIndex, words.length]);
 
   const handleRating = (quality: FeedbackQuality) => {
-    // Save feedback
     onFeedback(word.id, quality);
 
-    // EXPRESS LANE: If "Perfect/Easy", assume user knows it and move on immediately
     if (quality === 'easy') {
-      playHighChime(); // SFX: Gem Sound
+      playHighChime(); 
       confetti({
         particleCount: 25,
         spread: 40,
@@ -274,11 +353,10 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBl
       });
       handleNext();
     } 
-    // VERIFICATION LANE
     else {
-      if (quality === 'good') playHighWood(); // SFX: Solid Wood
-      else if (quality === 'hard') playLowWood(); // SFX: Hollow Wood
-      else playThud(); // SFX: Soft Thud (Forgot)
+      if (quality === 'good') playHighWood(); 
+      else if (quality === 'hard') playLowWood(); 
+      else playThud(); 
       
       setShowAnswer(true);
     }
@@ -296,6 +374,10 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBl
           words={words} 
           onFinish={onFinish} 
           isBlitz={isBlitz}
+          isGuest={isGuest}
+          onLoginRequest={onLoginRequest}
+          userStats={userStats}
+          user={user}
         />
       </div>
     );
@@ -303,23 +385,20 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBl
 
   if (!word) return null;
 
-  // Determine what to show on Front vs Back
   const frontText = isReverseMode ? word.t : word.s;
   const backText = isReverseMode ? word.s : word.t;
   const frontLabel = isReverseMode ? 'English' : 'Spanish';
   const showFrontAudio = !isReverseMode;
   
-  // Color Logic for Main Card
   const getCardBorderColor = () => {
     if (showAnswer) return 'border-[#ffe082]';
     if (isBlitz) return 'border-[#ce93d8]';
-    if (word.type === 'misc') return 'border-[#ce93d8]'; // Purple for Misc
+    if (word.type === 'misc') return 'border-[#ce93d8]';
     return 'border-[#8bc34a]';
   };
 
   return (
     <div className={`flex-1 flex flex-col max-w-2xl mx-auto w-full overflow-hidden animate-fadeIn relative ${isBlitz ? 'bg-[#f3e5f5]' : 'bg-[#f7f9e4]'}`}>
-      {/* Header & Progress */}
       <div className={`px-4 pt-6 pb-2 shrink-0 z-20 ${isBlitz ? 'bg-[#f3e5f5]' : 'bg-[#f7f9e4]'}`}>
         <div className="flex justify-between items-center mb-4">
           <button onClick={() => { playClick(); onFinish(); }} className="p-3 bg-white rounded-2xl shadow-[0_4px_0_#d0d0d0] border-2 border-[#f0f0f0] text-[#4b7d78] bubble-button">
@@ -340,7 +419,6 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBl
              </div>
           </div>
 
-          {/* Reverse Mode Toggle */}
           <button 
              onClick={toggleReverseMode}
              className={`p-3 rounded-2xl border-2 transition-all active:scale-95 flex items-center gap-1 ${isReverseMode ? 'bg-[#4b7d78] text-white border-[#4b7d78] shadow-inner' : 'bg-white text-[#4b7d78] border-[#f0f0f0] shadow-[0_4px_0_#d0d0d0]'}`}
@@ -352,9 +430,8 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBl
         </div>
       </div>
 
-      {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-64">
-        <div className={`bg-white w-full rounded-[3.5rem] border-[8px] transition-all duration-500 p-6 flex flex-col items-center shadow-[0_12px_0_rgba(0,0,0,0.08)] relative ${getCardBorderColor()} ${showAnswer ? '' : 'justify-center min-h-[400px] border-dashed'}`}>
+        <div className={`bg-white w-full rounded-[3.5rem] border-[8px] transition-all duration-200 p-6 flex flex-col items-center shadow-[0_12px_0_rgba(0,0,0,0.08)] relative ${getCardBorderColor()} ${showAnswer ? '' : 'justify-center min-h-[400px] border-dashed'} ${isVibrating ? 'animate-wiggle ring-4 ring-[#8bc34a]/30' : ''}`}>
           
           <div className="flex gap-2 mb-4">
             <div className={`px-3 py-1 rounded-lg text-white font-black text-[9px] uppercase tracking-[0.2em] shadow-sm ${word.type === 'verb' ? 'bg-[#ff7043]' : word.type === 'adj' ? 'bg-[#fbc02d]' : word.type === 'misc' ? 'bg-[#ab47bc]' : 'bg-[#2196f3]'}`}>
@@ -370,12 +447,11 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBl
             </div>
           </div>
           
-          {/* Main Word Display - Interactive */}
           <button 
             onClick={() => {
               if (showFrontAudio) {
                 playClick();
-                playAudio(word.s);
+                handlePlayAudio(word.s);
               }
             }}
             disabled={!showFrontAudio}
@@ -402,7 +478,7 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBl
                     {backText}
                   </p>
                   {isReverseMode && (
-                    <button onClick={() => playAudio(word.s)} className="mt-3 p-2 bg-[#f0f4c3] rounded-full text-[#827717] inline-block active:scale-90 transition-transform">
+                    <button onClick={() => handlePlayAudio(word.s)} className="mt-3 p-2 bg-[#f0f4c3] rounded-full text-[#827717] inline-block active:scale-90 transition-transform">
                       <Volume2 size={24} />
                     </button>
                   )}
@@ -434,18 +510,15 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBl
         </div>
       </div>
 
-      {/* FIXED BOTTOM CONTROL BAR */}
       <div className={`fixed bottom-0 left-0 right-0 p-4 pb-8 border-t-4 border-[#e0d9b4] z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] backdrop-blur-md transition-colors ${isBlitz ? 'bg-[#f3e5f5]/90' : 'bg-[#f7f9e4]/80'}`}>
         <div className="max-w-2xl mx-auto">
           
           {!showAnswer ? (
-            /* PHASE 1: RATING BUTTONS (Question Phase) */
             <div className="animate-slideUp flex flex-col gap-3">
                <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.25em] mb-1 text-center">
                   How well do you know this?
                </p>
                
-               {/* 3 Verification Buttons - Using updated sounds: Thud, Low Wood, High Wood */}
                <div className="grid grid-cols-3 gap-3">
                   {[
                     { id: 'forgot', icon: CloudRain, color: '#455a64', label: 'Forgot', bg: '#eceff1', border: '#90a4ae', shadow: '#78909c' },
@@ -469,7 +542,6 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBl
                   ))}
                </div>
 
-               {/* 1 Express Button - Using High Chime */}
                <button 
                   onClick={() => handleRating('easy')} 
                   className="w-full p-4 rounded-2xl border-4 bubble-button transition-all active:translate-y-1 active:shadow-none relative group overflow-hidden flex items-center justify-center gap-2 bg-[#a5d6a7] border-[#2e7d32] text-[#004d40] shadow-[0_6px_0_#1b5e20] hover:bg-[#81c784]"
@@ -484,7 +556,6 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBl
                </button>
             </div>
           ) : (
-            /* PHASE 2: NEXT BUTTON (Answer Phase) */
             <div className="animate-slideUp">
                <button 
                  onClick={handleNext}

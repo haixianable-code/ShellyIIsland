@@ -1,0 +1,25 @@
+
+{
+  "name": "Shelly Spanish Island",
+  "short_name": "Shelly Island",
+  "description": "Grow your Spanish vocabulary on a beautiful tropical island.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f9e4",
+  "theme_color": "#78c850",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2378c850' d='M11,20C4.3,18.3,2,12.1,4,6c2.4-7.2,12.7-7.2,15.1,0C21,12.1,17.7,18.3,11,20z'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2378c850' d='M11,20C4.3,18.3,2,12.1,4,6c2.4-7.2,12.7-7.2,15.1,0C21,12.1,17.7,18.3,11,20z'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

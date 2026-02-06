@@ -1,17 +1,20 @@
+
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { AppView, Word, FeedbackQuality } from './types';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import StudyView from './components/StudyView';
 import VocabularyView from './components/VocabularyView';
+import MobileSettings from './components/MobileSettings';
 import WordDetailModal from './components/WordDetailModal';
 import StreakModal from './components/StreakModal';
 import DailyHarvestModal from './components/DailyHarvestModal';
+import SyncCompleteModal from './components/SyncCompleteModal';
 import { AuthView } from './components/AuthView';
 import WelcomeView from './components/WelcomeView';
 import { useSRS } from './hooks/useSRS';
 import { useUserStats } from './hooks/useUserStats';
-import { Heart, Home, ShoppingBag, Leaf, Loader2, Cloud, CloudOff, User } from 'lucide-react';
+import { Heart, Home, ShoppingBag, Leaf, Loader2, Cloud, CloudOff, Menu } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { isSupabaseConfigured, supabase } from './services/supabaseClient';
 
@@ -27,6 +30,7 @@ const App: React.FC = () => {
   const { user, authChecking } = useAuth();
   const [isGuest, setIsGuest] = useState(false);
   const [showAuthView, setShowAuthView] = useState(false);
+  const [showSyncCelebration, setShowSyncCelebration] = useState(false);
   
   const { 
     progress, 
@@ -48,6 +52,14 @@ const App: React.FC = () => {
     return allAvailableWords.filter(w => progress[w.id]);
   }, [allAvailableWords, progress]);
   
+  // Check for Celebration Flag on User Load
+  useEffect(() => {
+    if (user && sessionStorage.getItem('show_sync_celebration') === 'true') {
+       setShowSyncCelebration(true);
+       sessionStorage.removeItem('show_sync_celebration');
+    }
+  }, [user]);
+
   const handleLoginRequest = useCallback(() => {
     setIsGuest(false);
     setShowAuthView(true);
@@ -186,24 +198,24 @@ const App: React.FC = () => {
         onLogout={handleLogout}
       />
       
+      {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-4 border-[#e0d9b4] flex justify-around items-center p-3 pb-5 z-40 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
-        <button onClick={() => setView(AppView.DASHBOARD)} className={`flex flex-col items-center gap-1 transition-all ${view === AppView.DASHBOARD ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
+        <button onClick={() => setView(AppView.DASHBOARD)} className={`flex flex-col items-center gap-1 transition-all w-16 ${view === AppView.DASHBOARD ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
           <Home size={22} className={view === AppView.DASHBOARD ? 'fill-current' : ''} />
           <span className="text-[9px] font-black uppercase">Home</span>
         </button>
-        <button onClick={() => setView(AppView.VOCABULARY)} className={`flex flex-col items-center gap-1 transition-all ${view === AppView.VOCABULARY ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
+        <button onClick={() => setView(AppView.VOCABULARY)} className={`flex flex-col items-center gap-1 transition-all w-16 ${view === AppView.VOCABULARY ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
           <ShoppingBag size={22} className={view === AppView.VOCABULARY ? 'fill-current' : ''} />
           <span className="text-[9px] font-black uppercase">Pocket</span>
         </button>
-        {isSupabaseConfigured && !user && (
-          <button onClick={handleLoginRequest} className="flex flex-col items-center gap-1 text-[#ff7b72]">
-             <User size={22} />
-             <span className="text-[9px] font-black uppercase">Sign Up</span>
-          </button>
-        )}
+        <button onClick={() => setView(AppView.SETTINGS)} className={`flex flex-col items-center gap-1 transition-all w-16 ${view === AppView.SETTINGS ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
+           <Menu size={22} />
+           <span className="text-[9px] font-black uppercase">Menu</span>
+        </button>
       </div>
 
       <main className="flex-1 md:ml-64 p-4 md:p-12 overflow-y-auto mb-24 md:mb-0 flex flex-col">
+        {/* Desktop Header Sync Indicator */}
         <div className="hidden md:flex absolute top-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] text-[#4b7d78] font-black border border-[#e0d9b4] items-center gap-2">
              {user ? (
                <>
@@ -239,27 +251,45 @@ const App: React.FC = () => {
               onAddExtraWords={addExtraWordsToProgress}
               onStartExtraStudy={handleStartExtraStudy}
             />
+          ) : view === AppView.SETTINGS ? (
+            <MobileSettings
+              user={user}
+              stats={stats}
+              isSupabaseConfigured={isSupabaseConfigured}
+              onLoginRequest={handleLoginRequest}
+              onLogout={handleLogout}
+            />
           ) : null}
         </div>
         
-        <footer className="mt-8 py-8 flex flex-col items-center justify-center space-y-2 opacity-30 grayscale hover:grayscale-0 transition-all">
-           <div className="flex items-center gap-2 text-[10px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">Made By SHELLY</div>
-           <Heart size={10} className="text-[#ff7b72] fill-current" />
-        </footer>
+        {view !== AppView.SETTINGS && (
+          <footer className="mt-8 py-8 flex flex-col items-center justify-center space-y-2 opacity-30 grayscale hover:grayscale-0 transition-all">
+             <div className="flex items-center gap-2 text-[10px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">Made By SHELLY</div>
+             <Heart size={10} className="text-[#ff7b72] fill-current" />
+          </footer>
+        )}
       </main>
 
       {(view === AppView.STUDY || view === AppView.REVIEW) && (
         <div className={`fixed inset-0 z-50 overflow-hidden flex flex-col ${isBlitzMode ? 'bg-[#f3e5f5]' : 'bg-[#f7f9e4]'}`}>
           <StudyView 
             key={studySessionKey}
+            user={user}
             words={sessionWords}
             unlearnedExtra={unlearnedExtraWords}
             onFinish={handleFinishSession}
             onFeedback={handleFeedback}
             onStartExtra={handleStartExtraStudy}
             isBlitz={isBlitzMode}
+            isGuest={isGuest}
+            onLoginRequest={handleLoginRequest}
+            userStats={stats} 
           />
         </div>
+      )}
+
+      {showSyncCelebration && (
+        <SyncCompleteModal onClose={() => setShowSyncCelebration(false)} />
       )}
 
       {showStreakModal && stats && stats.current_streak > 1 && (
@@ -290,9 +320,15 @@ const App: React.FC = () => {
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes wiggle { 
+          0%, 100% { transform: rotate(0deg); } 
+          25% { transform: rotate(-2deg); } 
+          75% { transform: rotate(2deg); } 
+        }
         .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
         .animate-slideUp { animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .animate-zoomIn { animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-wiggle { animation: wiggle 0.3s ease-in-out; }
       `}</style>
     </div>
   );

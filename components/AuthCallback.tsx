@@ -1,5 +1,5 @@
+
 import React, { useEffect, useState } from 'react';
-// FIX: Import the standalone helper function instead of trying to modify the useAuth hook.
 import { useAuth, getSupabaseUserFromLocalStorage } from '../hooks/useAuth';
 import { Loader2, Leaf, CheckCircle, AlertCircle, HelpCircle } from 'lucide-react';
 
@@ -11,30 +11,36 @@ const AuthCallback: React.FC = () => {
 
   useEffect(() => {
     if (authChecking) {
-      return; // Wait until Supabase has checked the auth state
+      return; 
     }
 
     if (user) {
+      // SUCCESS: Set the flag for the celebration modal
+      sessionStorage.setItem('show_sync_celebration', 'true');
+      
       setStatus('success');
       setTimeout(() => {
         window.location.href = '/';
       }, 1500);
     } else {
-      // If auth check is complete but there's no user, there might be an error in the hash
       const hash = window.location.hash;
       if (hash.includes('error_description')) {
         const params = new URLSearchParams(hash.substring(1));
         setErrorMessage(params.get('error_description') || 'An unknown error occurred.');
       }
       
-      // After a timeout, if still no user, assume failure.
       const timer = setTimeout(() => {
-        // Re-check inside timeout to avoid race conditions
         const { user: stillNoUser } = getSupabaseUserFromLocalStorage();
         if (!stillNoUser) { 
           setStatus('error');
-          // Set a helpful hint for the common mobile browser issue
           setErrorHint('On mobile, try copying the link from your email and pasting it directly into your main browser (like Chrome or Safari).');
+        } else {
+             // Late success check
+             sessionStorage.setItem('show_sync_celebration', 'true');
+             setStatus('success');
+             setTimeout(() => {
+                window.location.href = '/';
+             }, 1500);
         }
       }, 3000);
       

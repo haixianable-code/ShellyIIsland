@@ -4,7 +4,7 @@ import { Word } from '../types';
 import { 
   X, Check, Sprout, Leaf, ArrowRight, PartyPopper, 
   PackagePlus, Link, Clock, Compass, Zap, HelpCircle, 
-  TreePalm, Dice5, Sparkles
+  TreePalm, Sparkles, Wand2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playClick, playSparkle, playSwish } from '../utils/sfx';
@@ -62,7 +62,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
     setSelected(newSelected);
   };
 
-  const handleSurpriseMe = () => {
+  const handleMagicFill = () => {
     playSparkle();
     const needed = MAX_SELECTION - selected.size;
     if (needed <= 0) return;
@@ -126,14 +126,23 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-4xl bg-[#f7f9e4] rounded-[3rem] md:rounded-[4rem] border-[8px] border-white shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col h-[90vh]">
+    // FIX: Using fixed inset-0 and flex layout ensures the modal fills the screen on mobile,
+    // pushing the footer to the bottom while respecting safe areas.
+    <div className="fixed inset-0 z-[100] flex flex-col md:items-center md:justify-center md:p-4 bg-black/40 backdrop-blur-sm animate-fadeIn">
+      {/* 
+         Mobile: h-full (fills container), rounded-none, border-0.
+         Desktop: h-[90vh], rounded-[4rem], border-[8px].
+      */}
+      <div className="relative w-full bg-[#f7f9e4] shadow-2xl overflow-hidden flex flex-col 
+        h-full rounded-none border-0
+        md:h-[90vh] md:max-w-4xl md:rounded-[4rem] md:border-[8px] md:border-white md:shadow-[0_20px_50px_rgba(0,0,0,0.2)]
+      ">
         
         {/* Header Section */}
-        <div className="shrink-0 border-b-4 border-[#e0d9b4] bg-white relative z-20">
-          <div className="flex items-center justify-between p-6 md:px-8 md:pt-8 md:pb-4">
+        <div className="shrink-0 border-b-4 border-[#e0d9b4] bg-white relative z-20 pt-[env(safe-area-inset-top,20px)] md:pt-0">
+          <div className="flex items-center justify-between p-4 md:p-8">
             <div>
-              <h2 className="text-3xl font-black text-[#4b7d78] tracking-tight">Seed Catalog</h2>
+              <h2 className="text-2xl md:text-3xl font-black text-[#4b7d78] tracking-tight">Seed Catalog</h2>
               <p className="text-sm font-bold text-[#8d99ae]">Pick up to <span className="text-[#ffa600]">{MAX_SELECTION - selected.size}</span> more seeds</p>
             </div>
             <button onClick={onClose} className="p-3 bg-[#f7f9e4] rounded-2xl shadow-sm hover:bg-[#e0e0e0] transition-all active:scale-90 text-[#4b7d78]">
@@ -142,7 +151,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
           </div>
 
           {/* Category Tabs */}
-          <div className="flex overflow-x-auto no-scrollbar gap-2 px-6 md:px-8 pb-4">
+          <div className="flex overflow-x-auto no-scrollbar gap-2 px-4 md:px-8 pb-4">
             {CATEGORIES.map(cat => {
               const isActive = activeCategory === cat.id;
               const count = categoryCounts[cat.id] || 0;
@@ -171,27 +180,29 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
           </div>
         </div>
 
-        {/* Word Grid */}
-        <div className="flex-1 overflow-y-auto no-scrollbar p-6 md:p-8 bg-[#f9fbe7] relative">
+        {/* Word Grid - flex-1 ensures it takes all remaining space */}
+        <div className="flex-1 overflow-y-auto no-scrollbar p-4 md:p-8 bg-[#f9fbe7] relative">
           
-          {/* Surprise Me Floater */}
-          <div className="absolute top-4 right-6 z-10">
+          {/* Magic Fill Floater */}
+          <div className="absolute top-4 right-4 md:right-6 z-10">
              <button 
-                onClick={handleSurpriseMe}
+                onClick={handleMagicFill}
                 disabled={selected.size >= MAX_SELECTION || filteredWords.length === 0}
-                className="bg-[#ffa600] text-white px-4 py-2 rounded-xl shadow-md border-2 border-white font-black text-xs flex items-center gap-2 hover:bg-[#ffb74d] active:scale-90 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-[#ffa600] text-white px-4 py-2 rounded-xl shadow-md border-2 border-white font-black text-xs flex flex-col items-center hover:bg-[#ffb74d] active:scale-90 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
              >
-               <Dice5 size={16} /> Surprise Me
+               <div className="flex items-center gap-2">
+                 <Wand2 size={16} /> <span>Magic Fill</span>
+               </div>
+               <span className="text-[9px] opacity-80 uppercase tracking-wide mt-0.5">Randomly fill slots</span>
              </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mt-8 md:mt-0">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mt-12 md:mt-0 pb-24 md:pb-12">
             {filteredWords.map((word, idx) => {
               const isSelected = selected.has(word.id);
               const isFull = selected.size >= MAX_SELECTION && !isSelected;
               const isMisc = word.type === 'misc';
               
-              // Map legacy categories for styling if needed
               const catLabel = word.category === 'connector' ? 'CONN' :
                                word.category === 'time' ? 'TIME' :
                                word.category === 'preposition' ? 'PREP' :
@@ -225,7 +236,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
 
                   <div className="flex flex-col h-full justify-between">
                     <div>
-                       <h4 className={`font-black text-xl mb-0.5 ${isMisc ? 'text-[#6a1b9a]' : 'text-[#4b7d78]'}`}>{word.s}</h4>
+                       <h4 className={`font-black text-lg md:text-xl mb-0.5 ${isMisc ? 'text-[#6a1b9a]' : 'text-[#4b7d78]'}`}>{word.s}</h4>
                        <p className="text-xs font-bold text-[#8d99ae] leading-tight">{word.t}</p>
                     </div>
                     
@@ -257,8 +268,8 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-4 md:p-6 shrink-0 border-t-4 border-[#e0d9b4] bg-[#f9f5da] relative z-20">
+        {/* Footer with Safe Area - CRITICAL FIX */}
+        <div className="p-4 md:p-6 shrink-0 border-t-4 border-[#e0d9b4] bg-[#f9f5da] relative z-30 pb-[env(safe-area-inset-bottom,20px)]">
           <div className="flex items-center justify-between max-w-3xl mx-auto">
             <div className="flex flex-col">
                <span className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest">Cart</span>
@@ -272,7 +283,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
             <button
               onClick={handleConfirm}
               disabled={selected.size === 0}
-              className="px-8 py-4 rounded-[2rem] font-black text-lg text-white bg-[#88d068] shadow-[0_6px_0_#5a9a3b] flex items-center gap-2 bubble-button disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed hover:bg-[#7cb342] active:translate-y-1"
+              className="px-6 py-4 rounded-[2rem] font-black text-lg text-white bg-[#88d068] shadow-[0_6px_0_#5a9a3b] flex items-center gap-2 bubble-button disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed hover:bg-[#7cb342] active:translate-y-1"
             >
               <Leaf size={20} className="fill-current" /> 
               <span>Plant Seeds</span>

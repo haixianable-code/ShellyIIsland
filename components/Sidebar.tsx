@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from 'react';
 import { AppView } from '../types';
 import { User } from '@supabase/supabase-js';
@@ -110,13 +111,13 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabas
 
         {isGuest && (
             <div className="pt-8 px-2 space-y-3">
-              <p className="text-[9px] font-black text-[#8d99ae] uppercase tracking-widest pl-2">Guest Mode</p>
+              <p className="text-[9px] font-black text-[#8d99ae] uppercase tracking-widest pl-2">Sync Data</p>
               <button 
                 onClick={onLoginRequest}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-white bg-[#ff7b72] shadow-[0_4px_0_#d32f2f] hover:bg-[#ff8a80] transition-all bubble-button"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-white bg-[#ff7b72] shadow-[0_4px_0_#d32f2f] hover:bg-[#ff8a80] transition-all bubble-button group"
               >
-                  <CloudUpload size={18} />
-                  <span className="text-sm font-black">Create Account & Sync</span>
+                  <CloudUpload size={18} className="group-hover:scale-110 transition-transform" />
+                  <span className="text-sm font-black">Save Progress Forever</span>
               </button>
             </div>
         )}

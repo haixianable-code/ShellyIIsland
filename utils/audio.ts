@@ -6,7 +6,10 @@ export const playAudio = (text: string) => {
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 0.8; // Slightly slower than default for better pronunciation clarity
+  
+  // Mobile Adjustment: Slightly slower rate sounds more natural on default mobile engines
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  utterance.rate = isMobile ? 0.85 : 0.9; 
   utterance.pitch = 1;
   utterance.volume = 1;
 
@@ -15,26 +18,36 @@ export const playAudio = (text: string) => {
   const targetLang = 'es'; // Target Spanish
   
   // Priority List for selecting the "Best" voice available on the device
-  const bestVoice = 
-    // 1. Google Voices (Chrome - usually very natural)
-    voices.find(v => v.name.includes('Google') && v.lang.startsWith(targetLang)) ||
-    // 2. iOS/macOS Premium Voices (Monica is the top-tier Spanish voice on Apple)
-    voices.find(v => v.name === 'Monica') ||
-    voices.find(v => v.name === 'Jorge') ||
-    voices.find(v => v.name === 'Paulina') ||
-    // 3. Any "Premium" or "Enhanced" Spanish voice (generic detection)
-    voices.find(v => v.lang.startsWith(targetLang) && (v.name.includes('Premium') || v.name.includes('Enhanced') || v.name.includes('Natural'))) ||
-    // 4. Fallback: Spain Spanish
-    voices.find(v => v.lang === 'es-ES') ||
-    // 5. Fallback: Any Spanish
-    voices.find(v => v.lang.startsWith(targetLang));
+  // 1. "Monica" / "Paulina" (iOS Premium Spanish)
+  // 2. "Google" voices (Android/Chrome High Quality)
+  const preferredVoices = [
+    'Monica', 'Paulina', 'Jorge', 'Juan', // Apple Premium
+    'Google español', 'Google Español', // Android Google TTS
+    'Microsoft Helena', 'Microsoft Laura' // Windows
+  ];
+
+  let bestVoice = voices.find(v => 
+    preferredVoices.some(name => v.name.includes(name)) && v.lang.startsWith(targetLang)
+  );
+
+  // Fallback: Try to find specific regions if premium voices aren't found
+  if (!bestVoice) {
+      // Prefer Mexico or Spain specifically
+      bestVoice = voices.find(v => (v.lang === 'es-MX' || v.lang === 'es-ES') && !v.name.includes('Compact'));
+  }
+
+  // Final Fallback: Any Spanish voice
+  if (!bestVoice) {
+      bestVoice = voices.find(v => v.lang.startsWith(targetLang));
+  }
 
   if (bestVoice) {
     utterance.voice = bestVoice;
     // CRITICAL: Set the utterance lang to the voice's specific lang (e.g., es-MX) 
-    // to prevent the engine from trying to force an accent that doesn't match the voice.
+    // to prevent the engine from trying to force a mismatching accent.
     utterance.lang = bestVoice.lang; 
   } else {
+    // Default fallback if no voice object matches (rare)
     utterance.lang = 'es-ES';
   }
   
