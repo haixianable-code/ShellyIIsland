@@ -8,11 +8,12 @@ import WordDetailModal from './components/WordDetailModal';
 import StreakModal from './components/StreakModal';
 import DailyHarvestModal from './components/DailyHarvestModal';
 import AuthView from './components/AuthView';
+import WelcomeView from './components/WelcomeView'; // New Welcome Screen
 import { useSRS } from './hooks/useSRS';
 import { useUserStats } from './hooks/useUserStats';
-import { Heart, Home, ShoppingBag, Leaf, Loader2, Cloud, CloudOff } from 'lucide-react';
+import { Heart, Home, ShoppingBag, Leaf, Loader2, Cloud, CloudOff, User } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
-import { isSupabaseConfigured } from './services/supabaseClient';
+import { isSupabaseConfigured, supabase } from './services/supabaseClient';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.DASHBOARD);
@@ -24,6 +25,9 @@ const App: React.FC = () => {
 
   // --- Auth & Data Hooks Integration ---
   const { user, authChecking } = useAuth();
+  const [isGuest, setIsGuest] = useState(false);
+  const [showAuthView, setShowAuthView] = useState(false);
+  
   const { 
     progress, 
     allAvailableWords, 
@@ -43,6 +47,22 @@ const App: React.FC = () => {
   const learnedWords = useMemo(() => {
     return allAvailableWords.filter(w => progress[w.id]);
   }, [allAvailableWords, progress]);
+  
+  const handleLoginRequest = useCallback(() => {
+    setIsGuest(false);
+    setShowAuthView(true);
+  }, []);
+  
+  const handleLogout = async () => {
+    if (supabase) {
+      await supabase.auth.signOut();
+      setIsGuest(false);
+      setShowAuthView(false);
+      // Optional: force a reload to clear all state
+      window.location.reload();
+    }
+  };
+
 
   const handleStartStudy = useCallback(() => {
     if (newWordsForToday.length === 0) return;
@@ -120,12 +140,21 @@ const App: React.FC = () => {
     );
   }
 
-  // --- 2. Authentication View (if Supabase is on but no user) ---
-  if (isSupabaseConfigured && !user) {
-    return <AuthView />;
+  // --- 2. New Welcome / Auth Flow ---
+  if (isSupabaseConfigured && !user && !isGuest) {
+    if (showAuthView) {
+      return <AuthView onBack={() => setShowAuthView(false)} />;
+    }
+    return (
+      <WelcomeView
+        onSelectGuest={() => setIsGuest(true)}
+        onSelectAuth={() => setShowAuthView(true)}
+      />
+    );
   }
 
-  // --- 3. Loading State for SRS Data ---
+
+  // --- 3. Main App Render (Logged in, Guest, or Offline) ---
   if (loadingSrs) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#f7f9e4] text-center">
@@ -148,7 +177,14 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row selection:bg-[#ffd3b6] selection:text-[#e67e22]">
-      <Sidebar currentView={view} setView={setView} />
+      <Sidebar 
+        currentView={view} 
+        setView={setView}
+        user={user}
+        isSupabaseConfigured={isSupabaseConfigured}
+        onLoginRequest={handleLoginRequest}
+        onLogout={handleLogout}
+      />
       
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-4 border-[#e0d9b4] flex justify-around items-center p-3 pb-5 z-40 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
         <button onClick={() => setView(AppView.DASHBOARD)} className={`flex flex-col items-center gap-1 transition-all ${view === AppView.DASHBOARD ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
@@ -159,15 +195,25 @@ const App: React.FC = () => {
           <ShoppingBag size={22} className={view === AppView.VOCABULARY ? 'fill-current' : ''} />
           <span className="text-[9px] font-black uppercase">Pocket</span>
         </button>
+        {isSupabaseConfigured && !user && (
+          <button onClick={handleLoginRequest} className="flex flex-col items-center gap-1 text-[#ff7b72]">
+             <User size={22} />
+             <span className="text-[9px] font-black uppercase">Sign Up</span>
+          </button>
+        )}
       </div>
 
       <main className="flex-1 md:ml-64 p-4 md:p-12 overflow-y-auto mb-24 md:mb-0 flex flex-col">
-        {user && (
-          <div className="hidden md:flex absolute top-4 right-4 bg-white/50 px-3 py-1 rounded-full text-[10px] text-[#4b7d78] font-black border border-[#e0d9b4] items-center gap-2">
-             <SyncIndicator />
-             <span>{user.email}</span>
-          </div>
-        )}
+        <div className="hidden md:flex absolute top-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] text-[#4b7d78] font-black border border-[#e0d9b4] items-center gap-2">
+             {user ? (
+               <>
+                 <SyncIndicator />
+                 <span>{user.email}</span>
+               </>
+             ) : (
+                <span className="text-[#8d99ae]">Guest Mode</span>
+             )}
+        </div>
 
         <div className="max-w-4xl mx-auto w-full flex-1">
           {view === AppView.DASHBOARD ? (

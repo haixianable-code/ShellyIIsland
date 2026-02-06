@@ -1,21 +1,26 @@
-
 import React, { useRef, useState } from 'react';
 import { AppView } from '../types';
-import { Home, Briefcase, Leaf, Heart, RotateCcw, Download, Upload, Volume2, VolumeX } from 'lucide-react';
+import { User } from '@supabase/supabase-js';
+import { Home, Briefcase, Leaf, Heart, RotateCcw, Download, Upload, Volume2, VolumeX, CloudUpload, LogOut } from 'lucide-react';
 import { toggleMute, getMuteState, playClick } from '../utils/sfx';
 
 interface SidebarProps {
   currentView: AppView;
   setView: (view: AppView) => void;
+  user: User | null;
+  isSupabaseConfigured: boolean;
+  onLoginRequest: () => void;
+  onLogout: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabaseConfigured, onLoginRequest, onLogout }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isMuted, setIsMuted] = useState(getMuteState());
+  const isGuest = isSupabaseConfigured && !user;
 
   const navItems = [
-    { id: AppView.DASHBOARD, icon: Home, label: 'Island Home', color: '#ff7b72' },
-    { id: AppView.VOCABULARY, icon: Briefcase, label: 'My Pocket', color: '#ffb74d' },
+    { id: AppView.DASHBOARD, icon: Home, label: 'Island Home' },
+    { id: AppView.VOCABULARY, icon: Briefcase, label: 'My Pocket' },
   ];
 
   const handleReset = () => {
@@ -61,7 +66,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
     reader.onload = (event) => {
       try {
         const json = event.target?.result as string;
-        // Basic validation
         JSON.parse(json); 
         localStorage.setItem('hola_word_srs_v3_offline', json);
         alert("Island restored successfully! Reloading...");
@@ -104,6 +108,19 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
           );
         })}
 
+        {isGuest && (
+            <div className="pt-8 px-2 space-y-3">
+              <p className="text-[9px] font-black text-[#8d99ae] uppercase tracking-widest pl-2">Guest Mode</p>
+              <button 
+                onClick={onLoginRequest}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-white bg-[#ff7b72] shadow-[0_4px_0_#d32f2f] hover:bg-[#ff8a80] transition-all bubble-button"
+              >
+                  <CloudUpload size={18} />
+                  <span className="text-sm font-black">Create Account & Sync</span>
+              </button>
+            </div>
+        )}
+
         <div className="pt-8 px-2 space-y-3">
            <p className="text-[9px] font-black text-[#8d99ae] uppercase tracking-widest pl-2">Settings</p>
            
@@ -111,28 +128,42 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView }) => {
               {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
               <span className="text-sm font-black">{isMuted ? 'Sound Off' : 'Sound On'}</span>
            </button>
+           
+           {isGuest && (
+             <>
+               <button onClick={handleExport} className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#4b7d78] hover:bg-[#fff6e0] transition-colors border-2 border-transparent hover:border-[#e0d9b4]">
+                  <Download size={18} />
+                  <span className="text-sm font-black">Backup Memory</span>
+               </button>
 
-           <button onClick={handleExport} className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#4b7d78] hover:bg-[#fff6e0] transition-colors border-2 border-transparent hover:border-[#e0d9b4]">
-              <Download size={18} />
-              <span className="text-sm font-black">Backup Memory</span>
-           </button>
-
-           <button onClick={handleImportClick} className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#4b7d78] hover:bg-[#fff6e0] transition-colors border-2 border-transparent hover:border-[#e0d9b4]">
-              <Upload size={18} />
-              <span className="text-sm font-black">Restore Memory</span>
-           </button>
-           <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".json" />
+               <button onClick={handleImportClick} className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#4b7d78] hover:bg-[#fff6e0] transition-colors border-2 border-transparent hover:border-[#e0d9b4]">
+                  <Upload size={18} />
+                  <span className="text-sm font-black">Restore Memory</span>
+               </button>
+               <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".json" />
+             </>
+           )}
         </div>
       </nav>
 
       <div className="p-4 space-y-4">
-        <button
-          onClick={handleReset}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-[#d32f2f]/60 font-black hover:bg-red-50 hover:text-[#d32f2f] transition-colors"
-        >
-          <RotateCcw size={16} />
-          <span>Reset Island</span>
-        </button>
+        {user ? (
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-[#6d7c8e] font-black hover:bg-slate-100 hover:text-[#4b7d78] transition-colors"
+          >
+            <LogOut size={16} />
+            <span>Logout</span>
+          </button>
+        ) : (
+          <button
+            onClick={handleReset}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-[#d32f2f]/60 font-black hover:bg-red-50 hover:text-[#d32f2f] transition-colors"
+          >
+            <RotateCcw size={16} />
+            <span>Reset Island</span>
+          </button>
+        )}
         <div className="flex flex-col items-center opacity-30 gap-1 pb-4">
           <div className="flex items-center gap-1.5 text-[8px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">
             Made By SHELLY

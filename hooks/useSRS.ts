@@ -53,8 +53,30 @@ export const useSRS = (user: User | null) => {
       if (!mounted) return;
       setLoading(true);
 
-      // Case 1: User is logged in, sync with the cloud
+      // --- DATA MIGRATION & SYNC LOGIC ---
       if (user && isSupabaseConfigured && supabase) {
+        // Step 1: User has logged in. Check for any local (guest) data to migrate.
+        const localData = localStorage.getItem(STORAGE_KEY);
+        if (localData && localData !== '{}') {
+          try {
+            const localProgress: ProgressMap = JSON.parse(localData);
+            const records = Object.entries(localProgress).map(([word_id, data]) => ({
+              user_id: user.id,
+              word_id,
+              srs_level: data.level,
+              next_review: data.nextReviewDate,
+            }));
+
+            if (records.length > 0) {
+              setSyncStatus('syncing');
+              await supabase.from('user_word_choices').upsert(records, { onConflict: 'user_id,word_id' });
+            }
+          } catch (e) {
+            console.error('Failed to migrate local data on login:', e);
+          }
+        }
+        
+        // Step 2: Now that migration is done, fetch the canonical data from the cloud.
         setSyncStatus('syncing');
         try {
           const { data, error } = await supabase
@@ -71,8 +93,6 @@ export const useSRS = (user: User | null) => {
                 nextReviewDate: item.next_review
               };
             });
-
-            // Cloud data is the source of truth, update state and local cache
             setProgress(cloudProgress);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudProgress));
             setSyncStatus('synced');
@@ -85,7 +105,7 @@ export const useSRS = (user: User | null) => {
           }
         }
       } else {
-        // Case 2: Guest mode, load from local storage
+        // --- GUEST OR OFFLINE MODE ---
         if (mounted) {
           loadFromLocalStorage();
           setSyncStatus('idle');

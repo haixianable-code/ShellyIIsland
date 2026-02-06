@@ -1,9 +1,12 @@
-
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { Leaf, Mail, KeyRound, LogIn, UserPlus, AlertCircle } from 'lucide-react';
+import { Leaf, Mail, KeyRound, LogIn, UserPlus, AlertCircle, ArrowLeft } from 'lucide-react';
 
-const AuthView: React.FC = () => {
+interface AuthViewProps {
+  onBack?: () => void;
+}
+
+const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,6 +38,16 @@ const AuthView: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 selection:bg-[#ffd3b6] selection:text-[#e67e22]">
+      
+      {onBack && (
+        <button 
+           onClick={onBack}
+           className="absolute top-6 left-6 bg-white/80 backdrop-blur-sm p-3 rounded-2xl text-[#4b7d78] shadow-md hover:bg-white transition-all active:scale-90 z-20"
+        >
+          <ArrowLeft size={20} strokeWidth={3} />
+        </button>
+      )}
+
       <div className="max-w-md w-full mx-auto">
         <header className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-24 h-24 bg-[#78c850] rounded-[3rem] shadow-[0_10px_0_#5a9a3b] mb-6 border-4 border-white animate-bounce">
