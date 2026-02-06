@@ -426,7 +426,7 @@ const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBl
               <UsageExamples word={word} />
 
               <div className="pt-8 pb-4 flex flex-col items-center opacity-10 gap-1 pointer-events-none">
-                <span className="text-[8px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">Made By SHELLY</span>
+                <span className="text-[8px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">Detail Harvested</span>
                 <Heart size={8} className="text-[#ff7b72] fill-current" />
               </div>
             </div>

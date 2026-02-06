@@ -18,13 +18,8 @@ const WordExpansionPack: React.FC<WordExpansionPackProps> = ({ availableCount, o
         <PackagePlus size={180} />
       </div>
       <div className="relative z-10 flex items-center gap-6">
-        <div className="bg-white/20 p-5 rounded-[2.5rem] border-4 border-white/40 shadow-inner">
-          <PackagePlus size={40} />
-        </div>
-        <div>
-          <h3 className="text-3xl font-black tracking-tight drop-shadow-sm">Island Expansion Pack</h3>
-          <p className="font-bold opacity-80 mt-1">Add A1-B1 high-frequency words to your garden!</p>
-        </div>
+        <h3 className="text-3xl font-black tracking-tight drop-shadow-sm">Island Expansion Pack</h3>
+        <p className="font-bold opacity-80 mt-1">Add A1-B1 high-frequency words to your garden!</p>
       </div>
       <button 
         onClick={onExplore}
