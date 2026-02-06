@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Word, UserStats } from '../types';
 import { ISLAND_SLANG } from '../constants';
-import { playClick, playSparkle, playSwish } from '../utils/sfx';
+import { playClick, playSparkle, playSwish } from '../utils/sfx'; // REMOVED playMorningBirds
 import { 
   Sprout, 
   CloudRain, 
@@ -24,18 +24,18 @@ import {
 import confetti from 'canvas-confetti';
 
 interface DashboardProps {
-  progress: any;
+  progress: any; // Simplified for display
   stats: UserStats | null;
   wordsDue: number;
   newWordsAvailable: number;
-  unlearnedExtraCount: number;
+  unlearnedExtraCount: number; // Added to know if we can fetch more
   newWordsList?: Word[];
   learnedToday?: Word[];
   onStartStudy: () => void;
   onStartReview: () => void;
-  onGetSeedPack: () => void;
+  onGetSeedPack: () => void; // New action
   onWordClick?: (word: Word) => void;
-  onViewAllHarvest?: () => void;
+  onViewAllHarvest?: () => void; // New action for full list
 }
 
 const TITLE_WORDS = ['¡Vamos', '¡Fiesta', '¡Amigo', '¡Suerte', '¡Isla', '¡Sol', '¡Vida', '¡Hola', '¡Baila', '¡Ríe'];
@@ -58,12 +58,14 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [titleWord, setTitleWord] = useState(TITLE_WORDS[0]);
 
   useEffect(() => {
+    // Pick a random title word on mount
     const random = TITLE_WORDS[Math.floor(Math.random() * TITLE_WORDS.length)];
     setTitleWord(random);
+    // Removed ambience sound (playMorningBirds) based on feedback
   }, []);
 
   const rotateSlang = () => {
-    playSwish();
+    playSwish(); // Use swish for rotating slang
     setIsRotating(true);
     setTimeout(() => {
       setSlangIndex((prev) => (prev + 1) % ISLAND_SLANG.length);
@@ -72,7 +74,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const handleOpenPack = () => {
-    playSparkle();
+    playSparkle(); // Use sparkle for pack opening
     confetti({
       particleCount: 100,
       spread: 70,
@@ -83,9 +85,12 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const currentSlang = ISLAND_SLANG[slangIndex];
+  
+  // Logic: Can we get a seed pack?
   const canGetPack = newWordsAvailable === 0 && unlearnedExtraCount > 0;
   const isIslandQuiet = wordsDue === 0 && newWordsAvailable === 0;
 
+  // Recent words logic
   const RECENT_LIMIT = 8;
   const showViewAllRecent = learnedToday.length > RECENT_LIMIT;
   const displayedRecent = showViewAllRecent ? learnedToday.slice(0, RECENT_LIMIT) : learnedToday;
@@ -93,6 +98,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="p-4 max-w-2xl mx-auto space-y-8 animate-fadeIn pb-2">
       <header className="text-center pt-6 md:pt-10 pb-4 relative z-10">
+        {/* The Main Frame - HIGH IMPACT */}
         <div className="inline-block bg-white border-[6px] md:border-[8px] border-[#4b7d78] rounded-[2.5rem] md:rounded-[3.5rem] px-6 py-6 md:px-8 md:py-10 shadow-[0_10px_0_rgba(0,0,0,0.1)] md:shadow-[0_15px_0_rgba(0,0,0,0.1)] relative transform transition-transform hover:scale-105 duration-300 group">
             <h1 className="text-5xl md:text-8xl font-black text-[#4b7d78] tracking-tighter leading-none flex items-center justify-center gap-2 md:gap-5 flex-wrap">
                 <span className="group-hover:-rotate-6 transition-transform">SSI</span>
@@ -100,12 +106,14 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <span className="text-[#ff7b72] group-hover:scale-125 transition-transform">!</span>
             </h1>
             
+            {/* Decor Elements on Frame */}
             <TreePalm className="absolute -left-8 -top-8 md:-left-12 md:-top-12 text-[#78c850] -rotate-12 drop-shadow-md filter brightness-110" size={50} />
             <div className="absolute -right-5 -bottom-5 md:-right-8 md:-bottom-8 bg-[#ffeb3b] p-2 md:p-4 rounded-full border-[4px] md:border-[6px] border-[#fbc02d] animate-bounce shadow-md">
                  <Sun size={24} className="text-[#f57c00] fill-current animate-spin-slow" />
             </div>
         </div>
 
+        {/* Visual Impact Welcome Banner Below Frame */}
         <div className="mt-8 md:mt-12 mb-2 animate-slideUp relative z-0">
              <div className="inline-block bg-[#ff7b72] text-white text-sm md:text-2xl font-black px-6 py-3 md:px-10 md:py-4 rounded-xl md:rounded-2xl shadow-[4px_6px_0_#d32f2f] md:shadow-[8px_10px_0_#d32f2f] -rotate-2 hover:rotate-0 transition-transform cursor-default border-2 md:border-4 border-[#ff8a80] uppercase tracking-widest relative">
                 <div className="absolute -left-2 -top-2 md:-left-3 md:-top-3 text-[#ffeb3b]">
@@ -119,7 +127,10 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </header>
 
+      {/* Primary Stat Panels - 2 columns on mobile too for compactness */}
       <div className="grid grid-cols-2 gap-3 md:gap-6">
+        
+        {/* Card 1: New Seeds OR Seed Pack Button */}
         {canGetPack ? (
            <button 
              onClick={handleOpenPack}
@@ -143,6 +154,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
 
+        {/* Card 2: Daily Care */}
         <div className="bg-white p-4 md:px-6 md:py-8 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_6px_0_#e0e0e0] md:shadow-[0_8px_0_#e0e0e0] border-4 border-[#f0f0f0] flex flex-col items-center justify-center relative overflow-hidden group h-full min-h-[160px]">
           <div className="bg-[#a5d6a7] p-3 md:p-4 rounded-2xl shadow-sm mb-2 md:mb-3 border-2 border-white z-10">
             <CloudRain className="text-white fill-current group-hover:translate-y-1 transition-transform" size={24} />
@@ -154,6 +166,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       <div className="space-y-6 pt-2">
+        {/* Start Planting Button */}
         <div className="space-y-4">
           <button 
             onClick={() => { playClick(); onStartStudy(); }}
@@ -178,6 +191,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             <ArrowRight className="text-white w-6 h-6 md:w-7 md:h-7" strokeWidth={3} />
           </button>
 
+          {/* New Words Preview */}
           {newWordsAvailable > 0 && (
             <div className="bg-white/60 p-5 md:p-6 rounded-[2.5rem] border-4 border-dashed border-[#e0d9b4] animate-fadeIn relative overflow-hidden">
                <p className="text-[9px] font-black text-[#8d99ae] uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
@@ -199,6 +213,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           )}
         </div>
 
+        {/* Recently Planted */}
         {learnedToday.length > 0 && (
           <div className="bg-[#e8f5e9] p-5 md:p-6 rounded-[2.5rem] border-4 border-[#8bc34a] shadow-[0_6px_0_#689f38] md:shadow-[0_8px_0_#689f38] relative overflow-hidden group">
             <div className="flex items-center justify-between mb-4">
@@ -235,6 +250,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
 
+        {/* Review Button */}
         <button 
           onClick={() => { playClick(); onStartReview(); }}
           disabled={wordsDue === 0}
@@ -257,6 +273,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         </button>
       </div>
 
+      {/* QUIET ISLAND / SUPPLY CRATE STATE */}
       {isIslandQuiet && canGetPack && (
         <div className="bg-[#fff3e0] p-6 md:p-8 rounded-[3rem] border-4 border-[#ffb74d] shadow-[0_10px_0_#ef6c00] text-center relative overflow-hidden animate-slideUp">
            <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white to-transparent" />
@@ -280,6 +297,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
       )}
 
+      {/* Fun Fact Card (Island Slang) with shuffle button */}
       <div className="bg-[#fff9c4] rounded-[2.5rem] p-5 md:p-6 border-4 border-dashed border-[#fdd835] flex items-start space-x-4 md:space-x-5 shadow-sm relative overflow-hidden group">
         <div className="bg-white p-2 md:p-3 rounded-2xl shadow-md border-2 border-[#fdd835] shrink-0 z-10">
           <Snail className="text-[#795548] fill-current group-hover:translate-x-1 transition-transform w-5 h-5 md:w-6 md:h-6" />
@@ -291,6 +309,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             <p className="text-[9px] text-[#795548]/60 font-black uppercase tracking-wider">Lit: {currentSlang.note}</p>
         </div>
         
+        {/* Shuffle Button */}
         <button 
           onClick={rotateSlang}
           className="bg-white p-2 md:p-3 rounded-2xl border-2 border-[#fdd835] text-[#fbc02d] shadow-sm hover:bg-[#fdd835] hover:text-white transition-all active:scale-90 z-20"

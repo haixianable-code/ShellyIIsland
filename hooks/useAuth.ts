@@ -56,29 +56,17 @@ export const useAuth = () => {
 
 // FIX: Created a standalone synchronous function to get the user from local storage.
 // This is a workaround to avoid violating hook rules inside a timeout.
-// Updated to iterate localStorage safely without Object.keys to avoid TS issues.
 export const getSupabaseUserFromLocalStorage = (): { user: User | null } => {
   let user: User | null = null;
-  
-  if (typeof localStorage === 'undefined') return { user: null };
-
-  // Iterate over localStorage keys safely
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
-      try {
-        const item = localStorage.getItem(key);
-        if (item) {
-          const data = JSON.parse(item);
-          user = data.user || null;
-        }
-      } catch (e) {
-        // ignore invalid JSON
-      }
-      // Assuming only one Supabase project per domain for this app, we can break.
-      if (user) break; 
+  // Supabase stores the session in localStorage with a key like `sb-PROJECT_REF-auth-token`
+  const key = Object.keys(localStorage).find(i => i.startsWith('sb-') && i.endsWith('-auth-token'));
+  if (key) {
+    try {
+      const data = JSON.parse(localStorage.getItem(key) || '{}');
+      user = data.user || null;
+    } catch (e) {
+      // ignore
     }
   }
-  
   return { user };
 }

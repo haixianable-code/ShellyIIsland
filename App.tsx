@@ -7,7 +7,8 @@ import VocabularyView from './components/VocabularyView';
 import WordDetailModal from './components/WordDetailModal';
 import StreakModal from './components/StreakModal';
 import DailyHarvestModal from './components/DailyHarvestModal';
-import AuthView from './components/AuthView';
+// FIX: Changed AuthView from default to named import to resolve "Module has no default export" error.
+import { AuthView } from './components/AuthView';
 import WelcomeView from './components/WelcomeView'; // New Welcome Screen
 import AuthCallback from './components/AuthCallback'; // NEW
 import { useSRS } from './hooks/useSRS';

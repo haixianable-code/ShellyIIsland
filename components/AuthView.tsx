@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
-import { Leaf, Mail, AlertCircle, ArrowLeft, Loader2, CheckCircle, Send, UserPlus } from 'lucide-react';
+import { Leaf, Mail, AlertCircle, ArrowLeft, Loader2, CheckCircle, Send } from 'lucide-react';
 
 interface AuthViewProps {
   onBack?: () => void;
 }
 
 type AuthStatus = 'idle' | 'loading' | 'sent' | 'error';
-type AuthMode = 'login' | 'signup';
 
 const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
   const [status, setStatus] = useState<AuthStatus>('idle');
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
-  const [authMode, setAuthMode] = useState<AuthMode>('login');
 
   useEffect(() => {
     let timer: number;
@@ -28,7 +26,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
 
   const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
-    if (!email) {
+    if (!email.trim()) {
       setError("Please enter your email address.");
       setStatus('error');
       return;
@@ -40,34 +38,18 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
     try {
       if (!supabase) throw new Error("Supabase client is not available.");
       
-      let supabaseError;
-      if (authMode === 'login') {
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-        });
-        supabaseError = error;
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          // No password, this will trigger a confirmation email (magic link)
-          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-        });
-        supabaseError = error;
-      }
+      const { error: supabaseError } = await supabase.auth.signInWithOtp({
+        email: email.trim().toLowerCase(),
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      });
 
       if (supabaseError) throw supabaseError;
 
       setStatus('sent');
       setCooldown(15);
     } catch (err: any) {
-      // Specific error handling for existing users trying to sign up
-      if (err.message && err.message.includes('User already registered')) {
-        setError("This email is already registered. Please use the 'Log In' tab.");
-        setAuthMode('login'); // Automatically switch to login tab
-      } else {
-        setError(err.message || 'An unexpected error occurred. Please try again.');
-      }
+      console.error("Auth error:", err);
+      setError(err.message || 'An unexpected error occurred. Please try again.');
       setStatus('error');
     }
   };
@@ -77,16 +59,16 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
         <div className="island-card rounded-[3.5rem] p-8 md:p-12 w-full max-w-md flex flex-col items-center">
-          <div className="bg-yellow-100 p-5 rounded-[2.5rem] border-4 border-yellow-200 shadow-sm mb-6">
-            <AlertCircle size={48} className="text-yellow-600" />
+          <div className="bg-blue-100 p-5 rounded-[2.5rem] border-4 border-blue-200 shadow-sm mb-6">
+            <AlertCircle size={48} className="text-blue-600" />
           </div>
-          <h1 className="text-2xl font-black text-[#4b7d78]">Cloud Sync Not Configured</h1>
+          <h1 className="text-2xl font-black text-[#4b7d78]">Local Mode Only</h1>
           <p className="text-[#6d7c8e] font-bold mt-2">
-            This feature is unavailable. The app is currently in local-only mode.
+            ℹ️ Running in local mode. Your data is saved on this device only.
           </p>
           {onBack && (
             <button onClick={onBack} className="mt-8 bg-gray-200 text-gray-700 px-6 py-3 rounded-2xl font-black bubble-button">
-              Go Back
+              Continue to Guest Mode
             </button>
           )}
         </div>
@@ -100,16 +82,16 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
       <div className="bg-green-100 p-5 rounded-[2.5rem] border-4 border-green-200 shadow-sm mb-6 inline-block">
         <CheckCircle size={48} className="text-green-600" />
       </div>
-      <h2 className="text-2xl font-black text-[#4b7d78]">✅ Link Sent!</h2>
+      <h2 className="text-2xl font-black text-[#4b7d78]">✅ Check your email!</h2>
       <p className="text-[#6d7c8e] font-bold mt-2 mb-6">
-        📧 Please check your email and click the link at <strong>{email}</strong> to continue.
+        We sent a login link to <strong>{email}</strong>.
       </p>
       <button
         onClick={() => handleSubmit()}
         disabled={cooldown > 0}
         className="w-full p-4 rounded-2xl font-black text-sm bubble-button disabled:opacity-50 disabled:cursor-not-allowed bg-[#f1f8e9] text-[#2e7d32] border-2 border-[#c5e1a5] shadow-[0_4px_0_#c5e1a5] hover:bg-[#dcedc8]"
       >
-        {cooldown > 0 ? `Resend (${cooldown}s)` : 'Resend'}
+        {cooldown > 0 ? `Resend Link (${cooldown}s)` : 'Resend Link'}
       </button>
     </div>
   );
@@ -117,19 +99,13 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
   // Renders the form for email input
   const renderFormContent = () => (
     <div>
-      <div className="grid grid-cols-2 gap-2 bg-[#f1f8e9] p-2 rounded-2xl mb-6 border-2 border-[#e0d9b4]">
-        <button onClick={() => setAuthMode('login')} className={`p-3 rounded-xl font-black transition-all ${authMode === 'login' ? 'bg-white shadow-sm text-[#4b7d78]' : 'text-[#8d99ae]'}`}>
-          Log In
-        </button>
-        <button onClick={() => setAuthMode('signup')} className={`p-3 rounded-xl font-black transition-all ${authMode === 'signup' ? 'bg-white shadow-sm text-[#4b7d78]' : 'text-[#8d99ae]'}`}>
-          Sign Up
-        </button>
-      </div>
-
       <form onSubmit={handleSubmit} className="space-y-6">
         <h2 className="text-xl font-black text-center text-[#4b7d78]">
-          {authMode === 'login' ? 'Welcome Back!' : 'Create Your Account'}
+          Log In to Shelly Spanish Island
         </h2>
+        <p className="text-sm font-bold text-center text-[#8d99ae] mb-6">
+          We'll send you a magic link to log in.
+        </p>
         
         <div className="relative">
           <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8d99ae]" size={20} />
@@ -158,7 +134,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
           {status === 'loading' ? (
              <><Loader2 className="animate-spin" /> Sending...</>
           ) : (
-            authMode === 'login' ? <><Send size={22} /> Send Login Link</> : <><UserPlus size={22} /> Send Sign Up Link</>
+            <><Send size={22} /> Send Login Link</>
           )}
         </button>
       </form>
@@ -182,7 +158,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
             <Leaf className="text-white w-12 h-12 fill-current" />
           </div>
           <h1 className="text-4xl font-black text-[#4b7d78] tracking-tight">Shelly Spanish Island</h1>
-          <p className="text-[#6d7c8e] font-bold mt-2">Get a passwordless link delivered to your inbox.</p>
+          <p className="text-[#6d7c8e] font-bold mt-2">Your journey to fluency starts here.</p>
         </header>
 
         <main className="bg-white p-8 rounded-[3.5rem] border-[8px] border-[#e0d9b4] shadow-[0_12px_0_rgba(0,0,0,0.08)]">
@@ -193,4 +169,5 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
   );
 };
 
-export default AuthView;
+// FIX: Changed default export to named export to align with the import change in App.tsx.
+export { AuthView };
