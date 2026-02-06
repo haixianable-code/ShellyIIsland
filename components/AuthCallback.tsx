@@ -6,7 +6,7 @@ import { Loader2, Leaf, CheckCircle, AlertCircle } from 'lucide-react';
 const AuthCallback: React.FC = () => {
   const { user, authChecking } = useAuth();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [errorMessage, setErrorMessage] = useState('⚠️ 登录链接已失效或无效');
+  const [errorMessage, setErrorMessage] = useState('⚠️ Login link has expired or is invalid.');
 
   useEffect(() => {
     if (authChecking) {
@@ -48,8 +48,8 @@ const AuthCallback: React.FC = () => {
             <div className="bg-green-100 p-5 rounded-[2.5rem] border-4 border-green-200 shadow-sm mb-6 animate-bounce">
               <CheckCircle size={48} className="text-green-600" />
             </div>
-            <h1 className="text-3xl font-black text-[#4b7d78]">登录成功 ✅</h1>
-            <p className="text-[#6d7c8e] font-bold mt-2">正在带您前往小岛...</p>
+            <h1 className="text-3xl font-black text-[#4b7d78]">Login Successful ✅</h1>
+            <p className="text-[#6d7c8e] font-bold mt-2">Taking you to the island...</p>
           </>
         );
       case 'error':
@@ -58,13 +58,13 @@ const AuthCallback: React.FC = () => {
             <div className="bg-red-100 p-5 rounded-[2.5rem] border-4 border-red-200 shadow-sm mb-6">
               <AlertCircle size={48} className="text-red-600" />
             </div>
-            <h1 className="text-3xl font-black text-[#4b7d78]">登录失败</h1>
+            <h1 className="text-3xl font-black text-[#4b7d78]">Login Failed</h1>
             <p className="text-[#6d7c8e] font-bold mt-2 max-w-xs">{errorMessage}</p>
             <a
               href="/"
               className="mt-8 inline-block bg-[#ff7b72] text-white px-8 py-4 rounded-[2rem] font-black shadow-[0_6px_0_#d32f2f] border-2 border-[#ff8a80] hover:bg-[#ff8a80] transition-colors bubble-button"
             >
-              返回登录页
+              Back to Login
             </a>
           </>
         );
@@ -77,9 +77,9 @@ const AuthCallback: React.FC = () => {
             </div>
             <div className="mt-6 flex items-center gap-2 text-[#4b7d78] font-black uppercase tracking-[0.2em]">
               <Loader2 className="animate-spin" />
-              🏝️ 正在登录 Shelly Spanish Island...
+              🏝️ Logging into Shelly Spanish Island...
             </div>
-            <p className="text-[#8d99ae] font-bold mt-4 text-sm">请稍候，我们正在将您连接到岛屿。</p>
+            <p className="text-[#8d99ae] font-bold mt-4 text-sm">Please wait while we connect you to the island.</p>
           </>
         );
     }
