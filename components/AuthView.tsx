@@ -65,8 +65,8 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
 
   const handleVerifyOtp = async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
-    if (otp.length !== 8) {
-        setError("Please enter the 8-digit code.");
+    if (otp.length !== 6) {
+        setError("Please enter the 6-digit code.");
         setVerifyOtpStatus('error');
         return;
     }
@@ -131,19 +131,19 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
         </div>
         <h2 className="text-xl font-black text-[#4b7d78]">Enter Your Code</h2>
         <p className="text-sm font-bold text-[#8d99ae] -mt-2">
-            An 8-digit code was sent to <br/><strong>{email}</strong>
+            A 6-digit code was sent to <br/><strong>{email}</strong>
         </p>
 
         <input
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
-            pattern="\d{8}"
-            maxLength={8}
+            pattern="\d{6}"
+            maxLength={6}
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
             required
-            className="w-full text-center tracking-[0.7em] text-4xl font-black py-4 bg-white border-4 border-[#e0d9b4] rounded-2xl text-[#4b7d78] focus:outline-none focus:ring-8 focus:ring-[#8bc34a]/50 transition-all"
+            className="w-full text-center tracking-[1em] text-4xl font-black py-4 bg-white border-4 border-[#e0d9b4] rounded-2xl text-[#4b7d78] focus:outline-none focus:ring-8 focus:ring-[#8bc34a]/50 transition-all"
         />
 
         {verifyOtpStatus === 'error' && error && (
@@ -185,7 +185,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
             Log In to Shelly Spanish Island
         </h2>
         <p className="text-sm font-bold text-center text-[#8d99ae] mb-6">
-            We'll send you an 8-digit code to log in.
+            We'll send you a 6-digit code to log in.
         </p>
         
         <div className="relative">
