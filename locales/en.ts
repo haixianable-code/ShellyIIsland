@@ -34,7 +34,9 @@ export default {
       "island_quiet": "The Island is Quiet...",
       "crate_msg": "All chores are done! But look, a crate of supplies washed ashore.",
       "open_crate": "Open Supply Crate (+10)",
-      "slang_title": "Island Slang!"
+      "slang_title": "Island Slang!",
+      "mission": "Mission:",
+      "crate_unlocked": "Crate Unlocked!"
     },
     "passport": {
       "temp_pass": "Temporary Pass",
@@ -69,9 +71,14 @@ export default {
       "save_forever": "Enter Island Officially",
       "backup": "Backup Memory",
       "restore": "Restore Memory",
+      "search": "Search...",
       "reset": "Reset Island",
       "clear_progress": "Clear Learning Progress",
       "clear_warning": "Are you sure? This will wipe all your learning history and reset words to 0.",
+      "wipe_data": "Wipe data & restart garden",
+      "system_pref": "System Preferences",
+      "test_audio": "Test Audio Engine",
+      "check_voice": "Check if Spanish voice works",
       "logout": "Log Out",
       "sound_on": "Sound On",
       "sound_off": "Sound Off",
@@ -82,7 +89,12 @@ export default {
       "copied": "Text Copied!",
       "continue_learning": "Continue Learning",
       "share_harvest": "Share Harvest",
-      "generating": "Painting..."
+      "generating": "Painting...",
+      "use_items": "Use Items Now",
+      "stash": "Stash for Later",
+      "added_prefix": "You've added",
+      "added_suffix": "to your inventory",
+      "magic_items": "magic items"
     },
     "study": {
       "grammar_pocket": "Grammar Pocket",
@@ -102,7 +114,12 @@ export default {
       "today_harvest": "Today's Harvest",
       "total_growth": "Total Growth",
       "day_streak": "Day Streak",
-      "share_template": "🏝️ I found a new Spanish world on **SS Island**!\nThe **SSI System** helped me grow {{level}} words automatically.\n👇 Claim your island:\n{{url}}"
+      "share_template": "🏝️ I found a new Spanish world on **SS Island**!\nThe **SSI System** helped me grow {{level}} words automatically.\n👇 Claim your island:\n{{url}}",
+      "crops_collected": "{{count}} crops collected today",
+      "extra_credit": "Extra Credit",
+      "no_srs": "No SRS Impact",
+      "blitz_review": "Speed Blitz Review",
+      "seeding": "Seeding..."
     }
   },
   "vocab": {

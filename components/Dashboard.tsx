@@ -125,7 +125,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 </div>
                 {currentDayPack ? (
                   <span className="flex items-center gap-2">
-                    <span className="opacity-80">Mission:</span> {currentDayPack.title}
+                    <span className="opacity-80">{t('ui.dashboard.mission')}</span> {currentDayPack.title}
                   </span>
                 ) : (
                   t('ui.dashboard.welcome')

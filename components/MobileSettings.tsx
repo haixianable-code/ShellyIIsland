@@ -222,7 +222,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
 
       {/* 设置列表 */}
       <div className="space-y-4">
-        <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.2em] pl-4">System Preferences</p>
+        <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.2em] pl-4">{t('ui.actions.system_pref')}</p>
         
         <button 
           onClick={handleToggleMute} 
@@ -251,8 +251,8 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
                <Speaker size={24} />
             </div>
             <div className="text-left">
-              <div className="text-lg font-black text-[#4b7d78]">Test Audio Engine</div>
-              <div className="text-xs font-bold text-[#8d99ae]">Check if Spanish voice works</div>
+              <div className="text-lg font-black text-[#4b7d78]">{t('ui.actions.test_audio')}</div>
+              <div className="text-xs font-bold text-[#8d99ae]">{t('ui.actions.check_voice')}</div>
             </div>
           </div>
           <ChevronRight className="text-slate-300" size={20} />
@@ -268,7 +268,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
             </div>
             <div className="text-left">
               <div className="text-lg font-black text-[#c62828]">{t('ui.actions.clear_progress')}</div>
-              <div className="text-xs font-bold text-[#ef9a9a]">Wipe data & restart garden</div>
+              <div className="text-xs font-bold text-[#ef9a9a]">{t('ui.actions.wipe_data')}</div>
             </div>
           </div>
         </button>

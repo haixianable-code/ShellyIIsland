@@ -242,7 +242,7 @@ const SummaryView: React.FC<SummaryViewProps> = ({ dailyHarvest, totalLearned, s
                   />
                 ))
               ) : (
-                <div className="text-center opacity-40 font-bold italic">Seeding...</div>
+                <div className="text-center opacity-40 font-bold italic">{t('ui.study.seeding')}</div>
               )}
            </div>
         </div>

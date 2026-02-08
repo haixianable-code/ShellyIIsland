@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playClick, playSparkle, playSwish } from '../utils/sfx';
+import { useTranslation } from 'react-i18next';
 
 interface ExpansionModalProps {
   availableWords: Word[];
@@ -28,6 +29,7 @@ const CATEGORIES = [
 ];
 
 const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose, onAddWords, onStudyNow }) => {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [plantedWords, setPlantedWords] = useState<Word[] | null>(null);
   const [activeCategory, setActiveCategory] = useState('all');
@@ -101,9 +103,9 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
               <PartyPopper size={48} className="text-white fill-current" />
            </div>
 
-           <h2 className="text-3xl font-black text-[#4b7d78] mb-2 leading-tight">Crate Unlocked!</h2>
+           <h2 className="text-3xl font-black text-[#4b7d78] mb-2 leading-tight">{t('ui.dashboard.crate_unlocked')}</h2>
            <p className="text-[#8d99ae] font-bold mb-8 text-sm">
-             You've added <strong className="text-[#ffa600]">{plantedWords.length} magic items</strong> to your inventory.
+             {t('ui.actions.added_prefix')} <strong className="text-[#ffa600]">{plantedWords.length} {t('ui.actions.magic_items')}</strong> {t('ui.actions.added_suffix')}.
            </p>
 
            <div className="w-full space-y-3">
@@ -111,14 +113,14 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
                onClick={() => onStudyNow(plantedWords)}
                className="w-full bg-[#ffa600] text-white py-4 rounded-[2rem] font-black text-lg shadow-[0_8px_0_#e65100] border-4 border-white bubble-button flex items-center justify-center gap-2 hover:bg-[#ffb74d]"
              >
-               Use Items Now <ArrowRight size={20} />
+               {t('ui.actions.use_items')} <ArrowRight size={20} />
              </button>
 
              <button 
                onClick={onClose}
                className="w-full bg-transparent text-[#8d99ae] py-4 rounded-[2rem] font-black text-sm hover:bg-[#e0e0e0]/20 transition-colors"
              >
-               Stash for Later
+               {t('ui.actions.stash')}
              </button>
            </div>
         </div>

@@ -18,8 +18,10 @@ import { Heart, Home, ShoppingBag, Leaf, Loader2, Cloud, CloudOff, Menu } from '
 import { useAuth } from './hooks/useAuth';
 import { isSupabaseConfigured, supabase } from './services/supabaseClient';
 import { initAudioSystem } from './utils/audio'; // Import Audio Init
+import { useTranslation } from 'react-i18next';
 
 const App: React.FC = () => {
+  const { t } = useTranslation();
   const [view, setView] = useState<AppView>(AppView.DASHBOARD);
   const [sessionWords, setSessionWords] = useState<Word[]>([]);
   const [selectedWord, setSelectedWord] = useState<Word | null>(null);
@@ -208,15 +210,15 @@ const App: React.FC = () => {
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-4 border-[#e0d9b4] flex justify-around items-center p-3 pb-5 z-40 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
         <button onClick={() => setView(AppView.DASHBOARD)} className={`flex flex-col items-center gap-1 transition-all w-16 ${view === AppView.DASHBOARD ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
           <Home size={22} className={view === AppView.DASHBOARD ? 'fill-current' : ''} />
-          <span className="text-[9px] font-black uppercase">Home</span>
+          <span className="text-[9px] font-black uppercase">{t('ui.nav.home')}</span>
         </button>
         <button onClick={() => setView(AppView.VOCABULARY)} className={`flex flex-col items-center gap-1 transition-all w-16 ${view === AppView.VOCABULARY ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
           <ShoppingBag size={22} className={view === AppView.VOCABULARY ? 'fill-current' : ''} />
-          <span className="text-[9px] font-black uppercase">Pocket</span>
+          <span className="text-[9px] font-black uppercase">{t('ui.nav.pocket')}</span>
         </button>
         <button onClick={() => setView(AppView.SETTINGS)} className={`flex flex-col items-center gap-1 transition-all w-16 ${view === AppView.SETTINGS ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
            <Menu size={22} />
-           <span className="text-[9px] font-black uppercase">Menu</span>
+           <span className="text-[9px] font-black uppercase">{t('ui.nav.menu')}</span>
         </button>
       </div>
 

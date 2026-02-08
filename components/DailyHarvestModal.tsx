@@ -60,7 +60,7 @@ const DailyHarvestModal: React.FC<DailyHarvestModalProps> = ({ words, progress, 
               <h2 className="text-2xl md:text-3xl font-black text-[#4b7d78] tracking-tight leading-none">{t('ui.study.today_harvest')}</h2>
               <div className="flex items-center gap-1.5 text-xs md:text-sm font-bold text-[#8d99ae] mt-1.5">
                  <Calendar size={14} />
-                 <span>{words.length} crops collected today</span>
+                 <span>{t('ui.study.crops_collected', { count: words.length })}</span>
               </div>
             </div>
           </div>
@@ -142,15 +142,15 @@ const DailyHarvestModal: React.FC<DailyHarvestModalProps> = ({ words, progress, 
           <div className="p-4 md:p-6 shrink-0 bg-white border-t-4 border-[#e0d9b4] relative z-20 pb-[env(safe-area-inset-bottom,20px)]">
              <div className="flex items-center gap-4">
                <div className="hidden md:block">
-                 <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest">Extra Credit</p>
-                 <p className="text-[10px] font-bold text-[#8d99ae]">No SRS Impact</p>
+                 <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest">{t('ui.study.extra_credit')}</p>
+                 <p className="text-[10px] font-bold text-[#8d99ae]">{t('ui.study.no_srs')}</p>
                </div>
                <button 
                  onClick={onStartBlitz}
                  className="flex-1 bg-[#9c27b0] text-white py-3 md:py-4 rounded-[2rem] font-black text-base md:text-lg shadow-[0_6px_0_#7b1fa2] border-4 border-[#e1bee7] bubble-button flex items-center justify-center gap-2 hover:bg-[#ab47bc] transition-all group"
                >
                  <Zap size={20} className="fill-current text-[#e1bee7] group-hover:scale-110 transition-transform" />
-                 <span>Speed Blitz Review</span>
+                 <span>{t('ui.study.blitz_review')}</span>
                </button>
              </div>
           </div>

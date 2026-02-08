@@ -86,7 +86,7 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
         </div>
         <input 
           type="text" 
-          placeholder={t('ui.actions.restore')} 
+          placeholder={t('ui.actions.search')} 
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-20 pr-8 py-6 bg-white border-4 border-[#e0d9b4] rounded-[3rem] w-full shadow-[0_10px_0_rgba(224,217,180,0.4)] focus:outline-none focus:ring-8 focus:ring-[#8bc34a]/20 transition-all font-black text-[#4b7d78] text-xl placeholder:text-slate-300"
