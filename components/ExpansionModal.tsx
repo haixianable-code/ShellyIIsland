@@ -4,7 +4,7 @@ import { Word } from '../types';
 import { 
   X, Check, Sprout, Leaf, ArrowRight, PartyPopper, 
   PackagePlus, Link, Clock, Compass, Zap, HelpCircle, 
-  TreePalm, Sparkles, Wand2
+  TreePalm, Sparkles, Wand2, Scroll, Key, MapPin
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playClick, playSparkle, playSwish } from '../utils/sfx';
@@ -16,14 +16,15 @@ interface ExpansionModalProps {
   onStudyNow: (selectedWords: Word[]) => void;
 }
 
+// SSI Tech / Magic Item Rebranding
 const CATEGORIES = [
-  { id: 'all', label: 'All Seeds', icon: PackagePlus, color: 'text-gray-500', bg: 'bg-gray-100' },
-  { id: 'island', label: 'Island Life', icon: TreePalm, color: 'text-[#8bc34a]', bg: 'bg-[#f1f8e9]' },
-  { id: 'connector', label: 'The Glue', icon: Link, color: 'text-[#ab47bc]', bg: 'bg-[#f3e5f5]' },
-  { id: 'time', label: 'Time Machine', icon: Clock, color: 'text-[#ffa726]', bg: 'bg-[#fff3e0]' },
-  { id: 'preposition', label: 'Navigators', icon: Compass, color: 'text-[#29b6f6]', bg: 'bg-[#e1f5fe]' },
-  { id: 'quantity', label: 'Quantifiers', icon: Zap, color: 'text-[#ff7043]', bg: 'bg-[#fbe9e7]' },
-  { id: 'interrogative', label: 'Power Tools', icon: HelpCircle, color: 'text-[#ef5350]', bg: 'bg-[#ffebee]' },
+  { id: 'all', label: 'All Items', icon: PackagePlus, color: 'text-gray-500', bg: 'bg-gray-100' },
+  { id: 'island', label: 'Island Loot', icon: TreePalm, color: 'text-[#8bc34a]', bg: 'bg-[#f1f8e9]' },
+  { id: 'connector', label: 'Yarn Ball', icon: Scroll, color: 'text-[#ab47bc]', bg: 'bg-[#f3e5f5]' }, // Logic/Glue
+  { id: 'time', label: 'Magic Clock', icon: Clock, color: 'text-[#ffa726]', bg: 'bg-[#fff3e0]' }, // Time
+  { id: 'preposition', label: 'Sticky Notes', icon: MapPin, color: 'text-[#29b6f6]', bg: 'bg-[#e1f5fe]' }, // Navigators
+  { id: 'quantity', label: 'Flavor Pot', icon: Sparkles, color: 'text-[#ff7043]', bg: 'bg-[#fbe9e7]' }, // Quantifiers
+  { id: 'interrogative', label: 'Mystery Keys', icon: Key, color: 'text-[#ef5350]', bg: 'bg-[#ffebee]' }, // Questions
 ];
 
 const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose, onAddWords, onStudyNow }) => {
@@ -93,16 +94,16 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
 
   if (plantedWords) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fadeIn">
+      <div className="fixed inset-0 h-[100dvh] z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fadeIn supports-[height:100dvh]:h-[100dvh]">
         <div className="relative w-full max-w-sm bg-[#f7f9e4] rounded-[3.5rem] border-[8px] border-white shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col items-center p-8 text-center animate-zoomIn">
            
            <div className="bg-[#8bc34a] p-6 rounded-[2.5rem] shadow-[0_10px_0_#5a9a3b] border-4 border-white mb-6 animate-bounce">
               <PartyPopper size={48} className="text-white fill-current" />
            </div>
 
-           <h2 className="text-3xl font-black text-[#4b7d78] mb-2 leading-tight">Seeds Planted!</h2>
+           <h2 className="text-3xl font-black text-[#4b7d78] mb-2 leading-tight">Crate Unlocked!</h2>
            <p className="text-[#8d99ae] font-bold mb-8 text-sm">
-             You've added <strong className="text-[#ffa600]">{plantedWords.length} new words</strong> to your garden. They are ready to grow.
+             You've added <strong className="text-[#ffa600]">{plantedWords.length} magic items</strong> to your inventory.
            </p>
 
            <div className="w-full space-y-3">
@@ -110,14 +111,14 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
                onClick={() => onStudyNow(plantedWords)}
                className="w-full bg-[#ffa600] text-white py-4 rounded-[2rem] font-black text-lg shadow-[0_8px_0_#e65100] border-4 border-white bubble-button flex items-center justify-center gap-2 hover:bg-[#ffb74d]"
              >
-               Start Watering Now <ArrowRight size={20} />
+               Use Items Now <ArrowRight size={20} />
              </button>
 
              <button 
                onClick={onClose}
                className="w-full bg-transparent text-[#8d99ae] py-4 rounded-[2rem] font-black text-sm hover:bg-[#e0e0e0]/20 transition-colors"
              >
-               Keep Exploring Pocket
+               Stash for Later
              </button>
            </div>
         </div>
@@ -126,9 +127,9 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
   }
 
   return (
-    // FIX: Using fixed inset-0 and flex layout ensures the modal fills the screen on mobile,
-    // pushing the footer to the bottom while respecting safe areas.
-    <div className="fixed inset-0 z-[100] flex flex-col md:items-center md:justify-center md:p-4 bg-black/40 backdrop-blur-sm animate-fadeIn">
+    // FIX: Using fixed inset-0 and h-[100dvh] ensures the modal fits the mobile viewport perfectly
+    // even with address bars.
+    <div className="fixed inset-0 h-[100dvh] z-[100] flex flex-col md:items-center md:justify-center md:p-4 bg-black/40 backdrop-blur-sm animate-fadeIn supports-[height:100dvh]:h-[100dvh]">
       {/* 
          Mobile: h-full (fills container), rounded-none, border-0.
          Desktop: h-[90vh], rounded-[4rem], border-[8px].
@@ -142,8 +143,8 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
         <div className="shrink-0 border-b-4 border-[#e0d9b4] bg-white relative z-20 pt-[env(safe-area-inset-top,20px)] md:pt-0">
           <div className="flex items-center justify-between p-4 md:p-8">
             <div>
-              <h2 className="text-2xl md:text-3xl font-black text-[#4b7d78] tracking-tight">Seed Catalog</h2>
-              <p className="text-sm font-bold text-[#8d99ae]">Pick up to <span className="text-[#ffa600]">{MAX_SELECTION - selected.size}</span> more seeds</p>
+              <h2 className="text-2xl md:text-3xl font-black text-[#4b7d78] tracking-tight">SSI Supply Crate</h2>
+              <p className="text-sm font-bold text-[#8d99ae]">Select up to <span className="text-[#ffa600]">{MAX_SELECTION - selected.size}</span> items</p>
             </div>
             <button onClick={onClose} className="p-3 bg-[#f7f9e4] rounded-2xl shadow-sm hover:bg-[#e0e0e0] transition-all active:scale-90 text-[#4b7d78]">
               <X size={24} strokeWidth={3} />
@@ -193,7 +194,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
                <div className="flex items-center gap-2">
                  <Wand2 size={16} /> <span>Magic Fill</span>
                </div>
-               <span className="text-[9px] opacity-80 uppercase tracking-wide mt-0.5">Randomly fill slots</span>
+               <span className="text-[9px] opacity-80 uppercase tracking-wide mt-0.5">Lucky Draw</span>
              </button>
           </div>
 
@@ -203,12 +204,12 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
               const isFull = selected.size >= MAX_SELECTION && !isSelected;
               const isMisc = word.type === 'misc';
               
-              const catLabel = word.category === 'connector' ? 'CONN' :
-                               word.category === 'time' ? 'TIME' :
-                               word.category === 'preposition' ? 'PREP' :
-                               word.category === 'quantity' ? 'QTY' :
-                               word.category === 'interrogative' ? 'Q&A' :
-                               word.type.toUpperCase();
+              const catLabel = word.category === 'connector' ? 'YARN' :
+                               word.category === 'time' ? 'CLOCK' :
+                               word.category === 'preposition' ? 'STICKY' :
+                               word.category === 'quantity' ? 'SPICE' :
+                               word.category === 'interrogative' ? 'KEY' :
+                               'LOOT';
 
               return (
                 <button
@@ -262,13 +263,13 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
             
             {filteredWords.length === 0 && (
               <div className="col-span-full text-center py-20 opacity-50">
-                 <p className="font-black text-[#8d99ae] uppercase tracking-widest">No seeds found in this section.</p>
+                 <p className="font-black text-[#8d99ae] uppercase tracking-widest">No items found in this section.</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Footer with Safe Area - CRITICAL FIX */}
+        {/* Footer with Safe Area */}
         <div className="p-4 md:p-6 shrink-0 border-t-4 border-[#e0d9b4] bg-[#f9f5da] relative z-30 pb-[env(safe-area-inset-bottom,20px)]">
           <div className="flex items-center justify-between max-w-3xl mx-auto">
             <div className="flex flex-col">
@@ -286,7 +287,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
               className="px-6 py-4 rounded-[2rem] font-black text-lg text-white bg-[#88d068] shadow-[0_6px_0_#5a9a3b] flex items-center gap-2 bubble-button disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed hover:bg-[#7cb342] active:translate-y-1"
             >
               <Leaf size={20} className="fill-current" /> 
-              <span>Plant Seeds</span>
+              <span>Get Supplies</span>
             </button>
           </div>
         </div>

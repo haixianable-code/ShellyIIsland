@@ -1,21 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
-import { Leaf, Mail, AlertCircle, ArrowLeft, Loader2, CheckCircle, Send, KeyRound, ShieldCheck, Ticket, TreePalm, Shell, Star, Fingerprint, PenTool } from 'lucide-react';
+import { Mail, AlertCircle, ArrowLeft, Loader2, Send, KeyRound, ShieldCheck, Fingerprint, PenTool } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { playClick, playSparkle } from '../utils/sfx';
+import { playClick } from '../utils/sfx';
 
 interface AuthViewProps {
   onBack?: () => void;
 }
 
-type AuthStep = 'ritual' | 'email' | 'otp';
+type AuthStep = 'email' | 'otp';
 type Status = 'idle' | 'loading' | 'error';
 
 const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
   const { t } = useTranslation();
-  const [authStep, setAuthStep] = useState<AuthStep>('ritual');
-  const [selectedSeal, setSelectedSeal] = useState<number | null>(null);
+  const [authStep, setAuthStep] = useState<AuthStep>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   
@@ -129,14 +128,6 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
     setAuthStep('email');
   };
 
-  const selectRitualSeal = (id: number) => {
-    playSparkle();
-    setSelectedSeal(id);
-    setTimeout(() => {
-        setAuthStep('email');
-    }, 600);
-  };
-
   if (!isSupabaseConfigured) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
@@ -158,49 +149,6 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
     );
   }
 
-  const renderRitual = () => (
-    <div className="space-y-10 text-center animate-fadeIn">
-        <div className="space-y-3">
-            <h2 className="text-2xl font-black text-[#4b7d78] uppercase tracking-tighter">
-                Pick Your Citizen Seal
-            </h2>
-            <p className="text-sm font-bold text-[#8d99ae] leading-relaxed">
-                Choose an emblem for your permanent island passport. This choice builds your identity.
-            </p>
-        </div>
-
-        <div className="grid grid-cols-3 gap-5">
-            {[
-                { id: 1, icon: TreePalm, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-                { id: 2, icon: Shell, color: 'text-sky-500', bg: 'bg-sky-50' },
-                { id: 3, icon: Star, color: 'text-amber-500', bg: 'bg-amber-50' }
-            ].map((seal) => (
-                <button
-                    key={seal.id}
-                    onClick={() => selectRitualSeal(seal.id)}
-                    className={`relative p-6 rounded-[2.8rem] border-4 transition-all active:scale-95 group ${
-                        selectedSeal === seal.id 
-                        ? 'border-[#8bc34a] bg-white shadow-xl scale-110 z-10' 
-                        : 'border-[#f0f0f0] bg-white hover:border-[#e0d9b4]'
-                    }`}
-                >
-                    <seal.icon className={`w-12 h-12 mx-auto ${seal.color} ${selectedSeal === seal.id ? 'animate-bounce' : 'group-hover:rotate-12 transition-transform'}`} />
-                    {selectedSeal === seal.id && (
-                        <div className="absolute -top-2 -right-2 bg-[#8bc34a] text-white p-1 rounded-full border-2 border-white shadow-sm">
-                            <CheckCircle size={16} strokeWidth={3} />
-                        </div>
-                    )}
-                </button>
-            ))}
-        </div>
-
-        <div className="pt-4 opacity-50 flex flex-col items-center border-t-2 border-dashed border-[#e0d9b4]">
-            <Fingerprint size={32} className="text-[#4b7d78] mb-2" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em]">Identity Verification Ritual</span>
-        </div>
-    </div>
-  );
-
   const renderEmailForm = () => (
     <div className="space-y-8 animate-fadeIn">
         <div className="text-center relative">
@@ -211,19 +159,19 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
                            <Fingerprint size={28} className="text-[#4b7d78]/20" />
                         </div>
                         <div className="flex-1 text-left">
-                           <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest">Citizen Name</p>
-                           <h4 className="text-xl font-black text-[#4b7d78]/30 uppercase italic">Anonymous Visitor</h4>
+                           <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest">{t('ui.auth.traveler_name')}</p>
+                           <h4 className="text-xl font-black text-[#4b7d78]/30 uppercase italic">{t('ui.auth.anonymous')}</h4>
                         </div>
                     </div>
                     <div className="w-full h-px bg-[#e0d9b4] opacity-50 my-1" />
                     <div className="flex items-center justify-between w-full">
-                       <span className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest italic">To be signed: Island Covenant</span>
+                       <span className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest italic">{t('ui.auth.covenant')}</span>
                        <PenTool size={16} className="text-[#ffa600]" />
                     </div>
                  </div>
              </div>
-             <h2 className="text-2xl font-black text-[#4b7d78] uppercase tracking-tighter">Final Step: Secure Identity</h2>
-             <p className="text-xs font-bold text-[#8d99ae] mt-1">Sign with your email to protect your harvest forever.</p>
+             <h2 className="text-2xl font-black text-[#4b7d78] uppercase tracking-tighter">{t('ui.auth.login_title')}</h2>
+             <p className="text-xs font-bold text-[#8d99ae] mt-1">{t('ui.auth.login_subtitle')}</p>
         </div>
 
         <div className="space-y-4">
@@ -236,14 +184,14 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
                 {googleLoading ? <Loader2 className="animate-spin" /> : (
                     <>
                     <svg className="w-6 h-6" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                    <span>Google Citizenship</span>
+                    <span>{t('ui.auth.google_login')}</span>
                     </>
                 )}
             </button>
 
             <div className="relative flex items-center py-2">
                 <div className="flex-grow border-t-2 border-[#e0d9b4] opacity-50"></div>
-                <span className="flex-shrink-0 mx-4 text-[#8d99ae] text-[10px] font-black uppercase tracking-widest opacity-50 italic">Covenant Sign-off</span>
+                <span className="flex-shrink-0 mx-4 text-[#8d99ae] text-[10px] font-black uppercase tracking-widest opacity-50 italic">{t('ui.auth.sign_off')}</span>
                 <div className="flex-grow border-t-2 border-[#e0d9b4] opacity-50"></div>
             </div>
             
@@ -252,7 +200,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
                     <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-[#8d99ae]" size={20} />
                     <input
                         type="email"
-                        placeholder="Email Address"
+                        placeholder={t('ui.auth.email_placeholder')}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -264,7 +212,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
                     disabled={sendCodeStatus === 'loading'}
                     className="w-full p-5 rounded-[2.2rem] text-white bg-[#8bc34a] font-black text-lg shadow-[0_8px_0_#5a9a3b] hover:bg-[#96e072] disabled:opacity-50 flex items-center justify-center gap-3 transition-all bubble-button"
                 >
-                    {sendCodeStatus === 'loading' ? <Loader2 className="animate-spin" /> : <>Request Secure Invite <Send size={20} /></>}
+                    {sendCodeStatus === 'loading' ? <Loader2 className="animate-spin" /> : <>{t('ui.auth.send_code')} <Send size={20} /></>}
                 </button>
             </form>
         </div>
@@ -277,9 +225,9 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
             <KeyRound size={40} className="text-green-600" />
         </div>
         <div className="space-y-2">
-            <h2 className="text-2xl font-black text-[#4b7d78] uppercase tracking-tighter">Enter Ritual Code</h2>
+            <h2 className="text-2xl font-black text-[#4b7d78] uppercase tracking-tighter">{t('ui.auth.enter_code_title')}</h2>
             <p className="text-sm font-bold text-[#8d99ae] leading-relaxed px-4">
-                We've sent a 6-digit seal to <strong>{email}</strong>. Enter it to finalize your citizenship.
+                {t('ui.auth.enter_code_desc')} <strong>{email}</strong>
             </p>
         </div>
 
@@ -306,18 +254,18 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
             disabled={verifyOtpStatus === 'loading'}
             className="w-full p-6 rounded-[2.5rem] text-white font-black text-xl flex items-center justify-center gap-3 transition-all bubble-button bg-[#8bc34a] shadow-[0_10px_0_#5a9a3b] hover:bg-[#96e072] disabled:opacity-50"
         >
-            {verifyOtpStatus === 'loading' ? <Loader2 className="animate-spin" /> : <>Seal My Passport <ShieldCheck size={24} /></>}
+            {verifyOtpStatus === 'loading' ? <Loader2 className="animate-spin" /> : <>{t('ui.auth.verify_btn')} <ShieldCheck size={24} /></>}
         </button>
         
         <div className="flex flex-col gap-4 pt-2">
-            <button type="button" onClick={changeEmail} className="text-xs font-black text-[#8d99ae] uppercase tracking-widest hover:text-[#4b7d78]">Change Email</button>
+            <button type="button" onClick={changeEmail} className="text-xs font-black text-[#8d99ae] uppercase tracking-widest hover:text-[#4b7d78]">{t('ui.auth.change_email')}</button>
             <button
                 type="button"
                 onClick={() => handleSendCode()}
                 disabled={cooldown > 0 || sendCodeStatus === 'loading'}
                 className="text-[10px] font-black text-[#8d99ae] disabled:opacity-30 uppercase tracking-[0.3em]"
             >
-                {cooldown > 0 ? `Resend Ritual Code in ${cooldown}s` : 'Resend Ritual Code'}
+                {cooldown > 0 ? `${t('ui.auth.resend_code')} (${cooldown}s)` : t('ui.auth.resend_code')}
             </button>
         </div>
     </form>
@@ -335,19 +283,12 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
       )}
 
       <div className="max-w-md w-full mx-auto">
-        <header className="text-center mb-10 flex flex-col items-center">
-          <div className="bg-[#78c850] p-4 rounded-3xl shadow-[0_8px_0_#5a9a3b] border-4 border-white mb-4">
-            <Leaf className="text-white fill-current" size={40} />
-          </div>
-          <div className="flex items-center gap-1.5 text-[10px] font-black text-[#4b7d78]/30 uppercase tracking-[0.5em]">Island Immigration</div>
-        </header>
-
         <main className="bg-white p-8 rounded-[4rem] border-[10px] border-[#e0d9b4] shadow-[0_30px_60px_rgba(0,0,0,0.15)] relative overflow-hidden">
           {/* Decorative Holes like a real form */}
           <div className="absolute top-0 left-8 bottom-0 w-px border-l-2 border-dashed border-[#e0d9b4] opacity-30 pointer-events-none" />
           
           <div className="relative z-10">
-            {authStep === 'ritual' ? renderRitual() : (authStep === 'email' ? renderEmailForm() : renderOtpForm())}
+            {authStep === 'email' ? renderEmailForm() : renderOtpForm()}
           </div>
         </main>
       </div>

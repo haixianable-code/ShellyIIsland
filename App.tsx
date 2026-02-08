@@ -17,6 +17,7 @@ import { useUserStats } from './hooks/useUserStats';
 import { Heart, Home, ShoppingBag, Leaf, Loader2, Cloud, CloudOff, Menu } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { isSupabaseConfigured, supabase } from './services/supabaseClient';
+import { initAudioSystem } from './utils/audio'; // Import Audio Init
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>(AppView.DASHBOARD);
@@ -31,6 +32,11 @@ const App: React.FC = () => {
   const [isGuest, setIsGuest] = useState(false);
   const [showAuthView, setShowAuthView] = useState(false);
   const [showSyncCelebration, setShowSyncCelebration] = useState(false);
+  
+  // 1. Initialize Audio System on App Mount
+  useEffect(() => {
+    initAudioSystem();
+  }, []);
   
   const { 
     progress, 
@@ -276,6 +282,7 @@ const App: React.FC = () => {
             key={studySessionKey}
             user={user}
             words={sessionWords}
+            dailyHarvest={learnedToday}
             unlearnedExtra={unlearnedExtraWords}
             onFinish={handleFinishSession}
             onFeedback={handleFeedback}

@@ -40,28 +40,49 @@ export default {
       "temp_pass": "Temporary Pass",
       "official_passport": "Official Island Passport",
       "unverified": "Unverified Guest",
-      "citizen": "Island Citizen",
+      "citizen": "Island Resident",
       "verify_warning": "Progress is local and could be lost",
       "citizen_desc": "Your progress is encrypted and synced",
-      "apply_now": "Apply for Citizenship",
+      "apply_now": "Enter Island",
       "protect_harvest": "Protect Your Harvest",
-      "protect_desc": "We found {{count}} words not yet backed up. Become a citizen to save them forever.",
+      "protect_desc": "We found {{count}} words not yet backed up. Log in to save them forever.",
       "issue_date": "Date of Arrival",
       "id_number": "Citizen ID"
     },
+    "auth": {
+      "login_title": "Save Your Journey",
+      "login_subtitle": "Link your email to sync progress across devices.",
+      "traveler_name": "Traveler Name",
+      "anonymous": "Anonymous Visitor",
+      "covenant": "To be signed: Island Covenant",
+      "google_login": "Continue with Google",
+      "sign_off": "Covenant Sign-off",
+      "email_placeholder": "island_fan@email.com",
+      "send_code": "Send Magic Link",
+      "enter_code_title": "Enter Access Code",
+      "enter_code_desc": "We've sent a 6-digit code to",
+      "verify_btn": "Verify & Enter",
+      "change_email": "Change Email",
+      "resend_code": "Resend Code"
+    },
     "actions": {
-      "save_forever": "Apply for Citizenship",
+      "save_forever": "Enter Island Officially",
       "backup": "Backup Memory",
       "restore": "Restore Memory",
       "reset": "Reset Island",
-      "logout": "Leave Island",
+      "clear_progress": "Clear Learning Progress",
+      "clear_warning": "Are you sure? This will wipe all your learning history and reset words to 0.",
+      "logout": "Log Out",
       "sound_on": "Sound On",
       "sound_off": "Sound Off",
       "next_word": "Next Word",
       "finish": "Finish Session",
       "share_island": "Share My Achievement",
       "copy_link": "Copy Link",
-      "copied": "Text Copied!"
+      "copied": "Text Copied!",
+      "continue_learning": "Continue Learning",
+      "share_harvest": "Share Harvest",
+      "generating": "Painting..."
     },
     "study": {
       "grammar_pocket": "Grammar Pocket",
@@ -80,7 +101,8 @@ export default {
       "harvest_report": "Daily Progress Report",
       "today_harvest": "Today's Harvest",
       "total_growth": "Total Growth",
-      "share_template": "🏝️ I just reached the level of {{level}} on Spanish Island!\n🔥 Watered for {{streak}} days, today harvested {{count}} words!\n\nCheck my garden 👇\n{{url}}"
+      "day_streak": "Day Streak",
+      "share_template": "🏝️ I found a new Spanish world on **SS Island**!\nThe **SSI System** helped me grow {{level}} words automatically.\n👇 Claim your island:\n{{url}}"
     }
   },
   "vocab": {

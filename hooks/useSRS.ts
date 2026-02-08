@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
 import { Word, ProgressMap, SRSData, FeedbackQuality } from '../types';
@@ -6,7 +7,6 @@ import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 
 const STORAGE_KEY = 'hola_word_srs_v3_offline';
 
-// The hook now accepts the logged-in user to enable/disable sync
 export const useSRS = (user: User | null) => {
   const [progress, setProgress] = useState<ProgressMap>({});
   const [loading, setLoading] = useState(true);
@@ -25,27 +25,17 @@ export const useSRS = (user: User | null) => {
   const getNormalizedDate = (dateStr: string) => new Date(dateStr).setHours(0, 0, 0, 0);
   const todayTimestamp = getNormalizedDate(TODAY_SIMULATED);
 
-  // Helper for loading from localStorage, used for guests or as a fallback
   const loadFromLocalStorage = useCallback(() => {
     const localData = localStorage.getItem(STORAGE_KEY);
     if (localData) {
       setProgress(JSON.parse(localData));
     } else {
-      // Initial setup for new users
       const initialProgress: ProgressMap = {};
-      VOCABULARY_DATA.forEach(day => {
-        if (getNormalizedDate(day.date) < todayTimestamp) {
-          day.words.forEach(w => {
-            initialProgress[w.id] = { level: 2, nextReviewDate: TODAY_SIMULATED };
-          });
-        }
-      });
       setProgress(initialProgress);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(initialProgress));
     }
-  }, [todayTimestamp]);
+  }, []);
 
-  // Main data loading effect: syncs with Supabase if user is logged in
   useEffect(() => {
     let mounted = true;
 
@@ -53,9 +43,7 @@ export const useSRS = (user: User | null) => {
       if (!mounted) return;
       setLoading(true);
 
-      // --- DATA MIGRATION & SYNC LOGIC ---
       if (user && isSupabaseConfigured && supabase) {
-        // Step 1: User has logged in. Check for any local (guest) data to migrate.
         const localData = localStorage.getItem(STORAGE_KEY);
         if (localData && localData !== '{}') {
           try {
@@ -76,7 +64,6 @@ export const useSRS = (user: User | null) => {
           }
         }
         
-        // Step 2: Now that migration is done, fetch the canonical data from the cloud.
         setSyncStatus('syncing');
         try {
           const { data, error } = await supabase
@@ -100,12 +87,11 @@ export const useSRS = (user: User | null) => {
         } catch (err) {
           console.error("Supabase fetch failed. Falling back to local data.", err);
           if (mounted) {
-            loadFromLocalStorage(); // Graceful fallback
+            loadFromLocalStorage();
             setSyncStatus('error');
           }
         }
       } else {
-        // --- GUEST OR OFFLINE MODE ---
         if (mounted) {
           loadFromLocalStorage();
           setSyncStatus('idle');
@@ -120,7 +106,6 @@ export const useSRS = (user: User | null) => {
     return () => { mounted = false; };
   }, [user, loadFromLocalStorage]);
 
-  // --- Syncing logic for adding words ---
   const addExtraWordsToProgress = useCallback(async (words: Word[]) => {
     const todayStr = new Date(TODAY_SIMULATED).toISOString().split('T')[0];
     const newProgressMap = { ...progress };
@@ -139,7 +124,6 @@ export const useSRS = (user: User | null) => {
       setProgress(newProgressMap);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgressMap));
 
-      // Sync to Supabase if logged in
       if (user && isSupabaseConfigured && supabase && wordsToAdd.length > 0) {
         setSyncStatus('syncing');
         const recordsToUpsert = wordsToAdd.map(word => ({
@@ -160,7 +144,6 @@ export const useSRS = (user: User | null) => {
     }
   }, [progress, user]);
 
-  // REVIEW WORDS: Words that are effectively learned (Level > 1) and due today
   const reviewWords = useMemo(() => {
     return (Object.entries(progress) as [string, SRSData][])
       .filter(([_, data]) => data.level > 1 && getNormalizedDate(data.nextReviewDate) <= todayTimestamp)
@@ -168,22 +151,29 @@ export const useSRS = (user: User | null) => {
       .filter((w): w is Word => w !== undefined);
   }, [progress, wordMap, todayTimestamp]);
 
-  // NEW WORDS: 
+  // --- NEW LOGIC: SEQUENTIAL LEVEL UNLOCKING ---
   const newWordsForToday = useMemo(() => {
-    const dailyDrops = VOCABULARY_DATA
-      .filter(day => getNormalizedDate(day.date) === todayTimestamp)
-      .flatMap(day => day.words)
-      .filter(w => !progress[w.id]);
+    // Iterate through the ordered Day Packs
+    for (const dayPack of VOCABULARY_DATA) {
+      // Find unlearned words in this specific day
+      const unlearnedInPack = dayPack.words.filter(w => !progress[w.id]);
+      
+      // If we find ANY unlearned words in this day, THIS is the current active level.
+      // Return these words and STOP looking further. 
+      // Users must clear Day 1 before Day 2 words appear here.
+      if (unlearnedInPack.length > 0) {
+        return unlearnedInPack;
+      }
+    }
 
+    // If all levels are cleared, fallback to manually added words from the expansion pack
     const seedPackWords = (Object.entries(progress) as [string, SRSData][])
       .filter(([_, data]) => data.level === 1)
       .map(([id]) => wordMap.get(id))
       .filter((w): w is Word => w !== undefined);
 
-    const uniqueMap = new Map();
-    [...dailyDrops, ...seedPackWords].forEach(w => uniqueMap.set(w.id, w));
-    return Array.from(uniqueMap.values());
-  }, [progress, todayTimestamp, wordMap]);
+    return seedPackWords;
+  }, [progress, wordMap]);
 
   const unlearnedExtraWords = useMemo(() => {
     return EXTRA_CANDIDATES.filter(w => !progress[w.id]);
@@ -199,7 +189,6 @@ export const useSRS = (user: User | null) => {
       });
   }, [progress, todayTimestamp, wordMap]);
 
-  // --- Syncing logic for updating progress ---
   const updateProgress = useCallback(async (wordId: string, quality: FeedbackQuality) => {
     const currentData = progress[wordId] || { level: 1, nextReviewDate: TODAY_SIMULATED };
     let newLevel = currentData.level;
@@ -228,7 +217,6 @@ export const useSRS = (user: User | null) => {
     setProgress(newProgress);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
 
-    // Sync to Supabase if logged in
     if (user && isSupabaseConfigured && supabase) {
       setSyncStatus('syncing');
       try {

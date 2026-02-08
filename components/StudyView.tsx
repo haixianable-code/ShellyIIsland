@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { Word, FeedbackQuality } from '../types';
+import { Word, FeedbackQuality, WordLevel, WordTopic } from '../types';
 import { playAudio } from '../utils/audio';
 import { getTypeTheme, getPosLabel } from '../utils/theme';
 import { useTranslation } from 'react-i18next';
@@ -16,12 +16,14 @@ import {
   ChevronLeft, 
   Globe, Ghost, Wind, Smile,
   Volume2, BookOpen, PenTool, Map, FastForward, Zap,
-  Star, RotateCcw, ArrowLeftRight, AudioLines
+  Star, RotateCcw, ArrowLeftRight, AudioLines,
+  AlertTriangle, TrendingUp, ArrowRight
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { ArrowRight } from 'lucide-react';
 
-// 语法口袋组件
+// ... [Keep GrammarPocket, NuancePocket, OppositePocket, VocabNotes, UsageExamples identical to previous version] ...
+// Re-inserting helpers to ensure file completeness
+
 const GrammarPocket: React.FC<{ word: Word }> = ({ word }) => {
   const { t } = useTranslation();
   const theme = getTypeTheme(word);
@@ -82,18 +84,41 @@ const GrammarPocket: React.FC<{ word: Word }> = ({ word }) => {
   );
 };
 
-// 反义词组件
+const NuancePocket: React.FC<{ word: Word }> = ({ word }) => {
+  if (!word.nuance) return null;
+  const isWarning = word.nuance.type === 'warning';
+  const bgColor = isWarning ? 'bg-[#fff8e1]' : 'bg-[#e8eaf6]';
+  const borderColor = isWarning ? 'border-[#ffe082]' : 'border-[#c5cae9]';
+  const textColor = isWarning ? 'text-[#ff6f00]' : 'text-[#3f51b5]';
+  const Icon = isWarning ? AlertTriangle : TrendingUp;
+
+  return (
+    <div className={`${bgColor} rounded-[2.5rem] p-6 border-4 ${borderColor} mb-8 shadow-sm relative overflow-hidden group`}>
+       <div className="flex items-start gap-4 relative z-10">
+          <div className="bg-white p-3 rounded-2xl shadow-sm border border-white/50 shrink-0">
+             <Icon size={24} className={textColor} />
+          </div>
+          <div>
+             <h4 className={`text-[10px] font-black uppercase tracking-widest mb-1 opacity-60 ${textColor}`}>
+                {word.nuance.label}
+             </h4>
+             <p className={`text-sm font-bold leading-relaxed ${textColor}`}>
+                {word.nuance.note}
+             </p>
+          </div>
+       </div>
+    </div>
+  );
+};
+
 const OppositePocket: React.FC<{ word: Word }> = ({ word }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  
   if (word.type !== 'adj' || !word.ant) return null;
-
   const handleSpeak = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsPlaying(true);
     playAudio(word.ant!, undefined, () => setIsPlaying(false));
   };
-
   return (
     <div 
       onClick={handleSpeak}
@@ -118,11 +143,9 @@ const OppositePocket: React.FC<{ word: Word }> = ({ word }) => {
   );
 };
 
-// 单词拆解（改为清爽风格，去除黄色背景）
 const VocabNotes: React.FC<{ word: Word }> = ({ word }) => {
   const { t } = useTranslation();
   if (!word.nounNotes || word.nounNotes === 'Function Word') return null;
-
   return (
     <div className="mt-8 pt-6 border-t-2 border-dashed border-[#0277bd]/20">
        <div className="flex items-center gap-2 mb-3">
@@ -138,48 +161,32 @@ const VocabNotes: React.FC<{ word: Word }> = ({ word }) => {
   );
 };
 
-// 用法示例 - 蓝色背景
 const UsageExamples: React.FC<{ word: Word }> = ({ word }) => {
   const { t } = useTranslation();
   const theme = getTypeTheme(word);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
-
   const highlightWord = (text: string) => {
     const searchWord = word.s.toLowerCase();
     const regex = new RegExp(`(${searchWord}|${searchWord.substring(0, 3)}[a-zñáéíóú]*)`, 'gi');
     const parts = text.split(regex);
-    
     return parts.map((part, i) => 
-      regex.test(part) ? (
-        <span key={i} style={{ color: theme.main }} className="font-black decoration-2 decoration-current/30 underline underline-offset-4">
-          {part}
-        </span>
-      ) : (
-        <span key={i}>{part}</span>
-      )
+      regex.test(part) ? <span key={i} style={{ color: theme.main }} className="font-black decoration-2 decoration-current/30 underline underline-offset-4">{part}</span> : <span key={i}>{part}</span>
     );
   };
-
   const playExample = (e: React.MouseEvent, text: string, index: number) => {
     e.stopPropagation();
     setPlayingIndex(index);
     playAudio(text, undefined, () => setPlayingIndex(null));
   };
-
   return (
     <div className="bg-[#e3f2fd] rounded-[2.5rem] p-6 relative shadow-sm group">
       <div className="flex items-center gap-2 mb-6">
         <BookOpen size={14} className="text-[#0277bd]" />
         <span className="text-[9px] font-black text-[#0277bd]/50 uppercase tracking-widest">{t('ui.study.usage_examples')}</span>
       </div>
-      
       <div className="space-y-8">
         {word.examples.map((ex, i) => (
-          <button 
-            key={i} 
-            onClick={(e) => playExample(e, ex.txt, i)}
-            className="text-left w-full group/ex relative block focus:outline-none"
-          >
+          <button key={i} onClick={(e) => playExample(e, ex.txt, i)} className="text-left w-full group/ex relative block focus:outline-none">
             <div className="space-y-1.5">
                <p className="text-[#01579b] text-lg font-black leading-snug italic transition-colors flex items-start gap-2">
                  <span className="opacity-40 select-none">"</span>
@@ -187,21 +194,17 @@ const UsageExamples: React.FC<{ word: Word }> = ({ word }) => {
                  <span className="opacity-40 select-none">"</span>
                  {playingIndex === i && <AudioLines size={16} className="mt-1 text-[#0277bd] animate-pulse shrink-0" />}
                </p>
-               <p className="text-[#0277bd]/60 text-xs font-bold uppercase tracking-wide pl-4 border-l-2 border-[#0277bd]/20">
-                 {ex.eng}
-               </p>
+               <p className="text-[#0277bd]/60 text-xs font-bold uppercase tracking-wide pl-4 border-l-2 border-[#0277bd]/20">{ex.eng}</p>
             </div>
           </button>
         ))}
       </div>
-      
-      {/* 词汇笔记嵌套在底部 */}
       <VocabNotes word={word} />
     </div>
   );
 };
 
-const StudyView: React.FC<any> = ({ words, onFinish, onFeedback, onLoginRequest, isBlitz = false, userStats, user }) => {
+const StudyView: React.FC<any> = ({ words, dailyHarvest, onFinish, onFeedback, onLoginRequest, isBlitz = false, userStats, user }) => {
   const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -249,7 +252,9 @@ const StudyView: React.FC<any> = ({ words, onFinish, onFeedback, onLoginRequest,
     if (isFlipped && word) playAudio(word.s);
   }, [isFlipped, word]);
 
-  if (isSummaryView) return <SummaryView words={words} totalLearned={userStats?.total_words_learned || 0} streak={userStats?.current_streak || 1} user={user} onFinish={onFinish} onLoginRequest={onLoginRequest} />;
+  if (isSummaryView) {
+    return <SummaryView words={words} dailyHarvest={dailyHarvest && dailyHarvest.length > 0 ? dailyHarvest : words} totalLearned={userStats?.total_words_learned || 0} streak={userStats?.current_streak || 1} user={user} onFinish={onFinish} onLoginRequest={onLoginRequest} />;
+  }
   if (!word) return null;
 
   return (
@@ -270,19 +275,34 @@ const StudyView: React.FC<any> = ({ words, onFinish, onFeedback, onLoginRequest,
       </div>
       <div className="flex-1 px-4 py-1 card-perspective relative min-h-0 mb-4 z-10">
         <div className={`card-inner h-full ${isFlipped ? 'is-flipped' : ''} ${ritualClass}`}>
-          {/* 正面：问题页 */}
+          {/* Front */}
           <div className="card-face card-face-front p-8 flex flex-col items-center justify-between h-full" style={{ backgroundColor: theme.light }}>
+            
             <div className="flex-1 flex flex-col items-center justify-center text-center w-full">
-              <div className="flex flex-col items-center gap-2 mb-8">
-                 <span style={{ backgroundColor: theme.main }} className="px-5 py-1.5 rounded-full text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-sm">
+              
+              {/* Info Pills Row */}
+              <div className="flex flex-wrap justify-center gap-2 mb-8">
+                 {/* POS */}
+                 <span style={{ backgroundColor: theme.main }} className="px-3 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-widest shadow-sm border border-white/20">
                    {getPosLabel(word)}
                  </span>
+                 {/* Level */}
+                 <span style={{ backgroundColor: theme.main }} className="px-3 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-widest shadow-sm border border-white/20">
+                   {word.level}
+                 </span>
+                 {/* Topic */}
+                 <span style={{ backgroundColor: theme.main }} className="px-3 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-widest shadow-sm border border-white/20">
+                   {word.topic}
+                 </span>
+                 
+                 {/* Hard Mode Badge */}
                  {word.reg === false && (
-                   <span className="bg-white/60 text-rose-500 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1 border border-rose-100">
+                   <span className="bg-white/60 text-rose-500 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1 border border-rose-100">
                      <Zap size={10} fill="currentColor" /> {t('ui.study.hard_mode')}
                    </span>
                  )}
               </div>
+
               <h2 className="font-black text-[#2d4a47] leading-tight text-[clamp(2.5rem,12vw,5rem)] tracking-tighter transition-all duration-500 break-words w-full">
                  {isReverseMode ? displayTranslation : word.s}
               </h2>
@@ -307,7 +327,7 @@ const StudyView: React.FC<any> = ({ words, onFinish, onFeedback, onLoginRequest,
             </div>
           </div>
 
-          {/* 背面：答案详情页 */}
+          {/* Back */}
           <div className="card-face card-face-back flex flex-col h-full overflow-hidden bg-white relative">
             <div className="absolute top-0 left-4 bottom-0 flex flex-col justify-around py-16 opacity-[0.05] pointer-events-none z-0">
                {[...Array(6)].map((_, i) => <div key={i} className="w-2.5 h-2.5 rounded-full bg-black shadow-inner"></div>)}
@@ -326,13 +346,9 @@ const StudyView: React.FC<any> = ({ words, onFinish, onFeedback, onLoginRequest,
 
             <div className="flex-1 overflow-y-auto p-8 px-8 no-scrollbar min-h-0 bg-white relative">
               <GrammarPocket word={word} />
-              
-              {/* 新增：形容词反义词板块 */}
+              <NuancePocket word={word} />
               <OppositePocket word={word} />
-              
-              {/* 更新：蓝色背景的例句区 */}
               <UsageExamples word={word} />
-              
               <div className="h-16 flex flex-col items-center justify-center opacity-[0.03] grayscale mt-4">
                 <Star size={12} />
               </div>

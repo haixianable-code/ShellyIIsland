@@ -14,7 +14,7 @@ const WordExpansionPack: React.FC<WordExpansionPackProps> = ({ availableCount, o
       onMouseEnter={() => playShaker()} 
       className="bg-gradient-to-br from-[#88d068] to-[#78c850] p-8 rounded-[4rem] border-[8px] border-white shadow-[0_15px_0_#5a9a3b] flex flex-col md:flex-row items-center justify-between gap-6 text-white relative overflow-hidden group"
     >
-      <div className="absolute -bottom-10 -left-10 opacity-10 rotate-12 transition-transform group-hover:scale-110 duration-1000">
+      <div className="absolute -bottom-10 -left-10 opacity-10 rotate-12 transition-transform group-hover:scale-110 duration-1000 pointer-events-none">
         <PackagePlus size={180} />
       </div>
       <div className="relative z-10 flex items-center gap-6">

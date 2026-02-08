@@ -54,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabas
         <div className="inline-flex items-center justify-center w-16 h-16 bg-[#78c850] rounded-[2rem] shadow-[0_6px_0_#5a9a3b] mb-3 border-4 border-white">
           <Leaf className="text-white w-8 h-8 fill-current" />
         </div>
-        <h1 className="text-lg font-black text-[#4b7d78] tracking-tight uppercase italic">Shelly Island</h1>
+        <h1 className="text-xl font-black text-[#4b7d78] tracking-tight uppercase italic">SS Island</h1>
       </div>
 
       {/* Main Navigation */}
@@ -105,7 +105,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabas
                 </div>
                 <div className="flex-1 min-w-0">
                    <h4 className="text-[#4b7d78] text-xs font-black uppercase leading-none mb-1 truncate">{user.email?.split('@')[0]}</h4>
-                   <p className="text-[#8bc34a] text-[9px] font-black uppercase tracking-widest italic">Island Citizen</p>
+                   <p className="text-[#8bc34a] text-[9px] font-black uppercase tracking-widest italic">SSI CITIZEN</p>
                 </div>
              </div>
              <div className="absolute -right-2 -bottom-2 text-[10px] font-black border-2 border-[#8bc34a]/10 text-[#8bc34a]/10 px-2 py-0.5 rounded rotate-12">OFFICIAL</div>

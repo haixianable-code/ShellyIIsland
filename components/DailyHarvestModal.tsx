@@ -1,23 +1,24 @@
 
 import React, { useState, useMemo } from 'react';
 import { Word, ProgressMap } from '../types';
-import { X, Flower2, Calendar, Sprout, Zap, Filter, CheckCircle2, Volume2 } from 'lucide-react';
+import { X, Flower2, Calendar, Sprout, Zap, Filter, CheckCircle2, Volume2, TreeDeciduous } from 'lucide-react';
 import { playAudio } from '../utils/audio';
 import { playClick } from '../utils/sfx';
+import { useTranslation } from 'react-i18next';
 
 interface DailyHarvestModalProps {
   words: Word[];
   progress: ProgressMap;
   onClose: () => void;
   onWordClick: (word: Word) => void;
-  onStartBlitz: () => void; // New action for ambitious users
+  onStartBlitz: () => void;
 }
 
 const DailyHarvestModal: React.FC<DailyHarvestModalProps> = ({ words, progress, onClose, onWordClick, onStartBlitz }) => {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState<'all' | 'new' | 'review'>('all');
 
   const { newCount, reviewCount, displayWords } = useMemo(() => {
-    // Heuristic: Level <= 3 is likely a "New Seed" planted today. Level > 3 is likely a "Review" maintained today.
     const newSeeds = words.filter(w => (progress[w.id]?.level || 0) <= 3);
     const reviewSeeds = words.filter(w => (progress[w.id]?.level || 0) > 3);
 
@@ -34,27 +35,32 @@ const DailyHarvestModal: React.FC<DailyHarvestModalProps> = ({ words, progress, 
 
   const handlePlayAudio = (e: React.MouseEvent, word: string) => {
     e.stopPropagation();
-    // 优先发音
     playAudio(word);
-    // 其次音效
     try { playClick(); } catch (err) {}
   };
 
+  const getTypeColor = (type: string) => {
+    if (type === 'verb') return 'bg-[#ff7043] border-[#ff7043]';
+    if (type === 'noun') return 'bg-[#8bc34a] border-[#8bc34a]';
+    if (type === 'adj') return 'bg-[#29b6f6] border-[#29b6f6]';
+    return 'bg-[#ab47bc] border-[#ab47bc]';
+  };
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-2xl bg-[#f7f9e4] rounded-[3.5rem] border-[8px] border-white shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col h-[85vh] animate-zoomIn">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-fadeIn">
+      <div className="relative w-full max-w-2xl bg-[#f7f9e4] rounded-[3rem] md:rounded-[3.5rem] border-[8px] border-white shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col h-[85vh] animate-zoomIn">
         
         {/* Header */}
-        <div className="p-6 md:p-8 shrink-0 border-b-4 border-[#e0d9b4] flex items-center justify-between bg-white/50 relative z-10">
+        <div className="p-6 shrink-0 border-b-4 border-[#e0d9b4] flex items-center justify-between bg-white/60 relative z-10 backdrop-blur-sm">
           <div className="flex items-center gap-4">
             <div className="bg-[#8bc34a] p-3 rounded-2xl shadow-sm border-2 border-white animate-bounce-slight">
-              <Flower2 className="text-white" size={28} />
+              <TreeDeciduous className="text-white" size={28} />
             </div>
             <div>
-              <h2 className="text-3xl font-black text-[#4b7d78] tracking-tight">Today's Harvest</h2>
-              <div className="flex items-center gap-1.5 text-sm font-bold text-[#8d99ae] mt-1">
+              <h2 className="text-2xl md:text-3xl font-black text-[#4b7d78] tracking-tight leading-none">{t('ui.study.today_harvest')}</h2>
+              <div className="flex items-center gap-1.5 text-xs md:text-sm font-bold text-[#8d99ae] mt-1.5">
                  <Calendar size={14} />
-                 <span>{words.length} items cultivated</span>
+                 <span>{words.length} crops collected today</span>
               </div>
             </div>
           </div>
@@ -65,83 +71,85 @@ const DailyHarvestModal: React.FC<DailyHarvestModalProps> = ({ words, progress, 
 
         {/* Filter Tabs */}
         {words.length > 0 && (
-          <div className="px-6 md:px-8 py-4 flex gap-2 overflow-x-auto no-scrollbar bg-[#f7f9e4]">
+          <div className="px-6 pt-4 pb-2 flex gap-2 overflow-x-auto no-scrollbar bg-[#f7f9e4] shrink-0">
             {[
               { id: 'all', label: 'All Crops', count: words.length },
-              { id: 'new', label: 'New Seeds', count: newCount },
-              { id: 'review', label: 'Maintained', count: reviewCount }
+              { id: 'new', label: 'New', count: newCount },
+              { id: 'review', label: 'Review', count: reviewCount }
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setFilter(tab.id as any)}
-                className={`px-4 py-2 rounded-xl border-2 font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-xl border-2 font-black text-[10px] uppercase tracking-wider flex items-center gap-2 transition-all whitespace-nowrap active:scale-95 ${
                   filter === tab.id 
                   ? 'bg-[#4b7d78] border-[#4b7d78] text-white shadow-md' 
                   : 'bg-white border-[#e0e0e0] text-[#8d99ae] hover:border-[#b0bec5]'
                 }`}
               >
-                {tab.id === 'all' && <Filter size={12} />}
-                {tab.id === 'new' && <Sprout size={12} />}
-                {tab.id === 'review' && <CheckCircle2 size={12} />}
-                {tab.label} <span className="bg-black/10 px-1.5 py-0.5 rounded-md text-[9px]">{tab.count}</span>
+                {tab.id === 'all' && <Filter size={10} />}
+                {tab.id === 'new' && <Sprout size={10} />}
+                {tab.id === 'review' && <CheckCircle2 size={10} />}
+                {tab.label} <span className={`px-1.5 py-0.5 rounded-md text-[9px] ${filter === tab.id ? 'bg-black/20' : 'bg-slate-100'}`}>{tab.count}</span>
               </button>
             ))}
           </div>
         )}
 
-        {/* List */}
-        <div className="flex-1 overflow-y-auto no-scrollbar p-6 bg-[#f7f9e4] pt-0">
+        {/* Dense Grid List */}
+        <div className="flex-1 overflow-y-auto no-scrollbar p-6 bg-[#f7f9e4] pt-2">
            {displayWords.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full opacity-50 py-12">
                 <Sprout size={48} className="text-[#8bc34a] mb-2" />
-                <p className="font-black text-[#4b7d78]">No crops found in this category.</p>
+                <p className="font-black text-[#4b7d78]">No crops found.</p>
               </div>
            ) : (
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-               {displayWords.map((word, index) => (
-                 <div
-                    key={word.id} 
-                    className="bg-white p-4 rounded-[2rem] border-4 border-[#f0f0f0] flex items-center justify-between group hover:border-[#8bc34a] transition-all shadow-sm animate-fadeIn relative"
-                    style={{ animationDelay: `${index * 0.05}s` }}
-                 >
-                    {/* 点击区域覆盖文字部分，点击进入详情 */}
-                    <button 
+             <div className="flex flex-wrap content-start gap-2 pb-12">
+               {displayWords.map((word, index) => {
+                 const colorClass = getTypeColor(word.type);
+                 return (
+                   <button
+                      key={word.id} 
                       onClick={() => onWordClick(word)}
-                      className="flex-1 flex flex-col text-left active:scale-95 transition-transform"
-                    >
-                      <span className="font-black text-[#2e4d4a] text-lg group-hover:text-[#4b7d78] transition-colors">{word.s}</span>
-                      <span className="font-bold text-[#8d99ae] text-xs uppercase tracking-wide">{word.t}</span>
-                    </button>
+                      className={`group relative flex items-center gap-2 pl-3 pr-2 py-2 bg-white border-2 border-[#f0f0f0] rounded-xl shadow-sm hover:border-[#8bc34a] hover:shadow-md active:scale-95 transition-all animate-fadeIn`}
+                      style={{ animationDelay: `${Math.min(index * 0.03, 0.5)}s` }}
+                   >
+                      {/* Indicator Dot */}
+                      <div className={`w-2 h-2 rounded-full ${colorClass.split(' ')[0]}`} />
+                      
+                      <div className="text-left flex flex-col">
+                        <span className="font-black text-[#2e4d4a] text-sm leading-none">{word.s}</span>
+                        <span className="text-[9px] font-bold text-[#8d99ae] leading-none mt-0.5 truncate max-w-[80px]">
+                           {t(`vocab.${word.id}.t`, { defaultValue: word.t })}
+                        </span>
+                      </div>
 
-                    <div className="flex items-center gap-3">
-                       {/* 独立发音按钮 */}
-                       <button 
+                      {/* Mini Play Button */}
+                      <div
                          onClick={(e) => handlePlayAudio(e, word.s)}
-                         className="p-2 rounded-full bg-slate-50 text-slate-400 hover:bg-[#8bc34a] hover:text-white transition-colors active:scale-90"
+                         className="ml-1 p-1.5 rounded-lg bg-slate-50 text-slate-300 hover:bg-[#8bc34a] hover:text-white transition-colors"
                        >
-                         <Volume2 size={16} />
-                       </button>
-                       <div className={`w-3 h-3 rounded-full border-2 border-white shadow-sm ${word.type === 'verb' ? 'bg-[#ff7043]' : word.type === 'adj' ? 'bg-[#fbc02d]' : word.type === 'misc' ? 'bg-[#ab47bc]' : 'bg-[#2196f3]'}`} />
-                    </div>
-                 </div>
-               ))}
+                         <Volume2 size={12} />
+                       </div>
+                   </button>
+                 );
+               })}
              </div>
            )}
         </div>
 
-        {/* Footer: Blitz Action for Ambitious Users */}
+        {/* Footer: Blitz Action */}
         {words.length > 0 && (
-          <div className="p-6 md:p-8 shrink-0 bg-white border-t-4 border-[#e0d9b4] relative z-20">
-             <div className="flex flex-col gap-3">
-               <div className="flex items-center justify-between px-2">
-                 <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest">Ambitious Gardener?</p>
+          <div className="p-4 md:p-6 shrink-0 bg-white border-t-4 border-[#e0d9b4] relative z-20 pb-[env(safe-area-inset-bottom,20px)]">
+             <div className="flex items-center gap-4">
+               <div className="hidden md:block">
+                 <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest">Extra Credit</p>
                  <p className="text-[10px] font-bold text-[#8d99ae]">No SRS Impact</p>
                </div>
                <button 
                  onClick={onStartBlitz}
-                 className="w-full bg-[#9c27b0] text-white py-4 rounded-[2.5rem] font-black text-lg shadow-[0_8px_0_#7b1fa2] border-4 border-[#e1bee7] bubble-button flex items-center justify-center gap-3 hover:bg-[#ab47bc] transition-all group"
+                 className="flex-1 bg-[#9c27b0] text-white py-3 md:py-4 rounded-[2rem] font-black text-base md:text-lg shadow-[0_6px_0_#7b1fa2] border-4 border-[#e1bee7] bubble-button flex items-center justify-center gap-2 hover:bg-[#ab47bc] transition-all group"
                >
-                 <Zap size={24} className="fill-current text-[#e1bee7] group-hover:scale-110 transition-transform" />
+                 <Zap size={20} className="fill-current text-[#e1bee7] group-hover:scale-110 transition-transform" />
                  <span>Speed Blitz Review</span>
                </button>
              </div>

@@ -14,22 +14,24 @@ i18n
       en: { translation: enTranslation },
       zh: { translation: zhTranslation }
     },
-    // 默认回退语言为英文 (非中文系统都会显示英文)
+    // 1. 如果检测到的语言没有翻译（比如德语），回退到英文
     fallbackLng: 'en',
     
-    // 关键配置：只加载语言代码 (例如 zh-CN -> zh)，确保所有中文变体都能匹配到 zh 资源
+    // 2. 关键：将 zh-CN, zh-TW, zh-HK 统一归类为 'zh'，这样中文系统用户就能看到中文
     load: 'languageOnly',
     
-    // 明确支持的语言列表
+    // 3. 支持的语言列表
     supportedLngs: ['en', 'zh'],
     
     interpolation: {
-      escapeValue: false, // react already safes from xss
+      escapeValue: false, 
     },
     detection: {
-      // 检测顺序：先看本地缓存(用户上次的选择)，如果没有则看浏览器系统设置
+      // 4. 检测顺序：
+      // - localStorage: 记住用户上次手动切换的语言
+      // - navigator: 检测浏览器/系统语言
       order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
+      caches: ['localStorage'], // 缓存用户选择到 localStorage
       lookupLocalStorage: 'i18nextLng',
     }
   });

@@ -1,45 +1,54 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Word } from '../types';
 import { useTranslation } from 'react-i18next';
 import { getTypeTheme } from '../utils/theme';
 import { 
-  Trophy, Share2, Heart, 
-  TreePalm, Map,
-  Flame, Sprout, Home, Volume2, Sparkles, Gem,
-  Shield, Award, ShieldAlert, ChevronRight, CloudUpload, Fingerprint, ShieldCheck
+  Share2, Home, Volume2, TreePalm, Sparkles, Map, Leaf, ArrowRight,
+  CheckCircle2, Flame, Sprout, Loader2, Play
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playFanfare, playClick, playSparkle } from '../utils/sfx';
 import { playAudio } from '../utils/audio';
+import html2canvas from 'html2canvas';
 
-const getGardenerLevel = (total: number) => {
-  if (total <= 20) return { title: 'Apprentice Gardener', icon: Sprout, next: 21, color: '#8bc34a' };
-  if (total <= 50) return { title: 'Diligent Farmer', icon: Award, next: 51, color: '#ffa600' };
-  if (total <= 100) return { title: 'Island Wealthy', icon: Gem, next: 101, color: '#ab47bc' };
-  return { title: 'Spanish Lord', icon: Shield, next: 9999, color: '#ff7b72' };
+// Custom hook for number counting animation
+const useCountUp = (end: number, duration: number = 2000) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTime: number | null = null;
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      // Ease out expo
+      const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      
+      setCount(Math.floor(ease * end));
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setCount(end);
+      }
+    };
+    requestAnimationFrame(animate);
+  }, [end, duration]);
+
+  return count;
 };
 
-const WordSticker: React.FC<{ word: Word }> = ({ word }) => {
+// 单个单词胶囊组件
+const WordPill: React.FC<{ word: Word; index: number; forceVisible: boolean }> = ({ word, index, forceVisible }) => {
   const { t } = useTranslation();
   const theme = getTypeTheme(word);
   const [isPlaying, setIsPlaying] = useState(false);
   
-  const randomStyles = useMemo(() => ({
-    rotate: `${Math.floor(Math.random() * 20) - 10}deg`,
-    x: `${Math.floor(Math.random() * 10) - 5}px`,
-    y: `${Math.floor(Math.random() * 10) - 5}px`,
-  }), []);
-
   const handleWordClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    // 1. 发音优先
     setIsPlaying(true);
     playAudio(word.s, undefined, () => setIsPlaying(false));
-
-    // 2. 音效其次（异常捕获）
     try { playClick(); } catch (err) {}
   };
 
@@ -47,155 +56,240 @@ const WordSticker: React.FC<{ word: Word }> = ({ word }) => {
     <button 
       type="button"
       onClick={handleWordClick}
+      className={`
+        inline-flex items-center justify-center gap-3 px-5 py-3 rounded-full shadow-sm border-[3px] border-white/40 
+        transition-all select-none outline-none relative overflow-hidden
+        ${forceVisible 
+           ? 'opacity-100 scale-100 translate-y-0 animate-none' 
+           : 'animate-zoomIn active:scale-95 hover:scale-110 hover:z-10 hover:shadow-lg'
+        }
+        ${isPlaying ? 'ring-4 ring-white/50 scale-105 z-20' : ''}
+      `}
       style={{ 
-        transform: `rotate(${randomStyles.rotate}) translate(${randomStyles.x}, ${randomStyles.y})`,
-        backgroundColor: theme.main,
-        borderColor: 'white'
+        backgroundColor: theme.main, 
+        color: 'white',
+        // If forceVisible is true (during capture), remove delay to ensure it renders immediately
+        animationDelay: forceVisible ? '0s' : `${Math.min(index * 0.04, 1.5)}s`,
+        animationFillMode: 'both'
       }}
-      className="inline-flex flex-col items-center px-5 py-3 rounded-2xl border-4 shadow-lg text-white transition-all active:scale-95 active:shadow-sm hover:z-20 hover:scale-105 group relative cursor-pointer outline-none focus:ring-4 focus:ring-white/50"
     >
-      <div className="flex items-center gap-1.5 pointer-events-none">
-        {isPlaying && <Volume2 size={16} className="animate-pulse" />}
-        <span className="font-black text-lg leading-tight tracking-tight">{word.s}</span>
-      </div>
-      <span className="text-[9px] font-black opacity-80 uppercase mt-0.5 pointer-events-none">
+      {/* Word Text */}
+      <span className="font-black text-lg md:text-xl drop-shadow-md pb-[2px] leading-none">{word.s}</span>
+      
+      {/* Vertical Separator */}
+      <div className="w-[2px] h-4 bg-white/40 rounded-full shrink-0" />
+      
+      {/* Translation Text */}
+      <span className="text-xs md:text-sm font-bold opacity-90 pb-[1px] leading-none">
         {t(`vocab.${word.id}.t`, { defaultValue: word.t })}
       </span>
-      <div className="absolute -top-1 -left-1 w-2 h-2 bg-white/40 rounded-full pointer-events-none" />
+      
+      {/* Glossy effect overlay */}
+      <div className="absolute top-0 left-0 w-full h-1/2 bg-white/10 pointer-events-none" />
     </button>
   );
 };
 
-const SummaryView: React.FC<any> = ({ words, totalLearned, streak, user, onFinish, onLoginRequest }) => {
-  const { t } = useTranslation();
-  const [shareState, setShareState] = useState<'idle' | 'copied'>('idle');
+interface SummaryViewProps {
+  words: Word[]; // Session words (just for reference if needed, but we use dailyHarvest mostly)
+  dailyHarvest: Word[]; // All words learned today
+  totalLearned: number;
+  streak: number;
+  user: any;
+  onFinish: () => void;
+  onLoginRequest: () => void;
+}
 
-  const levelInfo = useMemo(() => getGardenerLevel(totalLearned), [totalLearned]);
-  const progressToNext = Math.min(100, (totalLearned / levelInfo.next) * 100);
+const SummaryView: React.FC<SummaryViewProps> = ({ dailyHarvest, totalLearned, streak, user, onFinish, onLoginRequest }) => {
+  const { t } = useTranslation();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false); // New state to control visibility during capture
+  const captureRef = useRef<HTMLDivElement>(null);
+
+  // Randomize words for the "Pile" effect
+  const shuffledWords = useMemo(() => {
+    return [...dailyHarvest].sort(() => 0.5 - Math.random());
+  }, [dailyHarvest]);
+  
+  // Animations
+  const displayTotalHarvest = useCountUp(dailyHarvest.length);
+  const displayStreak = useCountUp(streak);
 
   useEffect(() => {
-    playFanfare();
-    confetti({
-      particleCount: 150,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#8bc34a', '#ffa600', '#ffffff', '#ff7b72', '#29b6f6']
-    });
+    // Delayed fanfare to match the counter finishing
+    setTimeout(() => playFanfare(), 500);
+    
+    // Multiple confetti bursts for "Abundance" feel
+    const duration = 2000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#ff7043', '#8bc34a', '#29b6f6', '#ab47bc']
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#ff7043', '#8bc34a', '#29b6f6', '#ab47bc']
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    frame();
   }, []);
 
   const handleShare = async () => {
-    try { playClick(); } catch (e) {}
-    const shareUrl = new URL(window.location.origin);
-    const shareText = t('ui.study.share_template', {
-      level: levelInfo.title,
-      streak: streak,
-      count: words.length,
-      url: shareUrl.toString()
-    });
+    playClick();
+    if (!captureRef.current) return;
+    
+    setIsGenerating(true);
+    setIsCapturing(true); // Disable animations immediately
+    
+    // Slight delay to ensure React renders the 'forceVisible' state before capturing
+    await new Promise(resolve => setTimeout(resolve, 200));
 
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: 'Shelly Spanish Island', text: shareText, url: shareUrl.toString() });
-      } catch (err) { /* ignore */ }
-    } else {
-      await navigator.clipboard.writeText(shareText);
-      setShareState('copied');
-      setTimeout(() => setShareState('idle'), 2000);
+    try {
+      const canvas = await html2canvas(captureRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#f7f9e4',
+        logging: false,
+        // Force full dimensions to avoid clipping
+        windowWidth: captureRef.current.scrollWidth,
+        windowHeight: captureRef.current.scrollHeight
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          setIsGenerating(false);
+          setIsCapturing(false);
+          return;
+        }
+        
+        const file = new File([blob], 'shelly-harvest.png', { type: 'image/png' });
+
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              // Explicitly removed title/text/url to force image-only share on supporting platforms
+            });
+          } catch (err) {
+            console.log('Share canceled');
+          }
+        } else {
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = 'shelly-harvest.png';
+          link.click();
+        }
+        setIsGenerating(false);
+        setIsCapturing(false);
+      }, 'image/png');
+
+    } catch (err) {
+      console.error("Image generation failed", err);
+      setIsGenerating(false);
+      setIsCapturing(false);
     }
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-start py-8 px-4 md:py-12 md:px-12 animate-fadeIn bg-gradient-to-b from-[#f7f9e4] to-[#fffde7] h-[100dvh] overflow-y-auto no-scrollbar pb-32">
-      <div className="relative w-full max-w-xl mb-12 flex flex-col items-center">
-        <div className="absolute top-0 -left-12 opacity-5 -rotate-12 pointer-events-none"><TreePalm size={180} /></div>
-        <div className="absolute bottom-40 -right-12 opacity-5 rotate-12 pointer-events-none"><Map size={180} /></div>
-        <div className="bg-white rounded-[3.5rem] border-[10px] border-white shadow-[0_40px_80px_-20px_rgba(45,74,71,0.2)] overflow-hidden flex flex-col relative z-10 w-full shrink-0">
-          <div className="bg-[#8bc34a] p-10 pb-14 text-center text-white relative overflow-hidden">
-            <div className="absolute top-4 right-4 bg-white/20 p-3 rounded-3xl backdrop-blur-sm border-2 border-white/30 rotate-12"><Trophy size={40} className="drop-shadow-md" /></div>
-            <div className="absolute -left-8 -bottom-8 opacity-20"><Sparkles size={120} /></div>
-            <h2 className="text-4xl font-black uppercase tracking-tighter mb-1 relative z-10">{t('ui.study.summary_title')}</h2>
-            <p className="text-white/80 font-black uppercase tracking-widest text-[11px] italic relative z-10">{t('ui.study.harvest_report')}</p>
-          </div>
-          <div className="p-8 space-y-8 bg-white rounded-t-[3.5rem] -mt-8 relative z-20">
-            <div className="bg-slate-50/80 rounded-[2.5rem] p-6 border-2 border-slate-100 flex flex-col items-center relative group">
-               <div className="absolute -top-4 bg-white px-5 py-1 rounded-full border-2 border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest shadow-sm">
-                 {t('ui.dashboard.slang_title')}
-               </div>
-               <div className="flex items-center gap-4 mb-4 mt-2">
-                 <div style={{ backgroundColor: levelInfo.color }} className="p-4 rounded-[1.8rem] text-white shadow-lg rotate-[-4deg]"><levelInfo.icon size={32} /></div>
-                 <div className="text-left"><h3 className="text-3xl font-black text-[#4b7d78] tracking-tight">{levelInfo.title}</h3><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('ui.study.total_growth')}: {totalLearned}</p></div>
-               </div>
-               <div className="w-full px-4 mb-2"><div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden border-2 border-white shadow-inner"><div className="h-full transition-all duration-1000 ease-out rounded-full" style={{ width: `${progressToNext}%`, backgroundColor: levelInfo.color }} /></div></div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-[#f1f8e9] p-5 rounded-[2.5rem] border-4 border-[#e8f5e9] flex flex-col items-center shadow-inner group"><Flame size={28} className="text-[#ffa600] mb-1 fill-current group-hover:scale-110 transition-transform" /><span className="text-4xl font-black text-[#4b7d78] tracking-tighter">{streak}</span><span className="text-[9px] font-black uppercase text-[#8bc34a] tracking-widest mt-1">Day Streak</span></div>
-              <div className="bg-[#fffde7] p-5 rounded-[2.5rem] border-4 border-[#fff9c4] flex flex-col items-center shadow-inner group">
-                <Gem size={28} className="text-[#fbc02d] mb-1 fill-current group-hover:rotate-12 transition-transform" />
-                <span className="text-4xl font-black text-[#4b7d78] tracking-tighter">{words.length}</span>
-                <span className="text-[9px] font-black uppercase text-[#fbc02d] tracking-widest mt-1">{t('ui.study.today_harvest')}</span>
+    <div className="flex-1 flex flex-col items-center py-8 px-4 md:py-12 md:px-12 animate-fadeIn bg-[#f7f9e4] h-[100dvh] overflow-y-auto no-scrollbar pb-32">
+      
+      {/* --- CAPTURE AREA --- */}
+      <div ref={captureRef} className="relative w-full max-w-xl flex flex-col items-center bg-[#f7f9e4] p-8 rounded-[3rem]">
+        
+        {/* Background Decor */}
+        <div className="absolute top-10 -left-10 opacity-5 -rotate-12 pointer-events-none"><TreePalm size={200} /></div>
+        <div className="absolute bottom-40 -right-10 opacity-5 rotate-12 pointer-events-none"><Map size={200} /></div>
+
+        {/* 1. Header: The Big Counter */}
+        <div className="text-center mb-10 relative z-10 mt-4">
+           <div className={`inline-flex items-center justify-center gap-3 mb-2 ${isCapturing ? '' : 'animate-bounce-slight'}`}>
+              <div className="bg-[#ffa600] p-4 rounded-full shadow-lg border-2 border-white text-white">
+                <Leaf size={28} fill="currentColor" />
               </div>
-            </div>
-
-            <div className="relative py-12 px-6 bg-slate-50/50 rounded-[3rem] border-4 border-dashed border-slate-100 min-h-[300px]">
-              <div className="flex flex-wrap justify-center gap-3">{words.map(w => <WordSticker key={w.id} word={w} />)}</div>
-            </div>
-
-            {!user && (
-              <div className="bg-[#fff9c4] p-8 rounded-[3.5rem] border-[6px] border-white shadow-[0_15px_30px_rgba(251,192,45,0.2)] animate-slideUp relative overflow-hidden group">
-                 <div className="absolute -right-6 -top-6 w-32 h-32 border-[12px] border-[#fbc02d]/10 rounded-full flex items-center justify-center rotate-12">
-                   <ShieldCheck size={60} className="text-[#fbc02d]/10" />
-                 </div>
-                 
-                 <div className="flex flex-col items-center text-center relative z-10 space-y-4">
-                    <div className="bg-[#fbc02d] p-4 rounded-[1.8rem] shadow-md border-4 border-white rotate-[-3deg]">
-                       <Fingerprint className="text-white" size={32} />
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="text-2xl font-black text-[#4b7d78] uppercase tracking-tighter italic">{t('ui.passport.protect_harvest')}</h3>
-                      <p className="text-xs font-bold text-[#8d99ae] leading-relaxed max-w-[240px] mx-auto">
-                        {t('ui.passport.protect_desc', { count: totalLearned })}. Warning: Guest seeds may vanish in the storm.
-                      </p>
-                    </div>
-                    
-                    <button 
-                      onClick={() => { playSparkle(); onLoginRequest(); }}
-                      className="w-full bg-[#4b7d78] text-white py-5 rounded-[2rem] font-black text-xl flex items-center justify-between px-8 active:scale-95 transition-all shadow-[0_10px_0_#2d4a47] border-4 border-white hover:bg-[#3d5a57]"
-                    >
-                       <div className="flex items-center gap-3">
-                          <CloudUpload size={24} className="animate-bounce" />
-                          <span>{t('ui.passport.apply_now')}</span>
-                       </div>
-                       <ChevronRight size={24} />
-                    </button>
-                    
-                    <div className="flex items-center gap-2 opacity-30 text-[9px] font-black uppercase tracking-widest pt-2">
-                      <Fingerprint size={12} /> IDENTITY SECURE • PROGRESS BACKED UP • PERMANENT ACCESS
-                    </div>
-                 </div>
-              </div>
-            )}
-
-            <div className="space-y-4 pt-2">
-              <button 
-                onClick={handleShare} 
-                className="w-full bg-[#ffa600] text-white py-5 rounded-[2.5rem] font-black text-xl shadow-[0_8px_0_#e65100] border-4 border-white bubble-button flex items-center justify-center gap-3 active:translate-y-2 active:shadow-none transition-all"
-              >
-                <Share2 size={22} />
-                <span>{shareState === 'copied' ? t('ui.actions.copied') : t('ui.actions.share_island')}</span>
-              </button>
-              <button 
-                onClick={onFinish} 
-                className="w-full bg-slate-100 text-[#4b7d78] py-4 rounded-[2rem] font-black text-lg transition-all active:translate-y-1 flex items-center justify-center gap-2 border-b-4 border-slate-200"
-              >
-                <Home size={20} />
-                <span>{t('ui.nav.home')}</span>
-              </button>
-            </div>
-          </div>
-          <div className="bg-slate-50 py-6 flex flex-col items-center opacity-40"><div className="flex items-center gap-1.5 text-[8px] font-black text-slate-500 uppercase tracking-[0.4em]">Island Gardener Authority <Heart size={6} className="fill-current text-[#ff7b72]" /></div></div>
+           </div>
+           
+           <h1 className="text-[5rem] md:text-[6.5rem] leading-none font-black text-[#4b7d78] tracking-tighter drop-shadow-sm flex items-baseline justify-center gap-1">
+              <span className="text-4xl md:text-5xl opacity-40">+</span>
+              <span>{isCapturing ? dailyHarvest.length : displayTotalHarvest}</span>
+           </h1>
+           <p className="text-[#8bc34a] font-black uppercase tracking-[0.3em] text-xs md:text-sm mt-2 bg-white/60 inline-block px-5 py-2 rounded-full border border-white/50">
+             {t('ui.study.today_harvest')}
+           </p>
         </div>
+
+        {/* 2. The Abundance Pile (Word Cloud) */}
+        <div className="w-full relative z-20 mb-12">
+           <div className="flex flex-wrap justify-center gap-3 md:gap-4 p-2 min-h-[100px]">
+              {shuffledWords.length > 0 ? (
+                shuffledWords.map((w, idx) => (
+                  <WordPill 
+                    key={w.id} 
+                    word={w} 
+                    index={idx} 
+                    forceVisible={isCapturing} // Pass down state to force visibility
+                  />
+                ))
+              ) : (
+                <div className="text-center opacity-40 font-bold italic">Seeding...</div>
+              )}
+           </div>
+        </div>
+
+        {/* 3. Footer Stats (Streak & Total) */}
+        <div className="grid grid-cols-2 gap-4 w-full px-2 mb-10">
+           <div className="bg-white p-5 rounded-[2.5rem] shadow-sm border-4 border-[#fff3e0] flex flex-col items-center justify-center relative overflow-hidden">
+              <div className="absolute -right-2 -top-2 opacity-10 rotate-12"><Flame size={60} /></div>
+              <span className="text-4xl font-black text-[#f57c00]">{isCapturing ? streak : displayStreak}</span>
+              <span className="text-[10px] font-black uppercase text-[#ffcc80] tracking-widest mt-1">{t('ui.study.day_streak')}</span>
+           </div>
+           <div className="bg-white p-5 rounded-[2.5rem] shadow-sm border-4 border-[#e8f5e9] flex flex-col items-center justify-center relative overflow-hidden">
+              <div className="absolute -right-2 -top-2 opacity-10 rotate-12"><Sprout size={60} /></div>
+              <span className="text-4xl font-black text-[#2e7d32]">{totalLearned}</span>
+              <span className="text-[10px] font-black uppercase text-[#a5d6a7] tracking-widest mt-1">{t('ui.study.total_growth')}</span>
+           </div>
+        </div>
+
+        {/* Branding Footer - Domain Logo */}
+        <div className="flex flex-col items-center gap-2 pb-6 pt-8 border-t-2 border-[#e0d9b4]/20 w-full">
+           <div className="text-[#4b7d78] text-2xl md:text-3xl font-black uppercase tracking-widest font-mono border-b-4 border-[#ffa600] leading-none pb-1">
+             SSISLAND.SPACE
+           </div>
+        </div>
+
       </div>
+
+      {/* --- ACTION BUTTONS --- */}
+      <div className="w-full max-w-lg mt-6 space-y-3 px-2 relative z-50">
+        <button 
+          onClick={handleShare}
+          disabled={isGenerating}
+          className="w-full bg-[#ffa600] text-white py-5 rounded-[2.5rem] font-black text-xl shadow-[0_8px_0_#e65100] border-4 border-white bubble-button flex items-center justify-center gap-3 active:translate-y-2 active:shadow-none transition-all disabled:opacity-70 disabled:cursor-not-allowed hover:bg-[#ffb74d]"
+        >
+          {isGenerating ? <Loader2 className="animate-spin" /> : <Share2 size={22} />}
+          <span>{isGenerating ? t('ui.actions.generating') : t('ui.actions.share_harvest')}</span>
+        </button>
+        
+        <button 
+          onClick={onFinish} 
+          className="w-full bg-white text-[#4b7d78] py-4 rounded-[2rem] font-black text-lg transition-all active:scale-95 flex items-center justify-center gap-2 border-4 border-transparent hover:border-[#e0d9b4] shadow-sm"
+        >
+          <ArrowRight size={20} />
+          <span>{t('ui.actions.continue_learning')}</span>
+        </button>
+      </div>
+
     </div>
   );
 };

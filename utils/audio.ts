@@ -3,92 +3,106 @@
  * Shelly Spanish Island - Robust Audio Utility
  */
 
-// 保持引用防止垃圾回收（GC Protection）
-const activeUtterances = new Set<SpeechSynthesisUtterance>();
 let voices: SpeechSynthesisVoice[] = [];
 
-// 尝试加载语音列表
-const loadVoices = () => {
+// 防止垃圾回收机制 (Garbage Collection) 导致语音中断
+const keepAlive = (utterance: SpeechSynthesisUtterance) => {
+  (window as any).currentUtterance = utterance;
+};
+
+// 预加载语音列表
+export const initAudioSystem = () => {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    voices = window.speechSynthesis.getVoices();
+    const synth = window.speechSynthesis;
+    
+    // 1. 尝试立即获取
+    const initialVoices = synth.getVoices();
+    if (initialVoices.length > 0) {
+      voices = initialVoices;
+    }
+
+    // 2. 监听异步加载
+    synth.onvoiceschanged = () => {
+      voices = synth.getVoices();
+      console.log("🔊 Audio System: Voices loaded count:", voices.length);
+    };
   }
 };
 
-// 初始化监听
-if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-  window.speechSynthesis.onvoiceschanged = loadVoices;
-  // 立即尝试加载一次
-  loadVoices();
-}
-
 export const playAudio = (text: string, onStart?: () => void, onEnd?: () => void) => {
+  // 环境检查
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    console.warn("Speech Synthesis not supported");
     if (onEnd) onEnd();
     return;
   }
 
   const synth = window.speechSynthesis;
 
-  // 1. 强制重置状态：如果正在说话，先取消，防止队列卡死
+  // 1. 强制重置：如果在说话，立刻打断，防止队列卡死
   if (synth.speaking || synth.pending) {
     synth.cancel();
   }
 
-  // 2. 再次尝试获取语音（Chrome Android 有时需要懒加载）
+  // 2. 再次尝试获取语音 (防止第一次点击时列表为空)
   if (voices.length === 0) {
     voices = synth.getVoices();
   }
 
   const utterance = new SpeechSynthesisUtterance(text);
 
-  // 3. 极其宽容的语音选择逻辑
-  // 优先找西班牙语系 (es-ES, es-MX, es-US 等)
-  const esVoices = voices.filter(v => v.lang.toLowerCase().startsWith('es'));
+  // 3. 优化的语音选择逻辑
+  // 优先顺序：
+  // 1. 西班牙语 + 本地服务 (LocalService) -> 响应最快，无需联网
+  // 2. 西班牙语 + Google/Microsoft (高质量)
+  // 3. 任何 'es' 开头的语音
+  let bestVoice = voices.find(v => v.lang.toLowerCase().startsWith('es') && v.localService);
   
-  // 尝试找高质量语音 (Google, Monica, Paulina)
-  let bestVoice = esVoices.find(v => 
-    v.name.includes('Google') || 
-    v.name.includes('Premium') || 
-    v.name.includes('Monica') || 
-    v.name.includes('Paulina')
-  );
-
-  // 如果没有高质量，取任意一个西班牙语
-  if (!bestVoice && esVoices.length > 0) {
-    bestVoice = esVoices[0];
+  if (!bestVoice) {
+    bestVoice = voices.find(v => v.lang.toLowerCase().startsWith('es') && (v.name.includes('Google') || v.name.includes('Premium')));
   }
 
-  // 设置语音或兜底语言
+  if (!bestVoice) {
+    bestVoice = voices.find(v => v.lang.toLowerCase().startsWith('es'));
+  }
+
   if (bestVoice) {
     utterance.voice = bestVoice;
     utterance.lang = bestVoice.lang;
+    // console.log("Using voice:", bestVoice.name, bestVoice.lang); // Debug log
   } else {
-    // 关键兜底：如果没有找到语音包，直接强制指定语言代码
-    // 大多数现代浏览器会自动匹配默认 TTS 引擎
+    // 兜底：如果没有找到任何西班牙语语音包，强制指定语言代码
     utterance.lang = 'es-ES';
   }
 
-  utterance.rate = 0.9; // 语速稍慢，适合学习
+  // 4. 设置基本参数
+  utterance.rate = 0.9; // 语速适中
+  utterance.pitch = 1.0;
   utterance.volume = 1.0;
 
-  // 4. 事件绑定
+  // 5. 事件绑定
   utterance.onstart = () => {
-    activeUtterances.add(utterance);
     if (onStart) onStart();
   };
 
   utterance.onend = () => {
-    activeUtterances.delete(utterance);
     if (onEnd) onEnd();
+    (window as any).currentUtterance = null;
   };
 
   utterance.onerror = (e) => {
-    console.warn("TTS Error:", e);
-    activeUtterances.delete(utterance);
-    if (onEnd) onEnd();
+    console.warn("TTS Error event:", e);
+    // 许多浏览器在 cancel() 时也会触发 error，这是正常的，可以忽略
+    if (e.error !== 'interrupted') {
+       if (onEnd) onEnd();
+    }
+    (window as any).currentUtterance = null;
   };
 
-  // 5. 播放
+  // 6. 激活防回收机制
+  keepAlive(utterance);
+
+  // 7. 播放
   try {
     synth.speak(utterance);
   } catch (err) {

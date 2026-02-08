@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Word, UserStats } from '../types';
-import { ISLAND_SLANG } from '../constants';
+import { ISLAND_SLANG, VOCABULARY_DATA } from '../constants';
 import { playClick, playSparkle, playSwish } from '../utils/sfx';
 import { 
   Sprout, 
@@ -96,6 +96,13 @@ const Dashboard: React.FC<DashboardProps> = ({
     return t(`vocab.${word.id}.t`, { defaultValue: word.t });
   };
 
+  // Determine the current mission title based on the new words available
+  const currentDayPack = useMemo(() => {
+    if (newWordsList.length === 0) return null;
+    // Find the day pack that contains the first word of the new list
+    return VOCABULARY_DATA.find(day => day.words.some(w => w.id === newWordsList[0].id));
+  }, [newWordsList]);
+
   return (
     <div className="p-4 max-w-2xl mx-auto space-y-8 animate-fadeIn pb-2">
       <header className="text-center pt-6 md:pt-10 pb-4 relative z-10">
@@ -116,7 +123,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <div className="absolute -left-2 -top-2 md:-left-3 md:-top-3 text-[#ffeb3b]">
                   <Star size={16} fill="currentColor" />
                 </div>
-                {t('ui.dashboard.welcome')}
+                {currentDayPack ? (
+                  <span className="flex items-center gap-2">
+                    <span className="opacity-80">Mission:</span> {currentDayPack.title}
+                  </span>
+                ) : (
+                  t('ui.dashboard.welcome')
+                )}
                 <div className="absolute -right-2 -bottom-2 md:-right-3 md:-bottom-3 text-[#ffeb3b]">
                   <Star size={16} fill="currentColor" />
                 </div>

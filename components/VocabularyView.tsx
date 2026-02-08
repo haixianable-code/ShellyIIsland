@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
-import { Word, ProgressMap } from '../types';
-import { Search, ShoppingBag, CircleDot, Sprout, Flower2, TreeDeciduous, ChevronRight } from 'lucide-react';
+import { Word, ProgressMap, WordLevel, WordTopic } from '../types';
+import { Search, ShoppingBag, CircleDot, Sprout, Flower2, TreeDeciduous, ChevronRight, Filter, Plane, Apple, Briefcase, Leaf, Home, Heart, Users, Brain, Cpu, Palette, PenTool, Sparkles, Clock, User } from 'lucide-react';
 import WordExpansionPack from './WordExpansionPack';
 import ExpansionModal from './ExpansionModal';
 import { EXTRA_CANDIDATES } from '../constants';
-import { playClick } from '../utils/sfx';
+import { playClick, playSwish } from '../utils/sfx';
 import { useTranslation } from 'react-i18next';
+import { getTypeTheme, getPosLabel } from '../utils/theme';
 
 interface VocabularyViewProps {
   words: Word[];
@@ -16,15 +17,38 @@ interface VocabularyViewProps {
   onStartExtraStudy: (words: Word[]) => void;
 }
 
+const TOPIC_ICONS: Record<WordTopic, React.ElementType> = {
+  travel: Plane,
+  food: Apple,
+  work: Briefcase,
+  nature: Leaf,
+  daily: Home,
+  feelings: Heart,
+  society: Users,
+  abstract: Brain,
+  tech: Cpu,
+  art: Palette,
+  grammar: PenTool,
+  time: Clock,
+  social: Users,
+  body: User,
+  life: Sparkles
+};
+
 const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWordClick, onAddExtraWords, onStartExtraStudy }) => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState<WordLevel | 'ALL'>('ALL');
+  const [selectedTopic, setSelectedTopic] = useState<WordTopic | 'ALL'>('ALL');
 
-  const filteredWords = words.filter(w => 
-    w.s.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    t(`vocab.${w.id}.t`, { defaultValue: w.t }).toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredWords = words.filter(w => {
+    const matchesSearch = w.s.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          t(`vocab.${w.id}.t`, { defaultValue: w.t }).toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLevel = selectedLevel === 'ALL' || w.level === selectedLevel;
+    const matchesTopic = selectedTopic === 'ALL' || w.topic === selectedTopic;
+    return matchesSearch && matchesLevel && matchesTopic;
+  });
 
   const unlearnedExtra = EXTRA_CANDIDATES.filter(w => !progress[w.id]);
 
@@ -35,17 +59,8 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
     return { icon: TreeDeciduous, color: 'text-green-700', bg: 'bg-green-50', label: 'Tree' };
   };
 
-  const getTypeStyle = (type: string) => {
-    switch (type) {
-      case 'verb': return 'border-rose-200 bg-rose-50/30 text-rose-600 shadow-rose-100';
-      case 'noun': return 'border-sky-200 bg-sky-50/30 text-sky-600 shadow-sky-100';
-      case 'adj': return 'border-amber-200 bg-amber-50/30 text-amber-600 shadow-amber-100';
-      default: return 'border-purple-200 bg-purple-50/30 text-purple-600 shadow-purple-100';
-    }
-  };
-
   return (
-    <div className="space-y-10 animate-fadeIn pb-24 md:pb-12">
+    <div className="space-y-8 animate-fadeIn pb-24 md:pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-5">
           <div className="bg-[#ffb74d] p-5 rounded-[2.5rem] shadow-[0_10px_0_#e67e22] border-4 border-white animate-bounce-slight">
@@ -78,34 +93,75 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
         />
       </div>
 
+      {/* --- FILTERS --- */}
+      <div className="space-y-4">
+        {/* Level Filter */}
+        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+           {['ALL', 'A1', 'A2', 'B1'].map((lvl) => (
+             <button
+               key={lvl}
+               onClick={() => { playSwish(); setSelectedLevel(lvl as any); }}
+               className={`px-4 py-2 rounded-xl border-2 font-black text-xs uppercase tracking-widest transition-all whitespace-nowrap active:scale-95 ${
+                 selectedLevel === lvl 
+                 ? 'bg-[#4b7d78] text-white border-[#4b7d78] shadow-md' 
+                 : 'bg-white text-[#8d99ae] border-[#f0f0f0] hover:border-[#b0bec5]'
+               }`}
+             >
+               {lvl === 'ALL' ? 'All Levels' : `Level ${lvl}`}
+             </button>
+           ))}
+        </div>
+        
+        {/* Topic Filter */}
+        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+           {['ALL', 'travel', 'food', 'work', 'nature', 'daily', 'feelings', 'society', 'abstract', 'tech', 'art'].map((topic) => {
+             const Icon = topic === 'ALL' ? Filter : TOPIC_ICONS[topic as WordTopic];
+             return (
+               <button
+                 key={topic}
+                 onClick={() => { playSwish(); setSelectedTopic(topic as any); }}
+                 className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 font-black text-xs uppercase tracking-widest transition-all whitespace-nowrap active:scale-95 ${
+                   selectedTopic === topic 
+                   ? 'bg-[#8bc34a] text-white border-[#8bc34a] shadow-md' 
+                   : 'bg-white text-[#8d99ae] border-[#f0f0f0] hover:border-[#b0bec5]'
+                 }`}
+               >
+                 {Icon && <Icon size={14} />}
+                 {topic}
+               </button>
+             );
+           })}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {filteredWords.map((word, idx) => {
           const stats = progress[word.id];
           const level = stats?.level || 0;
           const { icon: StageIcon, color, bg, label } = getGrowthIcon(level);
-          const typeStyle = getTypeStyle(word.type);
+          const theme = getTypeTheme(word);
           
           return (
             <button 
               key={word.id} 
               onClick={() => { playClick(); onWordClick(word); }}
               style={{ animationDelay: `${idx * 0.05}s` }}
-              className={`island-card-3d bg-white p-6 rounded-[3rem] border-4 border-transparent shadow-[0_15px_30px_-5px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(139,195,74,0.3)] transition-all flex flex-col justify-between group active:translate-y-2 active:shadow-none text-left relative overflow-hidden h-full min-h-[160px]`}
+              className={`island-card-3d bg-white p-6 rounded-[3rem] border-4 border-transparent shadow-[0_15px_30px_-5px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(139,195,74,0.3)] transition-all flex flex-col justify-between group active:translate-y-2 active:shadow-none text-left relative overflow-hidden h-full min-h-[180px]`}
             >
-              {/* 类型背景装饰 */}
-              <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 ${typeStyle.split(' ')[1]}`}></div>
-
-              <div className="relative z-10 flex justify-between items-start mb-4">
-                <div className={`px-4 py-1.5 rounded-full border-2 font-black text-[10px] uppercase tracking-widest ${typeStyle}`}>
-                  {word.type}
-                </div>
-                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-xl ${bg} ${color} transition-colors group-hover:scale-105`}>
-                  <StageIcon size={14} className={level > 1 ? 'pulse-level' : ''} />
-                  <span className="text-[10px] font-black uppercase tracking-tighter">{label}</span>
-                </div>
+              {/* Unified Pill Header */}
+              <div className="flex flex-wrap gap-2 mb-3 relative z-10">
+                  <span style={{ backgroundColor: theme.main }} className="px-2.5 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-sm">
+                    {getPosLabel(word)}
+                  </span>
+                  <span style={{ backgroundColor: theme.main }} className="px-2.5 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-sm">
+                    {word.level}
+                  </span>
+                  <span style={{ backgroundColor: theme.main }} className="px-2.5 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-sm">
+                    {word.topic}
+                  </span>
               </div>
 
-              <div className="relative z-10 flex items-end justify-between">
+              <div className="relative z-10 flex items-end justify-between mt-1">
                 <div className="space-y-1">
                   <h3 className="text-4xl font-black text-[#2e4d4a] group-hover:text-[#4b7d78] transition-colors tracking-tighter flex items-center gap-2">
                     {word.s}
@@ -114,14 +170,25 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
                     {t(`vocab.${word.id}.t`, { defaultValue: word.t })}
                   </p>
                 </div>
-                <div className="bg-slate-50 p-3 rounded-2xl group-hover:bg-[#8bc34a] group-hover:text-white transition-all transform group-hover:translate-x-1">
-                  <ChevronRight size={20} strokeWidth={3} />
+                
+                {/* Growth Indicator */}
+                <div className={`flex flex-col items-center gap-1 p-2 rounded-2xl ${bg} transition-all`}>
+                  <StageIcon size={20} className={`${color} ${level > 1 ? 'pulse-level' : ''}`} />
                 </div>
               </div>
             </button>
           );
         })}
       </div>
+      
+      {isModalOpen && (
+        <ExpansionModal 
+          availableWords={unlearnedExtra}
+          onClose={() => setIsModalOpen(false)}
+          onAddWords={onAddExtraWords}
+          onStudyNow={onStartExtraStudy}
+        />
+      )}
     </div>
   );
 };

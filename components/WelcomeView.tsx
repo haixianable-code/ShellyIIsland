@@ -114,9 +114,9 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({ onSelectGuest, onSelectAuth }
           <div className="inline-flex items-center justify-center w-24 h-24 bg-[#78c850] rounded-[2.5rem] shadow-[0_10px_0_#5a9a3b] mb-8 border-4 border-white animate-bounce-slight">
             <Leaf className="text-white w-12 h-12 fill-current" />
           </div>
-          <h1 className="text-5xl font-black text-[#4b7d78] tracking-tighter leading-tight mb-2">
+          <h1 className="text-4xl md:text-5xl font-black text-[#4b7d78] tracking-tighter leading-tight mb-2">
             ¡Hola! <br/>
-            <span className="text-[#ffa600]">Shelly Island</span>
+            <span className="text-[#ffa600]">Shelly Spanish Island</span>
           </h1>
           <p className="text-[#6d7c8e] font-bold text-lg">{t('ui.dashboard.welcome')}</p>
         </header>
@@ -128,12 +128,14 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({ onSelectGuest, onSelectAuth }
               onClick={() => { playClick(); onSelectAuth(); }}
               className="relative w-full bg-[#2d4a47] p-8 rounded-[3rem] border-4 border-[#4b7d78] shadow-[0_15px_30px_rgba(45,74,71,0.3)] hover:shadow-[0_20px_40px_rgba(45,74,71,0.4)] hover:-translate-y-1 transition-all flex items-center gap-6 overflow-hidden bubble-button"
             >
-              <div className="bg-[#78c850] p-5 rounded-[2.2rem] border-2 border-white/20 shadow-inner">
-                <ShieldCheck className="text-white" size={40} />
+              <div className="bg-[#78c850] p-5 rounded-[2.2rem] border-2 border-white/20 shadow-inner shrink-0">
+                <ShieldCheck className="text-white" size={32} />
               </div>
               <div className="flex-1 text-left">
                 <h2 className="text-2xl font-black text-white leading-tight uppercase tracking-tighter">{t('ui.passport.apply_now')}</h2>
-                <p className="text-white/50 font-bold text-xs mt-1 uppercase tracking-widest">{t('ui.passport.citizen_desc')}</p>
+                <p className="text-[#8bc34a] font-black text-[10px] mt-1 uppercase tracking-widest border border-[#8bc34a]/30 inline-block px-2 py-0.5 rounded-md">
+                   Authorized by SSI Dept.
+                </p>
               </div>
               <ChevronRight className="text-white/30" size={32} />
               

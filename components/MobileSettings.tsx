@@ -1,14 +1,16 @@
 
 import React, { useState, useMemo } from 'react';
 import { User } from '@supabase/supabase-js';
+import { supabase } from '../services/supabaseClient';
 import { UserStats } from '../types';
 import { 
   LogOut, Volume2, VolumeX, RotateCcw, 
-  CloudUpload, Leaf, Settings, User as UserIcon, Heart,
-  Flame, Sprout, ShieldCheck, ChevronRight, Share2, Ticket, Check, Mail, Send,
-  ShieldAlert, Fingerprint, Calendar
+  Leaf, Settings, Heart,
+  Flame, Sprout, ShieldCheck, ChevronRight, Ticket, Mail, Send,
+  ShieldAlert, Fingerprint, Speaker, Trash2
 } from 'lucide-react';
 import { toggleMute, getMuteState, playClick } from '../utils/sfx';
+import { playAudio } from '../utils/audio'; // Import for test button
 import { useTranslation } from 'react-i18next';
 
 interface MobileSettingsProps {
@@ -36,6 +38,11 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
     setIsMuted(newState);
   };
 
+  const handleTestAudio = () => {
+    playClick();
+    playAudio("¡Hola! Bienvenido a la isla.");
+  };
+
   const handleReset = () => {
     playClick();
     if (confirm("Reset all progress? This will delete your learning history on this device.")) {
@@ -44,24 +51,38 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
     }
   };
 
+  const handleClearProgress = async () => {
+    playClick();
+    if (confirm(t('ui.actions.clear_warning'))) {
+        if (user && supabase) {
+             const { error } = await supabase.from('user_word_choices').delete().eq('user_id', user.id);
+             if (error) {
+                 alert("Error clearing cloud progress");
+                 return;
+             }
+        }
+        localStorage.removeItem('hola_word_srs_v3_offline');
+        localStorage.removeItem('hola_user_stats_v1_offline');
+        window.location.reload();
+    }
+  };
+
   const generateShareData = () => {
     const streak = stats?.current_streak || 0;
     const total = stats?.total_words_learned || 0;
     const inviterName = user?.email?.split('@')[0] || 'Friend';
     
-    const shareUrl = new URL(window.location.origin);
-    shareUrl.searchParams.set('invitedBy', inviterName);
-    shareUrl.searchParams.set('s', streak.toString());
-    shareUrl.searchParams.set('w', total.toString());
+    // We explicitly point to the new domain
+    const shareUrl = "https://ssisland.space";
 
     const text = t('ui.study.share_template', {
       level: stats?.total_words_learned || 0,
       streak: streak,
-      count: 0, // 仅展示统计
-      url: shareUrl.toString()
+      count: 0, 
+      url: shareUrl
     });
 
-    return { title: 'Join my Island', text, url: shareUrl.toString() };
+    return { title: 'Join SS Island', text, url: shareUrl };
   };
 
   const handleShareStats = async () => {
@@ -88,7 +109,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
         border: 'border-[#4b7d78]',
         text: 'text-white',
         status: t('ui.passport.citizen'),
-        stamp: 'CITIZEN',
+        stamp: 'SSI CITIZEN',
         label: t('ui.passport.official_passport')
       };
     }
@@ -127,7 +148,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
             <div className="flex items-start justify-between relative z-10 mb-8">
                <div className="space-y-1">
                   <h3 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-2">
-                     Shelly Island
+                     SS ISLAND
                   </h3>
                   <div className="flex items-center gap-2">
                     <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${user ? 'bg-[#78c850] text-[#2d4a47]' : 'bg-white/40 text-[#4b7d78]'}`}>
@@ -191,7 +212,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
            </div>
            <div className="text-left text-white">
               <h3 className="text-xl font-black leading-none">{t('ui.actions.share_island')}</h3>
-              <p className="text-[10px] font-bold opacity-90 uppercase tracking-widest mt-1.5">{shareState === 'copied' ? t('ui.actions.copied') : 'Invite friends to the island'}</p>
+              <p className="text-[10px] font-bold opacity-90 uppercase tracking-widest mt-1.5">{shareState === 'copied' ? t('ui.actions.copied') : 'Invite friends to SS Island'}</p>
            </div>
         </div>
         <div className="bg-white p-2 rounded-full shadow-sm">
@@ -218,6 +239,37 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
           </div>
           <div className={`w-12 h-7 rounded-full p-1 transition-colors ${isMuted ? 'bg-gray-200' : 'bg-[#8bc34a]'}`}>
              <div className={`w-5 h-5 bg-white rounded-full shadow-md transition-transform ${isMuted ? 'translate-x-0' : 'translate-x-5'}`} />
+          </div>
+        </button>
+
+        <button 
+          onClick={handleTestAudio} 
+          className="w-full bg-white p-5 rounded-[2.5rem] border-4 border-[#f0f0f0] shadow-[0_6px_0_#e0e0e0] flex items-center justify-between group active:scale-95 transition-transform"
+        >
+          <div className="flex items-center gap-4">
+            <div className="bg-[#e1f5fe] text-[#0288d1] p-3 rounded-2xl">
+               <Speaker size={24} />
+            </div>
+            <div className="text-left">
+              <div className="text-lg font-black text-[#4b7d78]">Test Audio Engine</div>
+              <div className="text-xs font-bold text-[#8d99ae]">Check if Spanish voice works</div>
+            </div>
+          </div>
+          <ChevronRight className="text-slate-300" size={20} />
+        </button>
+        
+        <button 
+          onClick={handleClearProgress} 
+          className="w-full bg-white p-5 rounded-[2.5rem] border-4 border-[#ffebee] shadow-[0_6px_0_#ffcdd2] flex items-center justify-between group active:scale-95 transition-transform"
+        >
+          <div className="flex items-center gap-4">
+            <div className="bg-[#ffcdd2] text-[#c62828] p-3 rounded-2xl">
+               <Trash2 size={24} />
+            </div>
+            <div className="text-left">
+              <div className="text-lg font-black text-[#c62828]">{t('ui.actions.clear_progress')}</div>
+              <div className="text-xs font-bold text-[#ef9a9a]">Wipe data & restart garden</div>
+            </div>
           </div>
         </button>
       </div>
