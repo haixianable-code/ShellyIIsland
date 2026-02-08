@@ -12,7 +12,6 @@ import DailyHarvestModal from './components/DailyHarvestModal';
 import SyncCompleteModal from './components/SyncCompleteModal';
 import { AuthView } from './components/AuthView';
 import WelcomeView from './components/WelcomeView';
-import LanguageSelectionView from './components/LanguageSelectionView'; // Import the new view
 import { useSRS } from './hooks/useSRS';
 import { useUserStats } from './hooks/useUserStats';
 import { Heart, Home, ShoppingBag, Leaf, Loader2, Cloud, CloudOff, Menu } from 'lucide-react';
@@ -33,11 +32,6 @@ const App: React.FC = () => {
   const [showAuthView, setShowAuthView] = useState(false);
   const [showSyncCelebration, setShowSyncCelebration] = useState(false);
   
-  // --- New: Language Selection State ---
-  const [isLanguageConfirmed, setIsLanguageConfirmed] = useState(() => {
-    return !!localStorage.getItem('shelly_language_confirmed');
-  });
-
   const { 
     progress, 
     allAvailableWords, 
@@ -143,11 +137,6 @@ const App: React.FC = () => {
   }, []);
 
   const studySessionKey = useMemo(() => `session-${sessionVersion}`, [sessionVersion]);
-
-  // --- 0. Language Selection Check (Very First Screen) ---
-  if (!isLanguageConfirmed) {
-    return <LanguageSelectionView onLanguageSelected={() => setIsLanguageConfirmed(true)} />;
-  }
 
   // --- 1. Loading State for Authentication Check ---
   if (authChecking) {
