@@ -3,6 +3,7 @@ import React, { useMemo, useEffect } from 'react';
 import { X, Flame, Sparkles, Star, Trophy, Heart, Languages } from 'lucide-react';
 import { Word } from '../types';
 import { playFanfare, playClick } from '../utils/sfx';
+import { playAudio } from '../utils/audio';
 
 interface StreakModalProps {
   onClose: () => void;
@@ -19,6 +20,11 @@ const StreakModal: React.FC<StreakModalProps> = ({ onClose, streak, words }) => 
   const wordPile = useMemo(() => {
     return [...words].sort(() => 0.5 - Math.random()).slice(0, 12);
   }, [words]);
+
+  const handleWordClick = (word: string) => {
+    playClick();
+    playAudio(word);
+  };
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-fadeIn">
@@ -69,13 +75,14 @@ const StreakModal: React.FC<StreakModalProps> = ({ onClose, streak, words }) => 
                     const rotations = ['rotate-1', '-rotate-2', 'rotate-3', '-rotate-1', 'rotate-2', '-rotate-3'];
                     const bgColors = ['bg-[#ff7b72]', 'bg-[#ffb74d]', 'bg-[#88d068]', 'bg-[#ffa600]', 'bg-[#78c850]'];
                     return (
-                      <div 
+                      <button 
                         key={w.id}
-                        className={`px-4 py-2 rounded-2xl text-white font-black text-xs shadow-md border-2 border-white/40 ${rotations[i % rotations.length]} ${bgColors[i % bgColors.length]} animate-fadeIn`}
+                        onClick={() => handleWordClick(w.s)}
+                        className={`px-4 py-2 rounded-2xl text-white font-black text-xs shadow-md border-2 border-white/40 ${rotations[i % rotations.length]} ${bgColors[i % bgColors.length]} animate-fadeIn hover:scale-110 active:scale-90 transition-transform cursor-pointer`}
                         style={{ animationDelay: `${i * 0.05}s` }}
                       >
                         {w.s}
-                      </div>
+                      </button>
                     );
                   })
                 ) : (

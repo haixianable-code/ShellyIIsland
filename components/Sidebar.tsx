@@ -2,7 +2,7 @@
 import React, { useRef, useState } from 'react';
 import { AppView } from '../types';
 import { User } from '@supabase/supabase-js';
-import { Home, Briefcase, Leaf, Heart, RotateCcw, Download, Volume2, VolumeX, CloudUpload, LogOut, ShieldAlert, ShieldCheck, Fingerprint, ChevronRight } from 'lucide-react';
+import { Home, Briefcase, Leaf, Heart, RotateCcw, Download, Volume2, VolumeX, CloudUpload, LogOut, ShieldAlert, ShieldCheck, Fingerprint, ChevronRight, UserPlus } from 'lucide-react';
 import { toggleMute, getMuteState, playClick, playSparkle } from '../utils/sfx';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -61,14 +61,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabas
       <nav className="px-4 py-4 space-y-3">
         <button
           onClick={() => { playClick(); setView(AppView.DASHBOARD); }}
-          className={`w-full flex items-center gap-4 px-6 py-4 rounded-[2rem] transition-all duration-200 border-b-4 ${currentView === AppView.DASHBOARD ? 'bg-[#ffa600] text-white font-black border-[#cc8400] shadow-md -translate-y-0.5' : 'text-[#8d99ae] hover:bg-white/50 border-transparent'}`}
+          className={`w-full flex items-center gap-4 px-6 py-4 rounded-[2.2rem] transition-all duration-200 border-b-4 ${currentView === AppView.DASHBOARD ? 'bg-[#ffa600] text-white font-black border-[#cc8400] shadow-md -translate-y-0.5' : 'text-[#8d99ae] hover:bg-white/50 border-transparent'}`}
         >
           <Home size={22} className={currentView === AppView.DASHBOARD ? 'fill-current' : ''} />
           <span className="text-base font-black uppercase tracking-tight">{t('ui.nav.home')}</span>
         </button>
         <button
           onClick={() => { playClick(); setView(AppView.VOCABULARY); }}
-          className={`w-full flex items-center gap-4 px-6 py-4 rounded-[2rem] transition-all duration-200 border-b-4 ${currentView === AppView.VOCABULARY ? 'bg-[#ffa600] text-white font-black border-[#cc8400] shadow-md -translate-y-0.5' : 'text-[#8d99ae] hover:bg-white/50 border-transparent'}`}
+          className={`w-full flex items-center gap-4 px-6 py-4 rounded-[2.2rem] transition-all duration-200 border-b-4 ${currentView === AppView.VOCABULARY ? 'bg-[#ffa600] text-white font-black border-[#cc8400] shadow-md -translate-y-0.5' : 'text-[#8d99ae] hover:bg-white/50 border-transparent'}`}
         >
           <Briefcase size={22} className={currentView === AppView.VOCABULARY ? 'fill-current' : ''} />
           <span className="text-base font-black uppercase tracking-tight">{t('ui.nav.pocket')}</span>
@@ -77,7 +77,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabas
 
       {/* Identity Card (Passport Badge) */}
       <div className="px-4 py-6">
-        <div className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.3em] mb-3 pl-4">Identification</div>
+        <div className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.3em] mb-3 pl-4">Citizenship</div>
         {isGuest ? (
           <button 
             onClick={() => { playSparkle(); onLoginRequest(); }}
@@ -86,7 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabas
             <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '12px 12px' }} />
             <div className="flex items-center gap-4 relative z-10">
                <div className="bg-[#ff7b72] p-2.5 rounded-xl border-2 border-white/20 shadow-inner">
-                  <ShieldAlert className="text-white" size={20} />
+                  <UserPlus className="text-white" size={20} />
                </div>
                <div className="flex-1">
                   <h4 className="text-white text-xs font-black uppercase leading-none mb-1">Apply Citizen</h4>
@@ -95,7 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabas
                <ChevronRight className="text-white/20 group-hover:translate-x-1 transition-transform" size={16} />
             </div>
             {/* Stamp decoration */}
-            <div className="absolute -right-2 -bottom-2 text-[10px] font-black border-2 border-white/10 text-white/10 px-2 py-0.5 rounded rotate-12">GUEST</div>
+            <div className="absolute -right-2 -bottom-2 text-[10px] font-black border-2 border-white/10 text-white/10 px-2 py-0.5 rounded rotate-12">UNOFFICIAL</div>
           </button>
         ) : user ? (
           <div className="bg-white p-5 rounded-[2.5rem] border-4 border-[#e0d9b4] shadow-sm relative overflow-hidden">
@@ -113,10 +113,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabas
         ) : null}
       </div>
 
-      {/* Utilities & Settings (Visual Downgrade) */}
+      {/* Utilities Section */}
       <div className="flex-1 flex flex-col justify-end px-4 py-8 space-y-6">
         <div className="space-y-1 bg-black/5 p-4 rounded-[2rem] border-2 border-transparent">
-          <div className="px-2 mb-2">
+          <div className="px-2 mb-2 flex justify-center">
             <LanguageSwitcher />
           </div>
           

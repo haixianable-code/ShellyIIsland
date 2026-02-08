@@ -6,7 +6,6 @@ import { getTypeTheme, getPosLabel } from '../utils/theme';
 import { useTranslation } from 'react-i18next';
 import SummaryView from './SummaryView';
 import { 
-  playSwish, 
   playHighChime, 
   playHighWood,
   playLowWood,
@@ -15,12 +14,14 @@ import {
 } from '../utils/sfx';
 import { 
   ChevronLeft, 
-  ArrowRight, Globe, Ghost, Wind, Smile,
+  Globe, Ghost, Wind, Smile,
   Volume2, BookOpen, PenTool, Map, FastForward, Zap,
-  Heart, RotateCcw, Bookmark, Leaf, Star
+  Star, RotateCcw, ArrowLeftRight, AudioLines
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { ArrowRight } from 'lucide-react';
 
+// 语法口袋组件
 const GrammarPocket: React.FC<{ word: Word }> = ({ word }) => {
   const { t } = useTranslation();
   const theme = getTypeTheme(word);
@@ -43,7 +44,11 @@ const GrammarPocket: React.FC<{ word: Word }> = ({ word }) => {
 
   if (word.type === 'misc' || !word.forms) {
     return (
-      <div className="p-5 rounded-[2.5rem] border-2 border-dashed border-slate-200 mb-8 bg-white/60">
+      <div className="p-5 rounded-[2rem] border-2 border-dashed border-slate-200 mb-6 bg-white/60">
+        <div className="flex items-center gap-2 mb-2">
+           <PenTool size={12} className="text-[#2d4a47]/40" />
+           <span className="text-[9px] font-black text-[#2d4a47]/40 uppercase tracking-widest">GRAMMAR TIP</span>
+        </div>
         <p className="text-[#2d4a47] font-bold text-sm italic leading-relaxed">
           {displayTip}
         </p>
@@ -58,16 +63,16 @@ const GrammarPocket: React.FC<{ word: Word }> = ({ word }) => {
       : [t('ui.grammar.masc'), t('ui.grammar.fem'), t('ui.grammar.masc_pl'), t('ui.grammar.fem_pl')];
 
   return (
-    <div className="space-y-3 mb-10">
+    <div className="space-y-3 mb-8">
       <div className="flex items-center gap-2 px-1">
-        <PenTool size={11} className="text-[#2d4a47]/40" />
-        <span className="text-[8px] font-black text-[#2d4a47]/40 uppercase tracking-widest">{t('ui.study.grammar_pocket')}</span>
+        <PenTool size={12} className="text-[#2d4a47]/40" />
+        <span className="text-[9px] font-black text-[#2d4a47]/40 uppercase tracking-widest">{t('ui.study.grammar_pocket')}</span>
       </div>
       <div className="grid grid-cols-2 gap-2.5">
         {labels.map((label, i) => (
           <div key={label} className="bg-white/80 p-3 rounded-2xl border border-slate-100 flex flex-col items-center shadow-sm">
             <span className="text-[7px] font-bold text-slate-400 uppercase leading-none mb-1">{label}</span>
-            <span className="text-sm font-bold text-[#2d4a47]">
+            <span className="text-sm font-black text-[#2d4a47]">
               {renderFormText(conjugationList[i])}
             </span>
           </div>
@@ -77,34 +82,67 @@ const GrammarPocket: React.FC<{ word: Word }> = ({ word }) => {
   );
 };
 
-// 单词拆解（便利贴样式）
-const VocabNotes: React.FC<{ word: Word }> = ({ word }) => {
-  const { t } = useTranslation();
-  if (!word.nounNotes || word.nounNotes === 'Function Word') return null;
+// 反义词组件
+const OppositePocket: React.FC<{ word: Word }> = ({ word }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  
+  if (word.type !== 'adj' || !word.ant) return null;
+
+  const handleSpeak = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsPlaying(true);
+    playAudio(word.ant!, undefined, () => setIsPlaying(false));
+  };
 
   return (
-    <div className="mt-8 mb-4 px-2">
-      <div className="relative rotate-1 hover:rotate-0 transition-transform duration-500">
-        <div className="absolute inset-0 bg-amber-200/20 blur-xl -z-10 translate-y-2"></div>
-        <div className="bg-[#fff9c4] p-6 rounded-[2rem] shadow-sm border-b-4 border-amber-200/50 relative overflow-hidden group/note">
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-8 bg-white/40 backdrop-blur-md border border-white/20 -rotate-2 shadow-sm rounded-sm z-20"></div>
-          <div className="flex items-center gap-2 mb-3 relative z-10">
-            <Map size={14} className="text-amber-600" />
-            <span className="text-[9px] font-black text-amber-700/40 uppercase tracking-[0.2em]">{t('ui.study.vocab_note')}</span>
-          </div>
-          <p className="text-amber-900 text-base font-bold leading-relaxed relative z-10 handwritten">
-            {t(`vocab.${word.id}.notes`, { defaultValue: word.nounNotes })}
-          </p>
-          <Leaf size={100} className="absolute -bottom-12 -right-12 text-amber-500/10 -rotate-12 group-hover/note:rotate-0 transition-transform duration-700" />
+    <div 
+      onClick={handleSpeak}
+      className="bg-[#f3e5f5] rounded-[2.5rem] p-5 border-2 border-[#ce93d8]/30 flex items-center justify-between mb-8 shadow-sm cursor-pointer active:scale-95 transition-all group"
+    >
+      <div className="flex items-center gap-3">
+        <div className="bg-white p-2.5 rounded-xl text-[#ab47bc] shadow-sm border border-[#ce93d8]/20">
+          <ArrowLeftRight size={20} />
         </div>
+        <div>
+          <h4 className="text-[9px] font-black text-[#ab47bc]/60 uppercase tracking-widest mb-0.5">OPPOSITE</h4>
+          <h3 className="text-2xl font-black text-[#6a1b9a] tracking-tight flex items-center gap-2">
+            {word.ant}
+            {isPlaying && <AudioLines size={16} className="text-[#ab47bc] animate-pulse" />}
+          </h3>
+        </div>
+      </div>
+      <div className="bg-white px-4 py-1.5 rounded-xl border-2 border-white shadow-sm font-black text-[#ab47bc] text-xs group-hover:bg-[#f3e5f5] transition-colors">
+        {word.antT}
       </div>
     </div>
   );
 };
 
+// 单词拆解（改为清爽风格，去除黄色背景）
+const VocabNotes: React.FC<{ word: Word }> = ({ word }) => {
+  const { t } = useTranslation();
+  if (!word.nounNotes || word.nounNotes === 'Function Word') return null;
+
+  return (
+    <div className="mt-8 pt-6 border-t-2 border-dashed border-[#0277bd]/20">
+       <div className="flex items-center gap-2 mb-3">
+         <Map size={14} className="text-[#0277bd]/40" />
+         <span className="text-[9px] font-black text-[#0277bd]/40 uppercase tracking-widest">{t('ui.study.vocab_note')}</span>
+       </div>
+       <div className="p-5 rounded-2xl border-2 border-dashed border-[#0277bd]/30 bg-white/60">
+         <p className="text-[#0277bd] text-sm font-bold leading-relaxed">
+           {t(`vocab.${word.id}.notes`, { defaultValue: word.nounNotes })}
+         </p>
+       </div>
+    </div>
+  );
+};
+
+// 用法示例 - 蓝色背景
 const UsageExamples: React.FC<{ word: Word }> = ({ word }) => {
   const { t } = useTranslation();
   const theme = getTypeTheme(word);
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null);
 
   const highlightWord = (text: string) => {
     const searchWord = word.s.toLowerCase();
@@ -113,7 +151,7 @@ const UsageExamples: React.FC<{ word: Word }> = ({ word }) => {
     
     return parts.map((part, i) => 
       regex.test(part) ? (
-        <span key={i} style={{ color: theme.main }} className="font-black decoration-wavy decoration-current/30 underline underline-offset-4">
+        <span key={i} style={{ color: theme.main }} className="font-black decoration-2 decoration-current/30 underline underline-offset-4">
           {part}
         </span>
       ) : (
@@ -122,30 +160,43 @@ const UsageExamples: React.FC<{ word: Word }> = ({ word }) => {
     );
   };
 
+  const playExample = (e: React.MouseEvent, text: string, index: number) => {
+    e.stopPropagation();
+    setPlayingIndex(index);
+    playAudio(text, undefined, () => setPlayingIndex(null));
+  };
+
   return (
-    <div className="relative z-10">
-      <div className="flex items-center gap-2 px-1 mb-6">
-        <BookOpen size={11} className="text-[#2d4a47]/40" />
-        <span className="text-[8px] font-black text-[#2d4a47]/40 uppercase tracking-widest">{t('ui.study.usage_examples')}</span>
+    <div className="bg-[#e3f2fd] rounded-[2.5rem] p-6 relative shadow-sm group">
+      <div className="flex items-center gap-2 mb-6">
+        <BookOpen size={14} className="text-[#0277bd]" />
+        <span className="text-[9px] font-black text-[#0277bd]/50 uppercase tracking-widest">{t('ui.study.usage_examples')}</span>
       </div>
-      <div className="relative py-2">
-        <div className="absolute inset-x-0 top-0 bottom-0 pointer-events-none opacity-[0.05]" style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px)', backgroundSize: '100% 3.5rem' }}></div>
-        <div className="space-y-12">
-          {word.examples.map((ex, i) => (
-            <div key={i} className="group/ex relative pl-8">
-              <Bookmark size={14} className="absolute left-0 top-1.5 text-sky-200 group-hover/ex:text-sky-400 transition-colors" />
-              <div className="space-y-1">
-                 <p className="text-slate-800 text-xl font-black leading-snug tracking-tight italic transition-colors group-hover/ex:text-sky-900">
-                   {highlightWord(ex.txt)}
-                 </p>
-                 <p className="handwritten text-slate-400 text-base leading-relaxed">
-                   {ex.eng}
-                 </p>
-              </div>
+      
+      <div className="space-y-8">
+        {word.examples.map((ex, i) => (
+          <button 
+            key={i} 
+            onClick={(e) => playExample(e, ex.txt, i)}
+            className="text-left w-full group/ex relative block focus:outline-none"
+          >
+            <div className="space-y-1.5">
+               <p className="text-[#01579b] text-lg font-black leading-snug italic transition-colors flex items-start gap-2">
+                 <span className="opacity-40 select-none">"</span>
+                 <span>{highlightWord(ex.txt)}</span>
+                 <span className="opacity-40 select-none">"</span>
+                 {playingIndex === i && <AudioLines size={16} className="mt-1 text-[#0277bd] animate-pulse shrink-0" />}
+               </p>
+               <p className="text-[#0277bd]/60 text-xs font-bold uppercase tracking-wide pl-4 border-l-2 border-[#0277bd]/20">
+                 {ex.eng}
+               </p>
             </div>
-          ))}
-        </div>
+          </button>
+        ))}
       </div>
+      
+      {/* 词汇笔记嵌套在底部 */}
+      <VocabNotes word={word} />
     </div>
   );
 };
@@ -219,6 +270,7 @@ const StudyView: React.FC<any> = ({ words, onFinish, onFeedback, onLoginRequest,
       </div>
       <div className="flex-1 px-4 py-1 card-perspective relative min-h-0 mb-4 z-10">
         <div className={`card-inner h-full ${isFlipped ? 'is-flipped' : ''} ${ritualClass}`}>
+          {/* 正面：问题页 */}
           <div className="card-face card-face-front p-8 flex flex-col items-center justify-between h-full" style={{ backgroundColor: theme.light }}>
             <div className="flex-1 flex flex-col items-center justify-center text-center w-full">
               <div className="flex flex-col items-center gap-2 mb-8">
@@ -254,26 +306,39 @@ const StudyView: React.FC<any> = ({ words, onFinish, onFeedback, onLoginRequest,
               </button>
             </div>
           </div>
+
+          {/* 背面：答案详情页 */}
           <div className="card-face card-face-back flex flex-col h-full overflow-hidden bg-white relative">
             <div className="absolute top-0 left-4 bottom-0 flex flex-col justify-around py-16 opacity-[0.05] pointer-events-none z-0">
                {[...Array(6)].map((_, i) => <div key={i} className="w-2.5 h-2.5 rounded-full bg-black shadow-inner"></div>)}
             </div>
+            
             <div className="shrink-0 p-5 px-8 border-b border-slate-50 flex items-center justify-between bg-white z-10">
               <div className="flex-1 min-w-0 pr-4">
-                <span style={{ color: theme.main }} className="text-[9px] font-black uppercase tracking-widest block mb-0.5">{getPosLabel(word)}</span>
-                <div className="flex items-baseline gap-2 overflow-hidden">
-                  <h3 className="text-3xl font-black text-[#2d4a47] tracking-tighter truncate">{word.s}</h3>
-                  <span style={{ color: theme.main }} className="text-sm font-bold italic truncate opacity-70">{displayTranslation}</span>
+                <span style={{ color: theme.main }} className="text-[9px] font-black uppercase tracking-widest block mb-1">{getPosLabel(word)}</span>
+                <div>
+                  <h3 className="text-3xl font-black text-[#2d4a47] tracking-tighter truncate leading-none">{word.s}</h3>
+                  <p style={{ color: theme.main }} className="text-xl font-black italic truncate opacity-80 mt-1">{displayTranslation}</p>
                 </div>
               </div>
               <button onClick={() => playAudio(word.s)} style={{ backgroundColor: theme.light, color: theme.main }} className="shrink-0 p-3 rounded-2xl shadow-sm border border-white active:scale-95 transition-all"><Volume2 className="w-6 h-6" /></button>
             </div>
-            <div className="flex-1 overflow-y-auto p-8 px-9 no-scrollbar min-h-0 bg-[#fbfcf0]/30 relative">
+
+            <div className="flex-1 overflow-y-auto p-8 px-8 no-scrollbar min-h-0 bg-white relative">
               <GrammarPocket word={word} />
-              <div className="relative"><UsageExamples word={word} /><VocabNotes word={word} /></div>
-              <div className="h-20 flex flex-col items-center justify-center opacity-[0.03] grayscale mt-8"><div className="h-px w-full border-t border-dashed border-black mb-4"></div><Star size={12} /></div>
+              
+              {/* 新增：形容词反义词板块 */}
+              <OppositePocket word={word} />
+              
+              {/* 更新：蓝色背景的例句区 */}
+              <UsageExamples word={word} />
+              
+              <div className="h-16 flex flex-col items-center justify-center opacity-[0.03] grayscale mt-4">
+                <Star size={12} />
+              </div>
             </div>
-            <div className="shrink-0 p-5 px-8 pt-3 bg-white border-t border-slate-50 space-y-3 z-10">
+
+            <div className="shrink-0 p-5 px-8 pt-3 bg-white border-t border-slate-50 space-y-3 z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.02)]">
               <div className="flex items-center justify-between px-2">
                 <div className="flex gap-4">
                   {[
@@ -284,10 +349,10 @@ const StudyView: React.FC<any> = ({ words, onFinish, onFeedback, onLoginRequest,
                     <button key={btn.id} onClick={() => handleRating(btn.id as FeedbackQuality)} className={`p-1.5 rounded-lg transition-all ${currentRating === btn.id ? 'bg-slate-100 ring-2 ring-current' : 'opacity-40 hover:opacity-100'}`} style={{ color: btn.color }}><btn.icon size={16} /></button>
                   ))}
                 </div>
-                <button onClick={() => setIsFlipped(false)} className="text-[8px] font-black text-slate-300 uppercase tracking-widest flex items-center gap-1 hover:text-slate-400"><RotateCcw size={10} /> 重新评估</button>
+                <button onClick={() => setIsFlipped(false)} className="text-[8px] font-black text-slate-300 uppercase tracking-widest flex items-center gap-1 hover:text-slate-400"><RotateCcw size={10} /> RE-EVALUATE</button>
               </div>
               <button onClick={() => { playHighWood(); handleNext(); }} style={{ backgroundColor: theme.main }} className="w-full py-4 rounded-[2.5rem] text-white font-black text-lg shadow-[0_6px_0_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none flex flex-col items-center justify-center transition-all border-2 border-white/20">
-                <div className="flex items-center gap-2"><span>继续探索</span><ArrowRight size={18} /></div>
+                <div className="flex items-center gap-2"><span>CONTINUE</span><ArrowRight size={18} /></div>
               </button>
             </div>
           </div>

@@ -1,7 +1,9 @@
 
 import React, { useState, useMemo } from 'react';
 import { Word, ProgressMap } from '../types';
-import { X, Flower2, Calendar, Sprout, Zap, Filter, CheckCircle2 } from 'lucide-react';
+import { X, Flower2, Calendar, Sprout, Zap, Filter, CheckCircle2, Volume2 } from 'lucide-react';
+import { playAudio } from '../utils/audio';
+import { playClick } from '../utils/sfx';
 
 interface DailyHarvestModalProps {
   words: Word[];
@@ -29,6 +31,14 @@ const DailyHarvestModal: React.FC<DailyHarvestModalProps> = ({ words, progress, 
       displayWords: display
     };
   }, [words, progress, filter]);
+
+  const handlePlayAudio = (e: React.MouseEvent, word: string) => {
+    e.stopPropagation();
+    // 优先发音
+    playAudio(word);
+    // 其次音效
+    try { playClick(); } catch (err) {}
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fadeIn">
@@ -89,18 +99,31 @@ const DailyHarvestModal: React.FC<DailyHarvestModalProps> = ({ words, progress, 
            ) : (
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                {displayWords.map((word, index) => (
-                 <button 
+                 <div
                     key={word.id} 
-                    onClick={() => onWordClick(word)}
-                    className="bg-white p-4 rounded-[2rem] border-4 border-[#f0f0f0] flex items-center justify-between group hover:border-[#8bc34a] transition-all shadow-sm active:scale-95 animate-fadeIn"
+                    className="bg-white p-4 rounded-[2rem] border-4 border-[#f0f0f0] flex items-center justify-between group hover:border-[#8bc34a] transition-all shadow-sm animate-fadeIn relative"
                     style={{ animationDelay: `${index * 0.05}s` }}
                  >
-                    <div className="flex flex-col text-left">
+                    {/* 点击区域覆盖文字部分，点击进入详情 */}
+                    <button 
+                      onClick={() => onWordClick(word)}
+                      className="flex-1 flex flex-col text-left active:scale-95 transition-transform"
+                    >
                       <span className="font-black text-[#2e4d4a] text-lg group-hover:text-[#4b7d78] transition-colors">{word.s}</span>
                       <span className="font-bold text-[#8d99ae] text-xs uppercase tracking-wide">{word.t}</span>
+                    </button>
+
+                    <div className="flex items-center gap-3">
+                       {/* 独立发音按钮 */}
+                       <button 
+                         onClick={(e) => handlePlayAudio(e, word.s)}
+                         className="p-2 rounded-full bg-slate-50 text-slate-400 hover:bg-[#8bc34a] hover:text-white transition-colors active:scale-90"
+                       >
+                         <Volume2 size={16} />
+                       </button>
+                       <div className={`w-3 h-3 rounded-full border-2 border-white shadow-sm ${word.type === 'verb' ? 'bg-[#ff7043]' : word.type === 'adj' ? 'bg-[#fbc02d]' : word.type === 'misc' ? 'bg-[#ab47bc]' : 'bg-[#2196f3]'}`} />
                     </div>
-                    <div className={`w-3 h-3 rounded-full border-2 border-white shadow-sm ${word.type === 'verb' ? 'bg-[#ff7043]' : word.type === 'adj' ? 'bg-[#fbc02d]' : word.type === 'misc' ? 'bg-[#ab47bc]' : 'bg-[#2196f3]'}`} />
-                 </button>
+                 </div>
                ))}
              </div>
            )}

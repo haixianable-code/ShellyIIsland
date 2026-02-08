@@ -13,7 +13,6 @@ import confetti from 'canvas-confetti';
 import { playFanfare, playClick, playSparkle } from '../utils/sfx';
 import { playAudio } from '../utils/audio';
 
-// Gardener Level Logic
 const getGardenerLevel = (total: number) => {
   if (total <= 20) return { title: 'Apprentice Gardener', icon: Sprout, next: 21, color: '#8bc34a' };
   if (total <= 50) return { title: 'Diligent Farmer', icon: Award, next: 51, color: '#ffa600' };
@@ -24,6 +23,7 @@ const getGardenerLevel = (total: number) => {
 const WordSticker: React.FC<{ word: Word }> = ({ word }) => {
   const { t } = useTranslation();
   const theme = getTypeTheme(word);
+  const [isPlaying, setIsPlaying] = useState(false);
   
   const randomStyles = useMemo(() => ({
     rotate: `${Math.floor(Math.random() * 20) - 10}deg`,
@@ -34,8 +34,13 @@ const WordSticker: React.FC<{ word: Word }> = ({ word }) => {
   const handleWordClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    playClick();
-    playAudio(word.s);
+    
+    // 1. 发音优先
+    setIsPlaying(true);
+    playAudio(word.s, undefined, () => setIsPlaying(false));
+
+    // 2. 音效其次（异常捕获）
+    try { playClick(); } catch (err) {}
   };
 
   return (
@@ -47,13 +52,16 @@ const WordSticker: React.FC<{ word: Word }> = ({ word }) => {
         backgroundColor: theme.main,
         borderColor: 'white'
       }}
-      className="inline-flex flex-col items-center px-5 py-3 rounded-2xl border-4 shadow-lg text-white transition-all active:scale-95 active:shadow-sm hover:z-20 hover:scale-105 group relative cursor-pointer"
+      className="inline-flex flex-col items-center px-5 py-3 rounded-2xl border-4 shadow-lg text-white transition-all active:scale-95 active:shadow-sm hover:z-20 hover:scale-105 group relative cursor-pointer outline-none focus:ring-4 focus:ring-white/50"
     >
-      <span className="font-black text-lg leading-tight tracking-tight pointer-events-none">{word.s}</span>
+      <div className="flex items-center gap-1.5 pointer-events-none">
+        {isPlaying && <Volume2 size={16} className="animate-pulse" />}
+        <span className="font-black text-lg leading-tight tracking-tight">{word.s}</span>
+      </div>
       <span className="text-[9px] font-black opacity-80 uppercase mt-0.5 pointer-events-none">
         {t(`vocab.${word.id}.t`, { defaultValue: word.t })}
       </span>
-      <div className="absolute -top-1 -left-1 w-2 h-2 bg-white/40 rounded-full" />
+      <div className="absolute -top-1 -left-1 w-2 h-2 bg-white/40 rounded-full pointer-events-none" />
     </button>
   );
 };
@@ -76,7 +84,7 @@ const SummaryView: React.FC<any> = ({ words, totalLearned, streak, user, onFinis
   }, []);
 
   const handleShare = async () => {
-    playClick();
+    try { playClick(); } catch (e) {}
     const shareUrl = new URL(window.location.origin);
     const shareText = t('ui.study.share_template', {
       level: levelInfo.title,
@@ -133,7 +141,6 @@ const SummaryView: React.FC<any> = ({ words, totalLearned, streak, user, onFinis
               <div className="flex flex-wrap justify-center gap-3">{words.map(w => <WordSticker key={w.id} word={w} />)}</div>
             </div>
 
-            {/* Enhanced Citizen Onboarding Module */}
             {!user && (
               <div className="bg-[#fff9c4] p-8 rounded-[3.5rem] border-[6px] border-white shadow-[0_15px_30px_rgba(251,192,45,0.2)] animate-slideUp relative overflow-hidden group">
                  <div className="absolute -right-6 -top-6 w-32 h-32 border-[12px] border-[#fbc02d]/10 rounded-full flex items-center justify-center rotate-12">

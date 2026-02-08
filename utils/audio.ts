@@ -1,61 +1,98 @@
 
-export const playAudio = (text: string) => {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+/**
+ * Shelly Spanish Island - Robust Audio Utility
+ */
 
-  // Cancel any ongoing speech to prevent overlapping
-  window.speechSynthesis.cancel();
+// 保持引用防止垃圾回收（GC Protection）
+const activeUtterances = new Set<SpeechSynthesisUtterance>();
+let voices: SpeechSynthesisVoice[] = [];
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  
-  // Mobile Adjustment: Slightly slower rate sounds more natural on default mobile engines
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  utterance.rate = isMobile ? 0.85 : 0.9; 
-  utterance.pitch = 1;
-  utterance.volume = 1;
-
-  // Voice Selection Strategy: "Make it sound human"
-  const voices = window.speechSynthesis.getVoices();
-  const targetLang = 'es'; // Target Spanish
-  
-  // Priority List for selecting the "Best" voice available on the device
-  // 1. "Monica" / "Paulina" (iOS Premium Spanish)
-  // 2. "Google" voices (Android/Chrome High Quality)
-  const preferredVoices = [
-    'Monica', 'Paulina', 'Jorge', 'Juan', // Apple Premium
-    'Google español', 'Google Español', // Android Google TTS
-    'Microsoft Helena', 'Microsoft Laura' // Windows
-  ];
-
-  let bestVoice = voices.find(v => 
-    preferredVoices.some(name => v.name.includes(name)) && v.lang.startsWith(targetLang)
-  );
-
-  // Fallback: Try to find specific regions if premium voices aren't found
-  if (!bestVoice) {
-      // Prefer Mexico or Spain specifically
-      bestVoice = voices.find(v => (v.lang === 'es-MX' || v.lang === 'es-ES') && !v.name.includes('Compact'));
+// 尝试加载语音列表
+const loadVoices = () => {
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    voices = window.speechSynthesis.getVoices();
   }
-
-  // Final Fallback: Any Spanish voice
-  if (!bestVoice) {
-      bestVoice = voices.find(v => v.lang.startsWith(targetLang));
-  }
-
-  if (bestVoice) {
-    utterance.voice = bestVoice;
-    // CRITICAL: Set the utterance lang to the voice's specific lang (e.g., es-MX) 
-    // to prevent the engine from trying to force a mismatching accent.
-    utterance.lang = bestVoice.lang; 
-  } else {
-    // Default fallback if no voice object matches (rare)
-    utterance.lang = 'es-ES';
-  }
-  
-  window.speechSynthesis.speak(utterance);
 };
 
-// Initialization: Force browser to load voices immediately
-// (Chrome sometimes returns empty voices array on first load without this)
+// 初始化监听
 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+  // 立即尝试加载一次
+  loadVoices();
 }
+
+export const playAudio = (text: string, onStart?: () => void, onEnd?: () => void) => {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    if (onEnd) onEnd();
+    return;
+  }
+
+  const synth = window.speechSynthesis;
+
+  // 1. 强制重置状态：如果正在说话，先取消，防止队列卡死
+  if (synth.speaking || synth.pending) {
+    synth.cancel();
+  }
+
+  // 2. 再次尝试获取语音（Chrome Android 有时需要懒加载）
+  if (voices.length === 0) {
+    voices = synth.getVoices();
+  }
+
+  const utterance = new SpeechSynthesisUtterance(text);
+
+  // 3. 极其宽容的语音选择逻辑
+  // 优先找西班牙语系 (es-ES, es-MX, es-US 等)
+  const esVoices = voices.filter(v => v.lang.toLowerCase().startsWith('es'));
+  
+  // 尝试找高质量语音 (Google, Monica, Paulina)
+  let bestVoice = esVoices.find(v => 
+    v.name.includes('Google') || 
+    v.name.includes('Premium') || 
+    v.name.includes('Monica') || 
+    v.name.includes('Paulina')
+  );
+
+  // 如果没有高质量，取任意一个西班牙语
+  if (!bestVoice && esVoices.length > 0) {
+    bestVoice = esVoices[0];
+  }
+
+  // 设置语音或兜底语言
+  if (bestVoice) {
+    utterance.voice = bestVoice;
+    utterance.lang = bestVoice.lang;
+  } else {
+    // 关键兜底：如果没有找到语音包，直接强制指定语言代码
+    // 大多数现代浏览器会自动匹配默认 TTS 引擎
+    utterance.lang = 'es-ES';
+  }
+
+  utterance.rate = 0.9; // 语速稍慢，适合学习
+  utterance.volume = 1.0;
+
+  // 4. 事件绑定
+  utterance.onstart = () => {
+    activeUtterances.add(utterance);
+    if (onStart) onStart();
+  };
+
+  utterance.onend = () => {
+    activeUtterances.delete(utterance);
+    if (onEnd) onEnd();
+  };
+
+  utterance.onerror = (e) => {
+    console.warn("TTS Error:", e);
+    activeUtterances.delete(utterance);
+    if (onEnd) onEnd();
+  };
+
+  // 5. 播放
+  try {
+    synth.speak(utterance);
+  } catch (err) {
+    console.error("TTS Speak exception:", err);
+    if (onEnd) onEnd();
+  }
+};
