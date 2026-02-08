@@ -1,571 +1,296 @@
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Word, FeedbackQuality, UserStats } from '../types';
+import React, { useState, useCallback, useEffect } from 'react';
+import { Word, FeedbackQuality } from '../types';
 import { playAudio } from '../utils/audio';
-import { User } from '@supabase/supabase-js';
+import { getTypeTheme, getPosLabel } from '../utils/theme';
+import { useTranslation } from 'react-i18next';
+import SummaryView from './SummaryView';
 import { 
-  playClick, 
   playSwish, 
   playHighChime, 
-  playHighWood, 
-  playLowWood, 
-  playThud, 
-  playFanfare 
+  playHighWood,
+  playLowWood,
+  playThud,
+  playClick
 } from '../utils/sfx';
 import { 
-  ChevronLeft, Sparkles, Zap, ArrowRightLeft, CloudRain, 
-  PartyPopper, BookOpen, Layers, 
-  Map, Heart, Trophy, ArrowRight,
-  FastForward, Pickaxe, Sun, Volume2,
-  Globe, Star, ShieldCheck, Flame, UserPlus,
-  Share2, CheckCircle2, Ticket
+  ChevronLeft, 
+  ArrowRight, Globe, Ghost, Wind, Smile,
+  Volume2, BookOpen, PenTool, Map, FastForward, Zap,
+  Heart, RotateCcw, Bookmark, Leaf, Star
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-// Sub-component: Grammar Pocket
 const GrammarPocket: React.FC<{ word: Word }> = ({ word }) => {
+  const { t } = useTranslation();
+  const theme = getTypeTheme(word);
   const conjugationList = word.forms ? word.forms.split(', ') : [];
-  
-  if (word.type === 'misc') {
-    return (
-      <section className="bg-[#f3e5f5] p-5 rounded-[2.5rem] border-4 border-[#ce93d8] relative overflow-hidden shadow-sm">
-        <div className="flex items-center gap-2 mb-3">
-          <Star size={16} className="text-[#9c27b0]" fill="currentColor" />
-          <h4 className="text-[11px] font-black text-[#9c27b0] uppercase tracking-tighter">Golden Rule</h4>
-        </div>
-        <p className="text-[#4a148c] font-bold text-sm leading-relaxed italic">
-          {word.grammarTip}
-        </p>
-      </section>
-    );
-  }
-  
-  let labels: string[] = [];
-  if (word.type === 'verb') {
-    labels = ['Yo', 'Tú', 'Él/Ella', 'Nos.', 'Vos.', 'Ellos'];
-  } else if (word.type === 'noun') {
-    labels = ['Singular', 'Plural'];
-  } else if (word.type === 'adj') {
-    labels = ['Masc', 'Fem', 'Masc Pl', 'Fem Pl'];
-  }
+  const displayTip = t(`vocab.${word.id}.tip`, { defaultValue: word.grammarTip });
 
   const renderFormText = (text: string) => {
     if (!text) return null;
     const parts = text.split(/(\[.*?\])/g);
-    return parts.map((part, i) => {
-      if (part.startsWith('[') && part.endsWith(']')) {
-        return (
-          <span key={i} className="text-[#e91e63] underline decoration-wavy decoration-1 underline-offset-4 decoration-[#ff80ab]">
-            {part.slice(1, -1)}
-          </span>
-        );
-      }
-      return part;
-    });
+    return parts.map((part, idx) => 
+      part.startsWith('[') ? (
+        <span key={idx} style={{ color: theme.main }} className="font-black underline decoration-2 underline-offset-2">
+          {part.slice(1, -1)}
+        </span>
+      ) : (
+        <span key={idx} className="text-[#2d4a47]">{part}</span>
+      )
+    );
+  };
+
+  if (word.type === 'misc' || !word.forms) {
+    return (
+      <div className="p-5 rounded-[2.5rem] border-2 border-dashed border-slate-200 mb-8 bg-white/60">
+        <p className="text-[#2d4a47] font-bold text-sm italic leading-relaxed">
+          {displayTip}
+        </p>
+      </div>
+    );
+  }
+
+  const labels = word.type === 'verb' 
+    ? [t('ui.grammar.yo'), t('ui.grammar.tu'), t('ui.grammar.el'), t('ui.grammar.nos'), t('ui.grammar.vos'), t('ui.grammar.ellos')] 
+    : word.type === 'noun' 
+      ? [t('ui.grammar.sing'), t('ui.grammar.plur')] 
+      : [t('ui.grammar.masc'), t('ui.grammar.fem'), t('ui.grammar.masc_pl'), t('ui.grammar.fem_pl')];
+
+  return (
+    <div className="space-y-3 mb-10">
+      <div className="flex items-center gap-2 px-1">
+        <PenTool size={11} className="text-[#2d4a47]/40" />
+        <span className="text-[8px] font-black text-[#2d4a47]/40 uppercase tracking-widest">{t('ui.study.grammar_pocket')}</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2.5">
+        {labels.map((label, i) => (
+          <div key={label} className="bg-white/80 p-3 rounded-2xl border border-slate-100 flex flex-col items-center shadow-sm">
+            <span className="text-[7px] font-bold text-slate-400 uppercase leading-none mb-1">{label}</span>
+            <span className="text-sm font-bold text-[#2d4a47]">
+              {renderFormText(conjugationList[i])}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// 单词拆解（便利贴样式）
+const VocabNotes: React.FC<{ word: Word }> = ({ word }) => {
+  const { t } = useTranslation();
+  if (!word.nounNotes || word.nounNotes === 'Function Word') return null;
+
+  return (
+    <div className="mt-8 mb-4 px-2">
+      <div className="relative rotate-1 hover:rotate-0 transition-transform duration-500">
+        <div className="absolute inset-0 bg-amber-200/20 blur-xl -z-10 translate-y-2"></div>
+        <div className="bg-[#fff9c4] p-6 rounded-[2rem] shadow-sm border-b-4 border-amber-200/50 relative overflow-hidden group/note">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-8 bg-white/40 backdrop-blur-md border border-white/20 -rotate-2 shadow-sm rounded-sm z-20"></div>
+          <div className="flex items-center gap-2 mb-3 relative z-10">
+            <Map size={14} className="text-amber-600" />
+            <span className="text-[9px] font-black text-amber-700/40 uppercase tracking-[0.2em]">{t('ui.study.vocab_note')}</span>
+          </div>
+          <p className="text-amber-900 text-base font-bold leading-relaxed relative z-10 handwritten">
+            {t(`vocab.${word.id}.notes`, { defaultValue: word.nounNotes })}
+          </p>
+          <Leaf size={100} className="absolute -bottom-12 -right-12 text-amber-500/10 -rotate-12 group-hover/note:rotate-0 transition-transform duration-700" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const UsageExamples: React.FC<{ word: Word }> = ({ word }) => {
+  const { t } = useTranslation();
+  const theme = getTypeTheme(word);
+
+  const highlightWord = (text: string) => {
+    const searchWord = word.s.toLowerCase();
+    const regex = new RegExp(`(${searchWord}|${searchWord.substring(0, 3)}[a-zñáéíóú]*)`, 'gi');
+    const parts = text.split(regex);
+    
+    return parts.map((part, i) => 
+      regex.test(part) ? (
+        <span key={i} style={{ color: theme.main }} className="font-black decoration-wavy decoration-current/30 underline underline-offset-4">
+          {part}
+        </span>
+      ) : (
+        <span key={i}>{part}</span>
+      )
+    );
   };
 
   return (
-    <section className="bg-[#fffdf2] p-5 rounded-[2.5rem] border-4 border-[#e0d9b4] relative overflow-hidden shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Layers size={16} className="text-[#ffa600]" />
-          <h4 className="text-[11px] font-black text-[#4b7d78] uppercase tracking-tighter">Grammar Pocket</h4>
-        </div>
-        {word.reg === false && (
-          <span className="text-[8px] font-black text-[#e91e63] bg-[#fce4ec] px-2 py-0.5 rounded border border-[#f8bbd0] uppercase tracking-widest">
-            Pink = Irregular
-          </span>
-        )}
+    <div className="relative z-10">
+      <div className="flex items-center gap-2 px-1 mb-6">
+        <BookOpen size={11} className="text-[#2d4a47]/40" />
+        <span className="text-[8px] font-black text-[#2d4a47]/40 uppercase tracking-widest">{t('ui.study.usage_examples')}</span>
       </div>
-      
-      {conjugationList.length > 0 && (
-        <div className={`grid gap-2 mb-4 ${word.type === 'verb' ? 'grid-cols-3' : word.type === 'adj' ? 'grid-cols-2' : 'grid-cols-2'}`}>
-          {labels.map((label, i) => (
-            <div key={label} className="bg-white/80 p-2 rounded-xl border border-[#e0d9b4] text-center">
-              <span className="text-[8px] text-[#8d99ae] font-black uppercase block mb-0.5">{label}</span>
-              <span className="text-sm font-black truncate block text-[#4b7d78]">
-                {conjugationList[i] ? renderFormText(conjugationList[i]) : '-'}
-              </span>
+      <div className="relative py-2">
+        <div className="absolute inset-x-0 top-0 bottom-0 pointer-events-none opacity-[0.05]" style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px)', backgroundSize: '100% 3.5rem' }}></div>
+        <div className="space-y-12">
+          {word.examples.map((ex, i) => (
+            <div key={i} className="group/ex relative pl-8">
+              <Bookmark size={14} className="absolute left-0 top-1.5 text-sky-200 group-hover/ex:text-sky-400 transition-colors" />
+              <div className="space-y-1">
+                 <p className="text-slate-800 text-xl font-black leading-snug tracking-tight italic transition-colors group-hover/ex:text-sky-900">
+                   {highlightWord(ex.txt)}
+                 </p>
+                 <p className="handwritten text-slate-400 text-base leading-relaxed">
+                   {ex.eng}
+                 </p>
+              </div>
             </div>
           ))}
         </div>
-      )}
-
-      <div className="flex gap-2 text-xs font-bold text-[#5d4037] leading-snug">
-        <Sparkles size={14} className="text-[#fbc02d] shrink-0 mt-0.5" />
-        <p>{word.grammarTip}</p>
       </div>
-    </section>
-  );
-};
-
-// Sub-component: Usage Examples
-const UsageExamples: React.FC<{ word: Word }> = ({ word }) => (
-  <section className="bg-[#e3f2fd] p-6 rounded-[3rem] border-b-[8px] border-[#90caf9] relative overflow-hidden">
-    <div className="flex items-center gap-2 mb-4">
-      <BookOpen size={16} className="text-[#1565c0]" />
-      <h4 className="text-[11px] font-black text-[#1565c0] uppercase tracking-tighter">Usage Examples</h4>
-    </div>
-
-    <div className="space-y-4 mb-4">
-      {word.examples.map((ex, i) => (
-        <div 
-          key={i} 
-          className="pl-3 border-l-3 border-[#90caf9] cursor-pointer active:opacity-60 transition-opacity group"
-          onClick={() => { playClick(); playAudio(ex.txt); }} 
-          title="Tap to listen"
-        >
-          <div className="flex items-center gap-2">
-             <p className="text-[#1565c0] text-lg font-black italic leading-tight">"{ex.txt}"</p>
-             <Volume2 size={12} className="text-[#1565c0] opacity-0 group-hover:opacity-50 transition-opacity" />
-          </div>
-          <p className="text-[#1565c0]/60 text-[10px] font-bold uppercase">{ex.eng}</p>
-        </div>
-      ))}
-    </div>
-    
-    {word.nounNotes && (
-      <div className="bg-white/70 p-4 rounded-2xl border-2 border-dashed border-[#90caf9]">
-        <div className="flex items-center gap-1.5 mb-1">
-          <Map size={12} className="text-[#8bc34a]" />
-          <span className="text-[9px] text-[#4b7d78] font-black uppercase tracking-wider">Vocab Note</span>
-        </div>
-        <p className="text-[#4b7d78] text-[11px] font-bold">{word.nounNotes}</p>
-      </div>
-    )}
-  </section>
-);
-
-// P1: High Conversion Session Summary & P2: Social Share
-const SessionSummary: React.FC<{ 
-  words: Word[], 
-  onFinish: () => void, 
-  isBlitz?: boolean,
-  isGuest: boolean,
-  onLoginRequest: () => void,
-  userStats: UserStats | null,
-  user: User | null
-}> = ({ words, onFinish, isBlitz, isGuest, onLoginRequest, userStats, user }) => {
-  
-  useEffect(() => {
-    playFanfare();
-    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-  }, []);
-
-  const handleShare = async () => {
-    playClick();
-    const streak = userStats?.current_streak || 0;
-    const inviterName = user?.email?.split('@')[0] || 'Friend';
-    const totalWords = userStats?.total_words_learned || words.length;
-
-    // Create Viral Link
-    const shareUrl = new URL(window.location.origin);
-    shareUrl.searchParams.set('invitedBy', inviterName);
-    shareUrl.searchParams.set('s', streak.toString());
-    shareUrl.searchParams.set('w', totalWords.toString());
-
-    const text = `🏝️ I just harvested ${words.length} words on Shelly Spanish Island!\n🔥 Current Streak: ${streak} Days\n\nJoin me in building your vocabulary island! 🇪🇸`;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Shelly Spanish Island Harvest',
-          text: text,
-          url: shareUrl.toString() // Use the proper viral URL
-        });
-      } catch (err) {
-        console.log('Share canceled');
-      }
-    } else {
-      // Fallback: Copy full text + link
-      navigator.clipboard.writeText(`${text}\n${shareUrl.toString()}`);
-      alert('Harvest report and link copied!');
-    }
-  };
-
-  const receiptWords = words.slice(0, 5);
-
-  return (
-    <div className={`flex-1 flex flex-col items-center justify-start pt-12 px-6 text-center animate-zoomIn overflow-y-auto no-scrollbar pb-32 ${isBlitz ? 'bg-[#f3e5f5]' : 'bg-[#f7f9e4]'}`}>
-      
-      {/* Trophy Section */}
-      <div className={`relative mb-6 ${isBlitz ? 'text-[#9c27b0]' : 'text-[#f57c00]'}`}>
-         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-white/50 rounded-full blur-2xl" />
-         <Trophy size={80} className="relative z-10 fill-current animate-bounce-slight" />
-      </div>
-
-      <h2 className={`text-3xl font-black uppercase tracking-tighter italic mb-1 ${isBlitz ? 'text-[#7b1fa2]' : 'text-[#4b7d78]'}`}>
-        {isBlitz ? 'Fast & Furious!' : 'Session Complete!'}
-      </h2>
-      <p className="text-[#8d99ae] font-bold mb-6 text-sm">
-        You just watered <strong className="text-[#ffa600]">{words.length}</strong> words.
-      </p>
-
-      {/* SHAREABLE HARVEST RECEIPT */}
-      <div className="bg-white p-5 rounded-[2rem] shadow-[0_15px_30px_-10px_rgba(0,0,0,0.1)] border border-[#e0e0e0] w-full max-w-xs mb-8 transform rotate-1 hover:rotate-0 transition-transform duration-500 relative">
-        {/* Receipt Teeth top */}
-        <div className="absolute -top-1.5 left-2 right-2 h-3 bg-white" style={{ clipPath: 'polygon(0% 100%, 5% 0%, 10% 100%, 15% 0%, 20% 100%, 25% 0%, 30% 100%, 35% 0%, 40% 100%, 45% 0%, 50% 100%, 55% 0%, 60% 100%, 65% 0%, 70% 100%, 75% 0%, 80% 100%, 85% 0%, 90% 100%, 95% 0%, 100% 100%)' }}></div>
-        
-        <div className="flex items-center justify-between mb-4 border-b-2 border-dashed border-[#e0e0e0] pb-2">
-            <div className="flex items-center gap-2">
-               <Ticket size={18} className="text-[#4b7d78]" />
-               <span className="text-[10px] font-black uppercase tracking-widest text-[#4b7d78]">Harvest Report</span>
-            </div>
-            <div className="text-[10px] font-mono text-[#8d99ae]">{new Date().toLocaleDateString()}</div>
-        </div>
-
-        <div className="space-y-2 mb-4">
-           {receiptWords.map(w => (
-             <div key={w.id} className="flex justify-between items-center text-xs font-bold text-[#5d4037]">
-                <span>{w.s}</span>
-                <CheckCircle2 size={12} className="text-[#8bc34a]" />
-             </div>
-           ))}
-           {words.length > 5 && (
-             <div className="text-center text-[10px] text-[#8d99ae] italic pt-1">
-               ...and {words.length - 5} more
-             </div>
-           )}
-        </div>
-
-        <div className="bg-[#f1f8e9] p-3 rounded-xl flex items-center justify-between mb-4">
-           <div className="text-left">
-              <span className="text-[9px] font-black uppercase text-[#689f38] block">Island Streak</span>
-              <div className="flex items-center gap-1">
-                 <Flame size={12} className="text-[#ffa600] fill-current" />
-                 <span className="text-lg font-black text-[#4b7d78]">{userStats?.current_streak || 0}</span>
-              </div>
-           </div>
-           <div className="text-right">
-              <span className="text-[9px] font-black uppercase text-[#689f38] block">XP Gained</span>
-              <span className="text-lg font-black text-[#4b7d78]">+{words.length * 10}</span>
-           </div>
-        </div>
-
-        <button 
-           onClick={handleShare}
-           className="w-full bg-[#4b7d78] text-white py-3 rounded-xl font-black text-sm flex items-center justify-center gap-2 hover:bg-[#3d6662] transition-colors"
-        >
-           <Share2 size={16} /> Share Harvest
-        </button>
-
-        {/* Receipt Teeth bottom */}
-        <div className="absolute -bottom-1.5 left-2 right-2 h-3 bg-white" style={{ clipPath: 'polygon(0% 0%, 5% 100%, 10% 0%, 15% 100%, 20% 0%, 25% 100%, 30% 0%, 35% 100%, 40% 0%, 45% 100%, 50% 0%, 55% 100%, 60% 0%, 65% 100%, 70% 0%, 75% 100%, 80% 0%, 85% 100%, 90% 0%, 95% 100%, 100% 0%)' }}></div>
-      </div>
-
-      {/* CONVERSION CARD */}
-      {isGuest && (
-        <div className="w-full max-w-sm bg-[#e3f2fd] p-5 rounded-[2.5rem] border-[6px] border-[#90caf9] shadow-sm mb-6 relative overflow-hidden animate-slideUp">
-           <div className="absolute -right-6 -top-6 text-[#bbdefb] opacity-50 rotate-12">
-              <ShieldCheck size={100} />
-           </div>
-           
-           <div className="relative z-10 text-left">
-              <h3 className="text-[#1565c0] font-black text-lg leading-tight mb-1">Don't lose your XP!</h3>
-              <p className="text-[#1e88e5] text-xs font-bold mb-3 pr-8">
-                You're making great progress. Save it permanently to the cloud.
-              </p>
-              
-              <button 
-                onClick={() => { playClick(); onLoginRequest(); }}
-                className="w-full bg-[#1976d2] text-white py-3 rounded-xl font-black flex items-center justify-center gap-2 shadow-md hover:bg-[#1565c0] active:scale-95 transition-all text-sm"
-              >
-                <UserPlus size={16} />
-                <span>Save My Progress</span>
-              </button>
-           </div>
-        </div>
-      )}
-
-      {/* Footer Action */}
-      <button 
-        onClick={() => { playClick(); onFinish(); }}
-        className="text-[#8d99ae] font-black uppercase tracking-widest text-xs hover:text-[#4b7d78] transition-colors py-4"
-      >
-        {isGuest ? 'Skip & Return Home' : 'Back to Island'}
-      </button>
-      
     </div>
   );
 };
 
-interface StudyViewProps {
-  words: Word[];
-  unlearnedExtra: Word[]; 
-  onFinish: () => void;
-  onFeedback: (wordId: string, quality: FeedbackQuality) => void;
-  onStartExtra: (selected: Word[]) => void;
-  isBlitz?: boolean;
-  isGuest: boolean;
-  onLoginRequest: () => void;
-  userStats: UserStats | null;
-  user: User | null; // Added prop
-}
-
-const StudyView: React.FC<StudyViewProps> = ({ words, onFinish, onFeedback, isBlitz = false, isGuest, onLoginRequest, userStats, user }) => {
+const StudyView: React.FC<any> = ({ words, onFinish, onFeedback, onLoginRequest, isBlitz = false, userStats, user }) => {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showAnswer, setShowAnswer] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [ritualClass, setRitualClass] = useState('');
   const [isSummaryView, setIsSummaryView] = useState(false);
   const [isReverseMode, setIsReverseMode] = useState(false);
-  const [isVibrating, setIsVibrating] = useState(false);
-
-  const word = words[currentIndex];
+  const [currentRating, setCurrentRating] = useState<FeedbackQuality | null>(null);
   
-  // Audio Visual Feedback Logic
-  const handlePlayAudio = (text: string) => {
-    playAudio(text);
-    // Trigger vibration effect
-    setIsVibrating(true);
-    setTimeout(() => setIsVibrating(false), 300); // 300ms wiggle
-  };
-
-  useEffect(() => {
-    if (showAnswer && word) {
-      setTimeout(() => handlePlayAudio(word.s), 400); 
-    }
-  }, [showAnswer, word]);
-
-  const progressPercent = useMemo(() => {
-    if (words.length === 0) return 0;
-    return (currentIndex / words.length) * 100;
-  }, [currentIndex, words.length]);
+  const word = words[currentIndex];
+  const theme = word ? getTypeTheme(word) : { main: '#4b7d78', light: '#f7f9e4', text: '#2d4a47' };
+  const displayTranslation = word ? t(`vocab.${word.id}.t`, { defaultValue: word.t }) : '';
+  const progressPercent = (currentIndex / words.length) * 100;
 
   const handleNext = useCallback(() => {
-    playClick(); 
     if (currentIndex < words.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setShowAnswer(false);
+      setIsFlipped(false);
+      setRitualClass('');
+      setCurrentRating(null);
+      setTimeout(() => {
+        setCurrentIndex(currentIndex + 1);
+      }, 300);
     } else {
       setIsSummaryView(true);
     }
   }, [currentIndex, words.length]);
 
   const handleRating = (quality: FeedbackQuality) => {
-    onFeedback(word.id, quality);
-
+    setCurrentRating(quality);
     if (quality === 'easy') {
+      onFeedback(word.id, 'easy');
       playHighChime(); 
-      confetti({
-        particleCount: 25,
-        spread: 40,
-        origin: { y: 0.8 },
-        colors: isBlitz ? ['#e1bee7', '#ffffff'] : ['#a5d6a7', '#ffffff']
-      });
-      handleNext();
-    } 
-    else {
-      if (quality === 'good') playHighWood(); 
-      else if (quality === 'hard') playLowWood(); 
-      else playThud(); 
-      
-      setShowAnswer(true);
+      confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 }, colors: [theme.main, '#ffa600'] });
+      setRitualClass('ritual-easy');
+      setTimeout(handleNext, 400);
+    } else {
+      onFeedback(word.id, quality);
+      if (quality === 'forgot') playThud();
+      else if (quality === 'hard') playLowWood();
+      else playHighWood();
+      setIsFlipped(true);
     }
   };
 
-  const toggleReverseMode = () => {
-    playClick();
-    setIsReverseMode(!isReverseMode);
-  };
+  useEffect(() => {
+    if (isFlipped && word) playAudio(word.s);
+  }, [isFlipped, word]);
 
-  if (isSummaryView) {
-    return (
-      <div className={`flex-1 flex flex-col max-w-2xl mx-auto w-full overflow-hidden ${isBlitz ? 'bg-[#f3e5f5]' : 'bg-[#f7f9e4]'}`}>
-        <SessionSummary 
-          words={words} 
-          onFinish={onFinish} 
-          isBlitz={isBlitz}
-          isGuest={isGuest}
-          onLoginRequest={onLoginRequest}
-          userStats={userStats}
-          user={user}
-        />
-      </div>
-    );
-  }
-
+  if (isSummaryView) return <SummaryView words={words} totalLearned={userStats?.total_words_learned || 0} streak={userStats?.current_streak || 1} user={user} onFinish={onFinish} onLoginRequest={onLoginRequest} />;
   if (!word) return null;
 
-  const frontText = isReverseMode ? word.t : word.s;
-  const backText = isReverseMode ? word.s : word.t;
-  const frontLabel = isReverseMode ? 'English' : 'Spanish';
-  const showFrontAudio = !isReverseMode;
-  
-  const getCardBorderColor = () => {
-    if (showAnswer) return 'border-[#ffe082]';
-    if (isBlitz) return 'border-[#ce93d8]';
-    if (word.type === 'misc') return 'border-[#ce93d8]';
-    return 'border-[#8bc34a]';
-  };
-
   return (
-    <div className={`flex-1 flex flex-col max-w-2xl mx-auto w-full overflow-hidden animate-fadeIn relative ${isBlitz ? 'bg-[#f3e5f5]' : 'bg-[#f7f9e4]'}`}>
-      <div className={`px-4 pt-6 pb-2 shrink-0 z-20 ${isBlitz ? 'bg-[#f3e5f5]' : 'bg-[#f7f9e4]'}`}>
-        <div className="flex justify-between items-center mb-4">
-          <button onClick={() => { playClick(); onFinish(); }} className="p-3 bg-white rounded-2xl shadow-[0_4px_0_#d0d0d0] border-2 border-[#f0f0f0] text-[#4b7d78] bubble-button">
-            <ChevronLeft size={24} strokeWidth={3} />
+    <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full h-[100dvh] overflow-hidden bg-[#f7f9e4] relative">
+      <div className="absolute inset-0 opacity-30 transition-colors duration-700" style={{ backgroundColor: theme.light }} />
+      <div className="px-6 pt-6 pb-2 shrink-0 z-20">
+        <div className="flex justify-between items-center mb-3">
+          <button onClick={() => { playClick(); onFinish(); }} className="p-2.5 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm text-[#4b7d78] active:scale-90 transition-all border border-white">
+            <ChevronLeft className="w-4 h-4" strokeWidth={3} />
           </button>
-          
-          <div className="flex-1 mx-4">
-             {isBlitz && (
-               <div className="text-center mb-1">
-                 <span className="text-[9px] font-black text-[#9c27b0] uppercase tracking-[0.2em] bg-[#e1bee7] px-2 py-0.5 rounded-md">Speed Blitz</span>
-               </div>
-             )}
-             <div className="h-4 bg-white rounded-full border-2 border-[#e0d9b4] shadow-inner overflow-hidden">
-               <div 
-                 className={`h-full transition-all duration-500 ease-out rounded-full ${isBlitz ? 'bg-[#9c27b0]' : 'bg-[#8bc34a]'}`}
-                 style={{ width: `${progressPercent}%` }}
-               />
-             </div>
+          <div className="flex-1 mx-4 h-1.5 bg-white/50 rounded-full overflow-hidden relative border border-white">
+            <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${progressPercent}%`, backgroundColor: theme.main }} />
           </div>
-
-          <button 
-             onClick={toggleReverseMode}
-             className={`p-3 rounded-2xl border-2 transition-all active:scale-95 flex items-center gap-1 ${isReverseMode ? 'bg-[#4b7d78] text-white border-[#4b7d78] shadow-inner' : 'bg-white text-[#4b7d78] border-[#f0f0f0] shadow-[0_4px_0_#d0d0d0]'}`}
-             title="Toggle Hard Mode (English -> Spanish)"
-          >
-             {isReverseMode ? <Globe size={20} /> : <ArrowRightLeft size={20} />}
-             <span className="text-[10px] font-black uppercase hidden sm:inline">{isReverseMode ? 'Hard' : 'Normal'}</span>
+          <button onClick={() => { playClick(); setIsReverseMode(!isReverseMode); }} className={`p-2.5 rounded-xl border transition-all ${isReverseMode ? 'text-white border-transparent' : 'bg-white/80 backdrop-blur-sm text-[#4b7d78] border-white'}`} style={isReverseMode ? { backgroundColor: theme.main } : {}}>
+             <Globe className="w-4 h-4" />
           </button>
         </div>
       </div>
-
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-64">
-        <div className={`bg-white w-full rounded-[3.5rem] border-[8px] transition-all duration-200 p-6 flex flex-col items-center shadow-[0_12px_0_rgba(0,0,0,0.08)] relative ${getCardBorderColor()} ${showAnswer ? '' : 'justify-center min-h-[400px] border-dashed'} ${isVibrating ? 'animate-wiggle ring-4 ring-[#8bc34a]/30' : ''}`}>
-          
-          <div className="flex gap-2 mb-4">
-            <div className={`px-3 py-1 rounded-lg text-white font-black text-[9px] uppercase tracking-[0.2em] shadow-sm ${word.type === 'verb' ? 'bg-[#ff7043]' : word.type === 'adj' ? 'bg-[#fbc02d]' : word.type === 'misc' ? 'bg-[#ab47bc]' : 'bg-[#2196f3]'}`}>
-              {word.type}
-            </div>
-            {word.reg === false && (
-               <div className="bg-[#e91e63] px-3 py-1 rounded-lg text-white font-black text-[9px] uppercase tracking-[0.2em] flex items-center gap-1 shadow-sm">
-                 <Zap size={10} fill="currentColor" /> Irregular
-               </div>
-            )}
-            <div className="bg-[#eceff1] px-3 py-1 rounded-lg text-[#546e7a] font-black text-[9px] uppercase tracking-[0.2em]">
-               {frontLabel}
-            </div>
-          </div>
-          
-          <button 
-            onClick={() => {
-              if (showFrontAudio) {
-                playClick();
-                handlePlayAudio(word.s);
-              }
-            }}
-            disabled={!showFrontAudio}
-            className={`group active:scale-95 transition-transform ${!showFrontAudio ? 'cursor-default' : ''}`}
-            title={showFrontAudio ? "Tap to listen" : ""}
-          >
-             <h2 className={`font-black text-[#2e4d4a] leading-tight tracking-tighter text-center transition-all duration-300 flex items-center justify-center gap-3 ${showAnswer ? 'text-4xl md:text-5xl mb-4' : 'text-5xl md:text-7xl mb-8'}`}>
-               {frontText}
-               {showFrontAudio && (
-                 <Volume2 
-                   size={showAnswer ? 24 : 32} 
-                   className={`text-[#2e4d4a] opacity-0 group-hover:opacity-20 transition-opacity ${showAnswer ? 'translate-y-1' : 'translate-y-2'}`} 
-                 />
-               )}
-             </h2>
-          </button>
-
-          {showAnswer && (
-            <div className="w-full space-y-6 animate-slideUp text-left">
-              <div className="h-1 bg-[#ffd54f] w-12 mx-auto rounded-full mb-2 opacity-30" />
-              
-              <section className="text-center px-2 py-2">
-                  <p className="text-3xl md:text-4xl text-[#2e4d4a] font-black tracking-tight leading-tight uppercase underline decoration-[#ffe082] decoration-4 underline-offset-8">
-                    {backText}
-                  </p>
-                  {isReverseMode && (
-                    <button onClick={() => handlePlayAudio(word.s)} className="mt-3 p-2 bg-[#f0f4c3] rounded-full text-[#827717] inline-block active:scale-90 transition-transform">
-                      <Volume2 size={24} />
-                    </button>
-                  )}
-              </section>
-
-              <GrammarPocket word={word} />
-
-              {word.type === 'adj' && word.ant && (
-                <div className="bg-[#f3e5f5] p-5 rounded-[2rem] border-4 border-[#ce93d8] flex items-center justify-between shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <ArrowRightLeft size={18} className="text-[#9c27b0]" />
-                    <div>
-                      <span className="text-[9px] font-black text-[#9c27b0] uppercase tracking-widest block">Opposite</span>
-                      <span className="text-xl font-black text-[#4a148c]">{word.ant}</span>
-                    </div>
-                  </div>
-                  <span className="text-xs font-black text-[#4a148c] bg-white px-3 py-1 rounded-lg border border-[#ce93d8]">{word.antT}</span>
-                </div>
-              )}
-
-              <UsageExamples word={word} />
-
-              <div className="pt-8 pb-4 flex flex-col items-center opacity-10 gap-1 pointer-events-none">
-                <span className="text-[8px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">Made By SHELLY</span>
-                <Heart size={8} className="text-[#ff7b72] fill-current" />
+      <div className="flex-1 px-4 py-1 card-perspective relative min-h-0 mb-4 z-10">
+        <div className={`card-inner h-full ${isFlipped ? 'is-flipped' : ''} ${ritualClass}`}>
+          <div className="card-face card-face-front p-8 flex flex-col items-center justify-between h-full" style={{ backgroundColor: theme.light }}>
+            <div className="flex-1 flex flex-col items-center justify-center text-center w-full">
+              <div className="flex flex-col items-center gap-2 mb-8">
+                 <span style={{ backgroundColor: theme.main }} className="px-5 py-1.5 rounded-full text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-sm">
+                   {getPosLabel(word)}
+                 </span>
+                 {word.reg === false && (
+                   <span className="bg-white/60 text-rose-500 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1 border border-rose-100">
+                     <Zap size={10} fill="currentColor" /> {t('ui.study.hard_mode')}
+                   </span>
+                 )}
               </div>
+              <h2 className="font-black text-[#2d4a47] leading-tight text-[clamp(2.5rem,12vw,5rem)] tracking-tighter transition-all duration-500 break-words w-full">
+                 {isReverseMode ? displayTranslation : word.s}
+              </h2>
             </div>
-          )}
-        </div>
-      </div>
-
-      <div className={`fixed bottom-0 left-0 right-0 p-4 pb-8 border-t-4 border-[#e0d9b4] z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] backdrop-blur-md transition-colors ${isBlitz ? 'bg-[#f3e5f5]/90' : 'bg-[#f7f9e4]/80'}`}>
-        <div className="max-w-2xl mx-auto">
-          
-          {!showAnswer ? (
-            <div className="animate-slideUp flex flex-col gap-3">
-               <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.25em] mb-1 text-center">
-                  How well do you know this?
-               </p>
-               
-               <div className="grid grid-cols-3 gap-3">
+            <div className="w-full space-y-4 pt-6 shrink-0">
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { id: 'forgot', label: t('ui.study.forgot'), icon: Ghost, color: '#94a3b8' },
+                  { id: 'hard', label: t('ui.study.hard'), icon: Wind, color: '#f97316' },
+                  { id: 'good', label: t('ui.study.good'), icon: Smile, color: theme.main },
+                ].map((btn) => (
+                  <button key={btn.id} onClick={() => handleRating(btn.id as FeedbackQuality)} className="py-4 flex flex-col items-center gap-2 rounded-[2rem] bg-white/90 backdrop-blur-sm border border-white shadow-sm active:translate-y-1 transition-all">
+                    <btn.icon size={22} style={{ color: btn.color }} />
+                    <span className="text-[10px] font-black uppercase text-slate-500 tracking-tighter">{btn.label}</span>
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => handleRating('easy')} style={{ backgroundColor: theme.main }} className="w-full py-5 rounded-[2.5rem] text-white font-black text-xl shadow-[0_8px_0_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none flex items-center justify-center gap-3 transition-all border-4 border-white">
+                <FastForward size={24} />
+                <span>{t('ui.study.perfect')}</span>
+              </button>
+            </div>
+          </div>
+          <div className="card-face card-face-back flex flex-col h-full overflow-hidden bg-white relative">
+            <div className="absolute top-0 left-4 bottom-0 flex flex-col justify-around py-16 opacity-[0.05] pointer-events-none z-0">
+               {[...Array(6)].map((_, i) => <div key={i} className="w-2.5 h-2.5 rounded-full bg-black shadow-inner"></div>)}
+            </div>
+            <div className="shrink-0 p-5 px-8 border-b border-slate-50 flex items-center justify-between bg-white z-10">
+              <div className="flex-1 min-w-0 pr-4">
+                <span style={{ color: theme.main }} className="text-[9px] font-black uppercase tracking-widest block mb-0.5">{getPosLabel(word)}</span>
+                <div className="flex items-baseline gap-2 overflow-hidden">
+                  <h3 className="text-3xl font-black text-[#2d4a47] tracking-tighter truncate">{word.s}</h3>
+                  <span style={{ color: theme.main }} className="text-sm font-bold italic truncate opacity-70">{displayTranslation}</span>
+                </div>
+              </div>
+              <button onClick={() => playAudio(word.s)} style={{ backgroundColor: theme.light, color: theme.main }} className="shrink-0 p-3 rounded-2xl shadow-sm border border-white active:scale-95 transition-all"><Volume2 className="w-6 h-6" /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-8 px-9 no-scrollbar min-h-0 bg-[#fbfcf0]/30 relative">
+              <GrammarPocket word={word} />
+              <div className="relative"><UsageExamples word={word} /><VocabNotes word={word} /></div>
+              <div className="h-20 flex flex-col items-center justify-center opacity-[0.03] grayscale mt-8"><div className="h-px w-full border-t border-dashed border-black mb-4"></div><Star size={12} /></div>
+            </div>
+            <div className="shrink-0 p-5 px-8 pt-3 bg-white border-t border-slate-50 space-y-3 z-10">
+              <div className="flex items-center justify-between px-2">
+                <div className="flex gap-4">
                   {[
-                    { id: 'forgot', icon: CloudRain, color: '#455a64', label: 'Forgot', bg: '#eceff1', border: '#90a4ae', shadow: '#78909c' },
-                    { id: 'hard', icon: Pickaxe, color: '#e65100', label: 'Hard', bg: '#fff3e0', border: '#ffb74d', shadow: '#fb8c00' },
-                    { id: 'good', icon: Sun, color: '#f57f17', label: 'Good', bg: '#fff9c4', border: '#fbc02d', shadow: '#f57f17' },
+                    { id: 'forgot', icon: Ghost, color: '#94a3b8' },
+                    { id: 'hard', icon: Wind, color: '#f97316' },
+                    { id: 'good', icon: Smile, color: theme.main },
                   ].map((btn) => (
-                    <button 
-                      key={btn.id}
-                      onClick={() => { playSwish(); handleRating(btn.id as FeedbackQuality); }} 
-                      className={`p-3 rounded-2xl flex flex-col items-center border-4 bubble-button transition-all active:translate-y-1 active:shadow-none relative group overflow-hidden`}
-                      style={{ 
-                        backgroundColor: btn.bg, 
-                        borderColor: btn.border, 
-                        color: btn.color,
-                        boxShadow: `0 6px 0 ${btn.shadow}`
-                      }}
-                    >
-                      <btn.icon size={22} className="mb-1 fill-current opacity-80" />
-                      <span className="text-[9px] font-black uppercase tracking-tighter text-center">{btn.label}</span>
-                    </button>
+                    <button key={btn.id} onClick={() => handleRating(btn.id as FeedbackQuality)} className={`p-1.5 rounded-lg transition-all ${currentRating === btn.id ? 'bg-slate-100 ring-2 ring-current' : 'opacity-40 hover:opacity-100'}`} style={{ color: btn.color }}><btn.icon size={16} /></button>
                   ))}
-               </div>
-
-               <button 
-                  onClick={() => handleRating('easy')} 
-                  className="w-full p-4 rounded-2xl border-4 bubble-button transition-all active:translate-y-1 active:shadow-none relative group overflow-hidden flex items-center justify-center gap-2 bg-[#a5d6a7] border-[#2e7d32] text-[#004d40] shadow-[0_6px_0_#1b5e20] hover:bg-[#81c784]"
-               >
-                  <div className="absolute inset-0 bg-white/20 animate-pulse pointer-events-none" />
-                  <PartyPopper size={24} className="fill-current" />
-                  <div className="flex flex-col items-start leading-none">
-                     <span className="text-lg font-black uppercase tracking-tighter">Perfect</span>
-                     <span className="text-[8px] font-black uppercase tracking-widest opacity-80">Skip Details</span>
-                  </div>
-                  <FastForward size={20} className="ml-1 opacity-70" />
-               </button>
+                </div>
+                <button onClick={() => setIsFlipped(false)} className="text-[8px] font-black text-slate-300 uppercase tracking-widest flex items-center gap-1 hover:text-slate-400"><RotateCcw size={10} /> 重新评估</button>
+              </div>
+              <button onClick={() => { playHighWood(); handleNext(); }} style={{ backgroundColor: theme.main }} className="w-full py-4 rounded-[2.5rem] text-white font-black text-lg shadow-[0_6px_0_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none flex flex-col items-center justify-center transition-all border-2 border-white/20">
+                <div className="flex items-center gap-2"><span>继续探索</span><ArrowRight size={18} /></div>
+              </button>
             </div>
-          ) : (
-            <div className="animate-slideUp">
-               <button 
-                 onClick={handleNext}
-                 className={`w-full py-5 rounded-[2.5rem] font-black text-xl text-white shadow-[0_8px_0_rgba(0,0,0,0.2)] border-4 border-white bubble-button flex items-center justify-center gap-3 ${isBlitz ? 'bg-[#9c27b0]' : 'bg-[#8bc34a]'}`}
-               >
-                 <span>Next Word</span>
-                 <ArrowRight size={24} />
-               </button>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

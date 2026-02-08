@@ -1,0 +1,53 @@
+
+{
+  "ui": {
+    "nav": {
+      "home": "Island Home",
+      "pocket": "My Pocket",
+      "menu": "Menu"
+    },
+    "dashboard": {
+      "welcome": "Welcome to Shelly Spanish Island!",
+      "new_seeds": "New Seeds",
+      "daily_care": "Daily Care",
+      "start_planting": "Start Planting",
+      "dig_into": "Dig into {{count}} new words",
+      "no_seeds": "No new seeds selected",
+      "recently_planted": "Recently Planted Today",
+      "water_garden": "Water the Garden",
+      "refresh_grown": "Refresh {{count}} grown words",
+      "island_quiet": "The Island is Quiet...",
+      "crate_msg": "All chores are done! But look, a crate of supplies washed ashore.",
+      "open_crate": "Open Supply Crate (+10)",
+      "slang_title": "Island Slang!"
+    },
+    "actions": {
+      "save_forever": "Save Progress Forever",
+      "backup": "Backup Memory",
+      "restore": "Restore Memory",
+      "reset": "Reset Island",
+      "logout": "Logout",
+      "sound_on": "Sound On",
+      "sound_off": "Sound Off",
+      "next_word": "Next Word",
+      "finish": "Finish Session"
+    },
+    "study": {
+      "grammar_pocket": "Grammar Pocket",
+      "usage_examples": "Usage Examples",
+      "vocab_note": "Vocab Note",
+      "how_well": "How well do you know this?",
+      "forgot": "Forgot",
+      "hard": "Hard",
+      "good": "Good",
+      "perfect": "Perfect",
+      "skip_details": "Skip Details",
+      "hard_mode": "Hard",
+      "normal_mode": "Normal"
+    }
+  },
+  "vocab": {
+    "ser": { "t": "To be (Essence)", "tip": "Permanent traits/origin." },
+    "estar": { "t": "To be (State)", "tip": "Temporary states/location." }
+  }
+}

@@ -2,8 +2,10 @@
 import React, { useRef, useState } from 'react';
 import { AppView } from '../types';
 import { User } from '@supabase/supabase-js';
-import { Home, Briefcase, Leaf, Heart, RotateCcw, Download, Upload, Volume2, VolumeX, CloudUpload, LogOut } from 'lucide-react';
-import { toggleMute, getMuteState, playClick } from '../utils/sfx';
+import { Home, Briefcase, Leaf, Heart, RotateCcw, Download, Volume2, VolumeX, CloudUpload, LogOut, ShieldAlert, ShieldCheck, Fingerprint, ChevronRight } from 'lucide-react';
+import { toggleMute, getMuteState, playClick, playSparkle } from '../utils/sfx';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface SidebarProps {
   currentView: AppView;
@@ -15,22 +17,9 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabaseConfigured, onLoginRequest, onLogout }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useTranslation();
   const [isMuted, setIsMuted] = useState(getMuteState());
   const isGuest = isSupabaseConfigured && !user;
-
-  const navItems = [
-    { id: AppView.DASHBOARD, icon: Home, label: 'Island Home' },
-    { id: AppView.VOCABULARY, icon: Briefcase, label: 'My Pocket' },
-  ];
-
-  const handleReset = () => {
-    playClick();
-    if (confirm("Reset all progress? This will delete your learning history on this device.")) {
-      localStorage.clear();
-      window.location.reload();
-    }
-  };
 
   const handleToggleMute = () => {
     playClick();
@@ -41,135 +30,124 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabas
   const handleExport = () => {
     playClick();
     const data = localStorage.getItem('hola_word_srs_v3_offline');
-    if (!data) return alert("No progress to backup yet!");
-    
+    if (!data) return;
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `shelly-island-backup-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
+    a.download = `shelly-island-backup.json`;
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
 
-  const handleImportClick = () => {
+  const handleReset = () => {
     playClick();
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const json = event.target?.result as string;
-        JSON.parse(json); 
-        localStorage.setItem('hola_word_srs_v3_offline', json);
-        alert("Island restored successfully! Reloading...");
-        window.location.reload();
-      } catch (err) {
-        alert("Invalid backup file.");
-      }
-    };
-    reader.readAsText(file);
+    if (confirm("Reset all progress?")) {
+      localStorage.clear();
+      window.location.reload();
+    }
   };
 
   return (
-    <aside className="w-64 bg-[#f9f5da] border-r-4 border-[#e0d9b4] hidden md:flex flex-col h-screen fixed left-0 top-0 z-10 shadow-[10px_0_0_rgba(224,217,180,0.4)]">
-      <div className="p-8 text-center">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-[#78c850] rounded-[2.5rem] shadow-[0_8px_0_#5a9a3b] mb-4 border-4 border-white">
-          <Leaf className="text-white w-10 h-10 fill-current" />
+    <aside className="w-72 bg-[#f9f5da] border-r-4 border-[#e0d9b4] hidden md:flex flex-col h-screen fixed left-0 top-0 z-50 shadow-[10px_0_0_rgba(224,217,180,0.4)]">
+      {/* Logo Section */}
+      <div className="p-8 pb-4 text-center">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-[#78c850] rounded-[2rem] shadow-[0_6px_0_#5a9a3b] mb-3 border-4 border-white">
+          <Leaf className="text-white w-8 h-8 fill-current" />
         </div>
-        <h1 className="text-xl font-black text-[#4b7d78] tracking-tight leading-tight">Shelly Spanish Island</h1>
+        <h1 className="text-lg font-black text-[#4b7d78] tracking-tight uppercase italic">Shelly Island</h1>
       </div>
-      
-      <nav className="flex-1 px-4 py-4 space-y-4">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = currentView === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => { playClick(); setView(item.id); }}
-              className={`w-full flex items-center gap-4 px-6 py-5 rounded-[2.5rem] transition-all duration-200 border-b-8 ${
-                isActive
-                  ? 'bg-[#ffa600] text-white font-black border-[#cc8400] shadow-md -translate-y-1'
-                  : 'text-[#8d99ae] hover:bg-[#fff6e0] border-transparent'
-              }`}
-            >
-              <div className={`p-3 rounded-2xl shadow-sm ${isActive ? 'bg-white/30' : 'bg-white border-2 border-[#f0f0f0]'}`}>
-                <Icon size={24} className={isActive ? 'text-white' : 'text-[#8d99ae]'} />
-              </div>
-              <span className="text-lg font-black">{item.label}</span>
-            </button>
-          );
-        })}
 
-        {isGuest && (
-            <div className="pt-8 px-2 space-y-3">
-              <p className="text-[9px] font-black text-[#8d99ae] uppercase tracking-widest pl-2">Sync Data</p>
-              <button 
-                onClick={onLoginRequest}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-white bg-[#ff7b72] shadow-[0_4px_0_#d32f2f] hover:bg-[#ff8a80] transition-all bubble-button group"
-              >
-                  <CloudUpload size={18} className="group-hover:scale-110 transition-transform" />
-                  <span className="text-sm font-black">Save Progress Forever</span>
-              </button>
-            </div>
-        )}
-
-        <div className="pt-8 px-2 space-y-3">
-           <p className="text-[9px] font-black text-[#8d99ae] uppercase tracking-widest pl-2">Settings</p>
-           
-           <button onClick={handleToggleMute} className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#4b7d78] hover:bg-[#fff6e0] transition-colors border-2 border-transparent hover:border-[#e0d9b4]">
-              {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-              <span className="text-sm font-black">{isMuted ? 'Sound Off' : 'Sound On'}</span>
-           </button>
-           
-           {isGuest && (
-             <>
-               <button onClick={handleExport} className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#4b7d78] hover:bg-[#fff6e0] transition-colors border-2 border-transparent hover:border-[#e0d9b4]">
-                  <Download size={18} />
-                  <span className="text-sm font-black">Backup Memory</span>
-               </button>
-
-               <button onClick={handleImportClick} className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[#4b7d78] hover:bg-[#fff6e0] transition-colors border-2 border-transparent hover:border-[#e0d9b4]">
-                  <Upload size={18} />
-                  <span className="text-sm font-black">Restore Memory</span>
-               </button>
-               <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".json" />
-             </>
-           )}
-        </div>
+      {/* Main Navigation */}
+      <nav className="px-4 py-4 space-y-3">
+        <button
+          onClick={() => { playClick(); setView(AppView.DASHBOARD); }}
+          className={`w-full flex items-center gap-4 px-6 py-4 rounded-[2rem] transition-all duration-200 border-b-4 ${currentView === AppView.DASHBOARD ? 'bg-[#ffa600] text-white font-black border-[#cc8400] shadow-md -translate-y-0.5' : 'text-[#8d99ae] hover:bg-white/50 border-transparent'}`}
+        >
+          <Home size={22} className={currentView === AppView.DASHBOARD ? 'fill-current' : ''} />
+          <span className="text-base font-black uppercase tracking-tight">{t('ui.nav.home')}</span>
+        </button>
+        <button
+          onClick={() => { playClick(); setView(AppView.VOCABULARY); }}
+          className={`w-full flex items-center gap-4 px-6 py-4 rounded-[2rem] transition-all duration-200 border-b-4 ${currentView === AppView.VOCABULARY ? 'bg-[#ffa600] text-white font-black border-[#cc8400] shadow-md -translate-y-0.5' : 'text-[#8d99ae] hover:bg-white/50 border-transparent'}`}
+        >
+          <Briefcase size={22} className={currentView === AppView.VOCABULARY ? 'fill-current' : ''} />
+          <span className="text-base font-black uppercase tracking-tight">{t('ui.nav.pocket')}</span>
+        </button>
       </nav>
 
-      <div className="p-4 space-y-4">
-        {user ? (
-          <button
-            onClick={onLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-[#6d7c8e] font-black hover:bg-slate-100 hover:text-[#4b7d78] transition-colors"
+      {/* Identity Card (Passport Badge) */}
+      <div className="px-4 py-6">
+        <div className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.3em] mb-3 pl-4">Identification</div>
+        {isGuest ? (
+          <button 
+            onClick={() => { playSparkle(); onLoginRequest(); }}
+            className="w-full text-left bg-[#2d4a47] p-5 rounded-[2.5rem] border-4 border-[#4b7d78] shadow-[0_8px_0_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all group overflow-hidden relative"
           >
-            <LogOut size={16} />
-            <span>Logout</span>
+            <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '12px 12px' }} />
+            <div className="flex items-center gap-4 relative z-10">
+               <div className="bg-[#ff7b72] p-2.5 rounded-xl border-2 border-white/20 shadow-inner">
+                  <ShieldAlert className="text-white" size={20} />
+               </div>
+               <div className="flex-1">
+                  <h4 className="text-white text-xs font-black uppercase leading-none mb-1">Apply Citizen</h4>
+                  <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest italic">Guest Mode</p>
+               </div>
+               <ChevronRight className="text-white/20 group-hover:translate-x-1 transition-transform" size={16} />
+            </div>
+            {/* Stamp decoration */}
+            <div className="absolute -right-2 -bottom-2 text-[10px] font-black border-2 border-white/10 text-white/10 px-2 py-0.5 rounded rotate-12">GUEST</div>
           </button>
-        ) : (
-          <button
-            onClick={handleReset}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-[#d32f2f]/60 font-black hover:bg-red-50 hover:text-[#d32f2f] transition-colors"
-          >
-            <RotateCcw size={16} />
-            <span>Reset Island</span>
-          </button>
-        )}
-        <div className="flex flex-col items-center opacity-30 gap-1 pb-4">
-          <div className="flex items-center gap-1.5 text-[8px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">
-            Made By SHELLY
+        ) : user ? (
+          <div className="bg-white p-5 rounded-[2.5rem] border-4 border-[#e0d9b4] shadow-sm relative overflow-hidden">
+             <div className="flex items-center gap-4">
+                <div className="bg-[#78c850] p-2.5 rounded-xl border-2 border-white shadow-inner">
+                   <ShieldCheck className="text-white" size={20} />
+                </div>
+                <div className="flex-1 min-w-0">
+                   <h4 className="text-[#4b7d78] text-xs font-black uppercase leading-none mb-1 truncate">{user.email?.split('@')[0]}</h4>
+                   <p className="text-[#8bc34a] text-[9px] font-black uppercase tracking-widest italic">Island Citizen</p>
+                </div>
+             </div>
+             <div className="absolute -right-2 -bottom-2 text-[10px] font-black border-2 border-[#8bc34a]/10 text-[#8bc34a]/10 px-2 py-0.5 rounded rotate-12">OFFICIAL</div>
           </div>
-          <Heart size={8} className="text-[#ff7b72] fill-current" />
+        ) : null}
+      </div>
+
+      {/* Utilities & Settings (Visual Downgrade) */}
+      <div className="flex-1 flex flex-col justify-end px-4 py-8 space-y-6">
+        <div className="space-y-1 bg-black/5 p-4 rounded-[2rem] border-2 border-transparent">
+          <div className="px-2 mb-2">
+            <LanguageSwitcher />
+          </div>
+          
+          <button onClick={handleToggleMute} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[#8d99ae] hover:text-[#4b7d78] hover:bg-white/50 transition-all text-sm font-bold">
+            {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            <span>{isMuted ? t('ui.actions.sound_off') : t('ui.actions.sound_on')}</span>
+          </button>
+
+          <button onClick={handleExport} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[#8d99ae] hover:text-[#4b7d78] hover:bg-white/50 transition-all text-sm font-bold">
+            <Download size={18} />
+            <span>{t('ui.actions.backup')}</span>
+          </button>
+        </div>
+
+        <div className="px-2">
+          {user ? (
+            <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[#8d99ae] font-black text-xs uppercase tracking-widest hover:text-[#ff7b72] transition-colors">
+              <LogOut size={14} />
+              <span>{t('ui.actions.logout')}</span>
+            </button>
+          ) : (
+            <button onClick={handleReset} className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[#d32f2f]/30 font-black text-xs uppercase tracking-widest hover:text-[#d32f2f] transition-colors">
+              <RotateCcw size={14} />
+              <span>{t('ui.actions.reset')}</span>
+            </button>
+          )}
+        </div>
+        
+        <div className="flex flex-col items-center opacity-10 gap-1 mt-2">
+           <div className="flex items-center gap-1.5 text-[7px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">Made By SHELLY</div>
+           <Heart size={6} className="text-[#ff7b72] fill-current" />
         </div>
       </div>
     </aside>

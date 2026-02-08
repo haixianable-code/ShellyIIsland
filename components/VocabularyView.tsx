@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
 import { Word, ProgressMap } from '../types';
-import { Search, ShoppingBag, Coffee, CircleDot, Sprout, Flower2, TreeDeciduous } from 'lucide-react';
+import { Search, ShoppingBag, CircleDot, Sprout, Flower2, TreeDeciduous, ChevronRight } from 'lucide-react';
 import WordExpansionPack from './WordExpansionPack';
 import ExpansionModal from './ExpansionModal';
 import { EXTRA_CANDIDATES } from '../constants';
 import { playClick } from '../utils/sfx';
+import { useTranslation } from 'react-i18next';
 
 interface VocabularyViewProps {
   words: Word[];
@@ -16,36 +17,46 @@ interface VocabularyViewProps {
 }
 
 const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWordClick, onAddExtraWords, onStartExtraStudy }) => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filteredWords = words.filter(w => 
     w.s.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    w.t.toLowerCase().includes(searchTerm.toLowerCase())
+    t(`vocab.${w.id}.t`, { defaultValue: w.t }).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const unlearnedExtra = EXTRA_CANDIDATES.filter(w => !progress[w.id]);
 
-  const handleAddWords = (selected: Word[]) => {
-    onAddExtraWords(selected);
+  const getGrowthIcon = (level: number) => {
+    if (level <= 1) return { icon: CircleDot, color: 'text-slate-400', bg: 'bg-slate-50', label: 'Seed' };
+    if (level <= 3) return { icon: Sprout, color: 'text-emerald-500', bg: 'bg-emerald-50', label: 'Sprout' };
+    if (level <= 5) return { icon: Flower2, color: 'text-orange-400', bg: 'bg-orange-50', label: 'Bloom' };
+    return { icon: TreeDeciduous, color: 'text-green-700', bg: 'bg-green-50', label: 'Tree' };
   };
 
-  // Helper to determine the "Growth Stage" of a word
-  const getGrowthIcon = (level: number) => {
-    if (level <= 1) return { icon: CircleDot, color: 'text-[#8d99ae]', label: 'Seed' };
-    if (level <= 3) return { icon: Sprout, color: 'text-[#8bc34a]', label: 'Sprout' };
-    if (level <= 5) return { icon: Flower2, color: 'text-[#ffa600]', label: 'Bloom' };
-    return { icon: TreeDeciduous, color: 'text-[#2e7d32]', label: 'Tree' };
+  const getTypeStyle = (type: string) => {
+    switch (type) {
+      case 'verb': return 'border-rose-200 bg-rose-50/30 text-rose-600 shadow-rose-100';
+      case 'noun': return 'border-sky-200 bg-sky-50/30 text-sky-600 shadow-sky-100';
+      case 'adj': return 'border-amber-200 bg-amber-50/30 text-amber-600 shadow-amber-100';
+      default: return 'border-purple-200 bg-purple-50/30 text-purple-600 shadow-purple-100';
+    }
   };
 
   return (
-    <div className="space-y-10 animate-fadeIn pb-12">
+    <div className="space-y-10 animate-fadeIn pb-24 md:pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="bg-[#ffb74d] p-4 rounded-3xl shadow-[0_6px_0_#e67e22] border-4 border-white animate-bounce-slight">
+        <div className="flex items-center gap-5">
+          <div className="bg-[#ffb74d] p-5 rounded-[2.5rem] shadow-[0_10px_0_#e67e22] border-4 border-white animate-bounce-slight">
             <ShoppingBag className="text-white fill-current" size={32} />
           </div>
-          <h2 className="text-5xl font-black text-[#4b7d78] drop-shadow-sm">My Pocket</h2>
+          <div>
+            <h2 className="text-5xl font-black text-[#4b7d78] drop-shadow-sm">{t('ui.nav.pocket')}</h2>
+            <p className="text-[#8d99ae] font-bold text-sm uppercase tracking-widest mt-1">
+              {words.length} {t('ui.dashboard.recently_planted')}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -54,73 +65,63 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
         onExplore={() => { playClick(); setIsModalOpen(true); }}
       />
         
-      <div className="relative group z-20">
-        <div className="absolute left-6 top-1/2 -translate-y-1/2 bg-[#8bc34a] p-2 rounded-xl shadow-sm border-2 border-white z-10 transition-transform group-focus-within:scale-110">
+      <div className="relative group z-20 max-w-2xl">
+        <div className="absolute left-6 top-1/2 -translate-y-1/2 bg-[#8bc34a] p-2.5 rounded-2xl shadow-sm border-2 border-white z-10 transition-transform group-focus-within:scale-110">
           <Search className="text-white" size={20} strokeWidth={3} />
         </div>
         <input 
           type="text" 
-          placeholder="Search your seeds..." 
+          placeholder={t('ui.actions.restore')} 
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-20 pr-8 py-5 bg-white border-4 border-[#e0d9b4] rounded-[3rem] w-full shadow-[0_6px_0_#e0d9b4] focus:outline-none focus:ring-8 focus:ring-[#8bc34a]/30 transition-all font-black text-[#4b7d78] placeholder:text-[#8d99ae]/50 text-lg"
+          className="pl-20 pr-8 py-6 bg-white border-4 border-[#e0d9b4] rounded-[3rem] w-full shadow-[0_10px_0_rgba(224,217,180,0.4)] focus:outline-none focus:ring-8 focus:ring-[#8bc34a]/20 transition-all font-black text-[#4b7d78] text-xl placeholder:text-slate-300"
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredWords.map(word => {
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {filteredWords.map((word, idx) => {
           const stats = progress[word.id];
           const level = stats?.level || 0;
-          const { icon: StageIcon, color, label } = getGrowthIcon(level);
+          const { icon: StageIcon, color, bg, label } = getGrowthIcon(level);
+          const typeStyle = getTypeStyle(word.type);
           
           return (
             <button 
               key={word.id} 
               onClick={() => { playClick(); onWordClick(word); }}
-              className="bg-white p-8 rounded-[3.5rem] border-4 border-[#f0f0f0] shadow-[0_10px_0_#e0e0e0] hover:shadow-[0_14px_0_#8bc34a] hover:border-[#8bc34a] transition-all flex items-center justify-between group cursor-pointer active:translate-y-2 active:shadow-none text-left relative overflow-hidden"
+              style={{ animationDelay: `${idx * 0.05}s` }}
+              className={`island-card-3d bg-white p-6 rounded-[3rem] border-4 border-transparent shadow-[0_15px_30px_-5px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(139,195,74,0.3)] transition-all flex flex-col justify-between group active:translate-y-2 active:shadow-none text-left relative overflow-hidden h-full min-h-[160px]`}
             >
-              <div className="relative z-10 space-y-2">
-                <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full shadow-sm border border-white/50 ${word.type === 'verb' ? 'bg-[#ff7043]' : word.type === 'adj' ? 'bg-[#fbc02d]' : word.type === 'misc' ? 'bg-[#ab47bc]' : 'bg-[#2196f3]'}`}></div>
-                  <h3 className="text-3xl font-black text-[#2e4d4a] group-hover:text-[#4b7d78] transition-colors tracking-tight">{word.s}</h3>
+              {/* 类型背景装饰 */}
+              <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 ${typeStyle.split(' ')[1]}`}></div>
+
+              <div className="relative z-10 flex justify-between items-start mb-4">
+                <div className={`px-4 py-1.5 rounded-full border-2 font-black text-[10px] uppercase tracking-widest ${typeStyle}`}>
+                  {word.type}
                 </div>
-                <p className="text-[#6d7c8e] font-bold text-lg tracking-tight pl-6 border-l-4 border-[#f0f0f0] group-hover:border-[#e0e0e0] transition-colors">{word.t}</p>
+                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-xl ${bg} ${color} transition-colors group-hover:scale-105`}>
+                  <StageIcon size={14} className={level > 1 ? 'pulse-level' : ''} />
+                  <span className="text-[10px] font-black uppercase tracking-tighter">{label}</span>
+                </div>
               </div>
-              
-              <div className="flex flex-col items-center gap-1 shrink-0 bg-[#f9fbe7] p-3 rounded-2xl border-2 border-[#f0f4c3] group-hover:bg-[#f1f8e9] group-hover:border-[#dcedc8] transition-colors">
-                 <StageIcon size={32} className={`${color} fill-current transition-transform group-hover:scale-110`} />
-                 <span className={`text-[9px] font-black uppercase tracking-widest ${color}`}>{label}</span>
-                 
-                 {/* Mini progress bar for level within stage (simplified) */}
-                 <div className="flex gap-0.5 mt-1">
-                   {[...Array(3)].map((_, i) => (
-                      <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < (level % 2 === 0 ? 1 : 2) ? color.replace('text-', 'bg-') : 'bg-gray-200'}`} />
-                   ))}
-                 </div>
+
+              <div className="relative z-10 flex items-end justify-between">
+                <div className="space-y-1">
+                  <h3 className="text-4xl font-black text-[#2e4d4a] group-hover:text-[#4b7d78] transition-colors tracking-tighter flex items-center gap-2">
+                    {word.s}
+                  </h3>
+                  <p className="text-slate-400 font-bold text-lg leading-tight">
+                    {t(`vocab.${word.id}.t`, { defaultValue: word.t })}
+                  </p>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl group-hover:bg-[#8bc34a] group-hover:text-white transition-all transform group-hover:translate-x-1">
+                  <ChevronRight size={20} strokeWidth={3} />
+                </div>
               </div>
             </button>
           );
         })}
       </div>
-
-      {filteredWords.length === 0 && (
-        <div className="text-center py-24 bg-white/50 rounded-[5rem] border-8 border-dashed border-[#e0d9b4]">
-          <div className="bg-[#fff9c4] w-32 h-32 rounded-[3rem] flex items-center justify-center mx-auto mb-8 text-[#fbc02d] border-4 border-[#fdd835] shadow-inner rotate-3">
-            <Coffee size={64} className="fill-current" />
-          </div>
-          <p className="text-[#8d99ae] font-black uppercase tracking-[0.3em] text-lg">Pocket is empty!</p>
-          <p className="text-[#8d99ae] font-bold mt-2 opacity-60">Try searching for something else?</p>
-        </div>
-      )}
-
-      {isModalOpen && (
-        <ExpansionModal
-          availableWords={unlearnedExtra}
-          onClose={() => setIsModalOpen(false)}
-          onAddWords={handleAddWords}
-          onStudyNow={onStartExtraStudy}
-        />
-      )}
     </div>
   );
 };

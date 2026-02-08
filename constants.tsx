@@ -1,120 +1,77 @@
 
 import { Word } from './types';
+import { pluralize, generateRegularForms } from './utils/grammar';
 
 export const SRS_INTERVALS = [0, 1, 3, 7, 14, 30, 90, 180];
-
-// FIX: Use real local date to ensure SRS works with actual time passage.
-// The app will now work based on when the user actually uses it.
 export const TODAY_SIMULATED = new Date().toISOString().split('T')[0];
 
-// Helper to generate regular conjugations
-const generateRegularForms = (verb: string): string => {
-  let root = verb.slice(0, -2);
-  let type = verb.slice(-2);
-  let prefix = ['', '', '', '', '', ''];
-
-  // Handle Reflexive (e.g., lavarse, ducharse)
-  if (verb.endsWith('se')) {
-    const infinitive = verb.slice(0, -2); // lavarse -> lavar
-    root = infinitive.slice(0, -2); // lavar -> lav
-    type = infinitive.slice(-2); // lavar -> ar
-    prefix = ['me ', 'te ', 'se ', 'nos ', 'os ', 'se '];
-  }
-
-  if (type === 'ar') {
-    return `${prefix[0]}${root}o, ${prefix[1]}${root}as, ${prefix[2]}${root}a, ${prefix[3]}${root}amos, ${prefix[4]}${root}áis, ${prefix[5]}${root}an`;
-  }
-  if (type === 'er') {
-    return `${prefix[0]}${root}o, ${prefix[1]}${root}es, ${prefix[2]}${root}e, ${prefix[3]}${root}emos, ${prefix[4]}${root}éis, ${prefix[5]}${root}en`;
-  }
-  if (type === 'ir') {
-    return `${prefix[0]}${root}o, ${prefix[1]}${root}es, ${prefix[2]}${root}e, ${prefix[3]}${root}imos, ${prefix[4]}${root}ís, ${prefix[5]}${root}en`;
-  }
-  return '';
-};
-
-// Helper to simple pluralize Spanish words
-const pluralize = (word: string): string => {
-  if (/[aeiouáéíóú]$/i.test(word)) return word + 's';
-  if (word.endsWith('z')) return word.slice(0, -1) + 'ces';
-  return word + 'es';
-};
-
-// Helper to create Verb (English) - Default Category: 'island'
+// Helper to create Verb
 const v = (id: string, s: string, t: string, tip: string, ex1: string, ex1t: string, ex2: string, ex2t: string, nn: string, forms: string = '', reg: boolean = true): Word => {
   let computedForms = forms;
   if (reg && !computedForms) {
     computedForms = generateRegularForms(s);
   }
-  
   return {
     id, s, t, type: 'verb', category: 'island', reg, forms: computedForms, grammarTip: tip,
     examples: [{ txt: ex1, eng: ex1t }, { txt: ex2, eng: ex2t }], nounNotes: nn
   };
 };
 
-// Helper to create Adjective (English) - Default Category: 'island'
+// Helper to create Adjective
 const a = (id: string, s: string, t: string, ant: string, antT: string, tip: string, ex1: string, ex1t: string, ex2: string, ex2t: string, nn: string): Word => {
   let masc = s;
   let fem = s;
-  if (s.endsWith('o')) {
-    fem = s.slice(0, -1) + 'a';
-  }
+  if (s.endsWith('o')) fem = s.slice(0, -1) + 'a';
   const mascPl = pluralize(masc);
   const femPl = pluralize(fem);
   const forms = `${masc}, ${fem}, ${mascPl}, ${femPl}`;
-
   return {
     id, s, t, type: 'adj', category: 'island', ant, antT, grammarTip: tip, forms,
     examples: [{ txt: ex1, eng: ex1t }, { txt: ex2, eng: ex2t }], nounNotes: nn
   };
 };
 
-// Helper to create Noun (English) - Default Category: 'island'
+// Helper to create Noun
 const n = (id: string, s: string, t: string, gender: 'm' | 'f', tip: string, ex1: string, ex1t: string, ex2: string, ex2t: string, nn: string): Word => {
   const article = gender === 'm' ? 'El' : 'La';
   const pluralArticle = gender === 'm' ? 'Los' : 'Las';
   const plural = pluralize(s);
   const forms = `${article} ${s}, ${pluralArticle} ${plural}`;
-
   return {
     id, s, t, type: 'noun', category: 'island', forms, grammarTip: `${gender === 'm' ? 'Masculine' : 'Feminine'}. ${tip}`,
     examples: [{ txt: ex1, eng: ex1t }, { txt: ex2, eng: ex2t }], nounNotes: nn
   };
 };
 
-// Helper for Misc/Function words (No conjugation tables, Golden Rules) - REQUIRES CATEGORY
+// Helper for Misc
 const m = (id: string, s: string, t: string, tip: string, ex1: string, ex1t: string, ex2: string, ex2t: string, category: string): Word => ({
   id, s, t, type: 'misc', category, grammarTip: tip, forms: '',
   examples: [{ txt: ex1, eng: ex1t }, { txt: ex2, eng: ex2t }], nounNotes: 'Function Word'
 });
 
 export const EXTRA_CANDIDATES: Word[] = [
-  // ... (content remains unchanged, just ensuring exports are correct)
-  // --- The Glue (Connectors) ---
   m('y', 'y', 'And', 'Change "y" to "e" if the next word starts with "i-" or "hi-" (e.g., madre e hija).', 'Tú y yo.', 'You and I.', 'Pan y agua.', 'Bread and water.', 'connector'),
   m('o', 'o', 'Or', 'Change "o" to "u" if the next word starts with "o-" or "ho-" (e.g., siete u ocho).', '¿Té o café?', 'Tea or coffee?', 'Blanco o negro.', 'White or black.', 'connector'),
   m('pero', 'pero', 'But', 'Use to contrast ideas. If the first part is negative and you correct it, use "Sino" instead.', 'Pobre pero feliz.', 'Poor but happy.', 'Es tarde pero voy.', 'It is late but I go.', 'connector'),
-  m('porque', 'porque', 'Because', 'Note: "Por qué" = Why? "Porque" = Because. "El porqué" = The reason.', 'Como porque tengo hambre.', 'I eat because I am hungry.', 'Lloro porque duele.', 'I cry because it hurts.', 'connector'),
+  m('porque', 'porque', 'Because', 'Note: "Por qué" = Why? "Porque" = Because. "El porqué" = The reason.', 'Como porque tengo hambre.', 'I eat because I am hungry.', 'Lloro because it hurts.', 'I cry because it hurts.', 'connector'),
   m('si', 'si', 'If', 'No accent mark! "Sí" (with accent) means Yes.', 'Si puedes, ven.', 'If you can, come.', 'Si llueve, no voy.', 'If it rains, I do not go.', 'connector'),
-  m('que', 'que', 'That / Than', 'The most common connector. Used for relative clauses and comparisons.', 'El libro que leo.', 'The book that I read.', 'Más alto que tú.', 'Taller than you.', 'connector'),
-  m('cuando', 'cuando', 'When', 'No accent. Use subjunctive if referring to the future.', 'Cuando llegues.', 'When you arrive.', 'Cuando como.', 'When I eat.', 'connector'),
-  m('como', 'como', 'Like / As', 'Used for comparisons or "In the capacity of".', 'Fuerte como un toro.', 'Strong as a bull.', 'Trabajo como chef.', 'I work as a chef.', 'connector'),
-  m('aunque', 'aunque', 'Although / Even if', 'Use subjunctive if the fact is hypothetical.', 'Aunque llueva.', 'Even if it rains.', 'Aunque es tarde.', 'Although it is late.', 'connector'),
-  m('mientras', 'mientras', 'While', 'Two actions happening at the same time.', 'Leo mientras como.', 'I read while I eat.', 'Mientras tanto.', 'Meanwhile.', 'connector'),
-  m('pues', 'pues', 'Well / Since', 'Common filler word or cause connector.', 'Pues... no sé.', 'Well... I do not know.', 'Hazlo, pues puedes.', 'Do it, since you can.', 'connector'),
-  m('ni', 'ni', 'Nor / Neither', 'Used in negatives. "Ni esto ni aquello" (Neither this nor that).', 'Ni agua ni pan.', 'Neither water nor bread.', 'No tengo ni idea.', 'I have no idea.', 'connector'),
-  m('tambien', 'también', 'Also / Too', 'Used for agreement in positive sentences.', 'Yo también.', 'Me too.', 'Ella viene también.', 'She comes also.', 'connector'),
-  m('tampoco', 'tampoco', 'Neither', 'Used for agreement in negative sentences.', 'Yo tampoco.', 'Me neither.', 'No voy tampoco.', 'I am not going either.', 'connector'),
+  m('que', 'que', 'That / Than', 'The most common connector.', 'El libro que leo.', 'The book that I read.', 'Más alto que tú.', 'Taller than you.', 'connector'),
+  m('cuando', 'cuando', 'When', 'No accent.', 'Cuando llegues.', 'When you arrive.', 'Cuando como.', 'When I eat.', 'connector'),
+  m('como', 'como', 'Like / As', 'Used for comparisons.', 'Fuerte como un toro.', 'Strong as a bull.', 'Trabajo como chef.', 'I work as a chef.', 'connector'),
+  m('aunque', 'aunque', 'Although / Even if', 'Use subjunctive if hypothetical.', 'Aunque llueva.', 'Even if it rains.', 'Aunque es tarde.', 'Although it is late.', 'connector'),
+  m('mientras', 'mientras', 'While', 'Two actions at the same time.', 'Leo mientras como.', 'I read while I eat.', 'Mientras tanto.', 'Meanwhile.', 'connector'),
+  m('pues', 'pues', 'Well / Since', 'Common filler word.', 'Pues... no sé.', 'Well... I do not know.', 'Hazlo, pues puedes.', 'Do it, since you can.', 'connector'),
+  m('ni', 'ni', 'Nor / Neither', 'Used in negatives.', 'Ni agua ni pan.', 'Neither water nor bread.', 'No tengo ni idea.', 'I have no idea.', 'connector'),
+  m('tambien', 'también', 'Also / Too', 'Positive agreement.', 'Yo también.', 'Me too.', 'Ella viene también.', 'She comes also.', 'connector'),
+  m('tampoco', 'tampoco', 'Neither', 'Negative agreement.', 'Yo tampoco.', 'Me neither.', 'No voy tampoco.', 'I am not going either.', 'connector'),
   m('ademas', 'además', 'Besides / Furthermore', 'Adds information.', 'Además, es barato.', 'Besides, it is cheap.', 'Además de eso.', 'Besides that.', 'connector'),
-  m('asi', 'así', 'Like this / So', 'Manner or consequence.', 'Hazlo así.', 'Do it like this.', 'Es así.', 'It is like that.', 'connector'),
-  m('entonces', 'entonces', 'Then / So', 'Sequence or consequence.', 'Y entonces se fue.', 'And then he left.', '¿Entonces qué?', 'So what?', 'connector'),
+  m('asi', 'así', 'Like this / So', 'Manner.', 'Hazlo así.', 'Do it like this.', 'Es así.', 'It is like that.', 'connector'),
+  m('entonces', 'entonces', 'Then / So', 'Sequence.', 'Y entonces se fue.', 'And then he left.', '¿Entonces qué?', 'So what?', 'connector'),
   m('luego', 'luego', 'Later / Then', 'Time sequence.', 'Hasta luego.', 'See you later.', 'Primero como, luego duermo.', 'First I eat, then I sleep.', 'connector'),
-  m('sino', 'sino', 'But rather', 'Used after a negative to offer the correct alternative.', 'No es rojo, sino azul.', 'It is not red, but blue.', 'No hablo, sino escucho.', 'I do not speak, but listen.', 'connector'),
-  m('donde', 'donde', 'Where', 'Relative pronoun (no accent). Place.', 'La casa donde vivo.', 'The house where I live.', 'Donde quieras.', 'Wherever you want.', 'connector'),
-  // ... (Abbreviated for response length - assumes all other EXTRA_CANDIDATES remain)
-  m('ahora', 'ahora', 'Now', 'Right this moment.', 'Hazlo ahora.', 'Do it now.', 'Ahora o nunca.', 'Now or never.', 'time'),
-  n('tiempo', 'tiempo', 'Time / Weather', 'm', 'Means both clock time and weather.', 'Hace buen tiempo.', 'The weather is good.', 'No tengo tiempo.', 'I have no time.', 'Buen (Good)'),
+  m('sino', 'sino', 'But rather', 'Correct alternative.', 'No es rojo, sino azul.', 'It is not red, but blue.', 'No hablo, sino escucho.', 'I do not speak, but listen.', 'connector'),
+  m('donde', 'donde', 'Where', 'Relative pronoun.', 'La casa donde vivo.', 'The house where I live.', 'Donde quieras.', 'Wherever you want.', 'connector'),
+  m('ahora', 'ahora', 'Now', 'Right now.', 'Hazlo ahora.', 'Do it now.', 'Ahora o nunca.', 'Now or never.', 'time'),
+  n('tiempo', 'tiempo', 'Time / Weather', 'm', 'Both clock and weather.', 'Hace buen tiempo.', 'The weather is good.', 'No tengo tiempo.', 'I have no time.', 'Buen (Good)'),
 ];
 
 export const ISLAND_SLANG = [
@@ -125,8 +82,6 @@ export const ISLAND_SLANG = [
   { s: "En plan...", t: "Like...", note: "Common filler word." }
 ];
 
-// Note: The 'date' field is now used primarily for sorting/grouping, 
-// the SRS logic uses sequential unlocking (Campaign Mode) instead of calendar matching.
 export const VOCABULARY_DATA: { date: string, words: Word[] }[] = [
   {
     date: '2026-02-03',
@@ -148,7 +103,6 @@ export const VOCABULARY_DATA: { date: string, words: Word[] }[] = [
       a('grueso', 'grueso', 'Thick', 'delgado', 'Thin', 'Thickness of objects.', 'Libro grueso.', 'Thick book.', 'Muro grueso.', 'Thick wall.', 'Libro (Book)')
     ]
   },
-  // ... (The rest of the vocabulary list remains exactly as is in the original file, just updating the TODAY_SIMULATED and export structure)
   {
     date: '2026-02-04',
     words: [
@@ -181,7 +135,7 @@ export const VOCABULARY_DATA: { date: string, words: Word[] }[] = [
     date: '2026-02-06',
     words: [
       v('sentir', 'sentir', 'To feel', 'E->IE.', 'Siento frío.', 'I feel cold.', 'Sientes dolor.', 'You feel pain.', 'Dolor (Pain)', 's[ie]nto, s[ie]ntes, s[ie]nte, sentimos, sentís, s[ie]nten', false),
-      v('tomar', 'tomar', 'To take/drink', 'Regular AR.', 'Tomo café.', 'I drink coffee.', 'Tomas el bus.', 'You take the bus.', 'Bus (Bus)', '', true),
+      v('tomar', 'tomar', 'To take/drink', 'Regular AR.', 'Tomo café.', 'I drink coffee.', 'Tomas the bus.', 'You take the bus.', 'Bus (Bus)', '', true),
       v('vivir', 'vivir', 'To live', 'Regular IR.', 'Vivo aquí.', 'I live here.', 'Vives lejos.', 'You live far.', 'Lejos (Far)', '', true),
       v('creer', 'creer', 'To believe', 'Regular ER.', 'Creo en ti.', 'I believe in you.', 'Crees eso.', 'You believe that.', 'Ti (You)', '', true),
       v('pensar', 'pensar', 'To think', 'E->IE.', 'Pienso mucho.', 'I think a lot.', 'Piensas bien.', 'You think well.', 'Mucho (A lot)', 'p[ie]nso, p[ie]nsas, p[ie]nsa, pensamos, pensáis, p[ie]nsan', false),
@@ -212,8 +166,8 @@ export const VOCABULARY_DATA: { date: string, words: Word[] }[] = [
       v('necesitar', 'necesitar', 'To need', 'Regular AR.', 'Necesito aire.', 'I need air.', 'Necesitas ir.', 'You need to go.', 'Aire (Air)', '', true),
       v('buscar', 'buscar', 'To search', 'Regular AR.', 'Busco paz.', 'I seek peace.', 'Buscas algo.', 'You seek something.', 'Algo (Something)', '', true),
       v('esperar', 'esperar', 'To wait/hope', 'Regular AR.', 'Espero tren.', 'I wait for train.', 'Esperas ver.', 'You hope to see.', 'Tren (Train)', '', true),
-      v('usar', 'usar', 'To use', 'Regular AR.', 'Uso el coche.', 'I use the car.', 'Usas la red.', 'You use the net.', 'Red (Net)', '', true),
-      v('mirar', 'mirar', 'To look', 'Regular AR.', 'Miro el mar.', 'I look at the sea.', 'Miras la tv.', 'You watch TV.', 'Mar (Sea)', '', true),
+      v('usar', 'usar', 'To use', 'Regular AR.', 'Uso the car.', 'I use the car.', 'Usas la red.', 'You use the net.', 'Red (Net)', '', true),
+      v('mirar', 'mirar', 'To look', 'Regular AR.', 'Miro the sea.', 'I look at the sea.', 'Miras the tv.', 'You watch TV.', 'Mar (Sea)', '', true),
       a('limpio', 'limpio', 'Clean', 'sucio', 'Dirty', 'Hygiene.', 'Casa limpia.', 'Clean house.', 'Mano sucia.', 'Dirty hand.', 'Mano (Hand)'),
       a('lleno', 'lleno', 'Full', 'vacío', 'Empty', 'Capacity.', 'Vaso lleno.', 'Full glass.', 'Vaso vacío.', 'Empty glass.', 'Vaso (Glass)'),
       a('abierto', 'abierto', 'Open', 'cerrado', 'Closed', 'Status.', 'Ojo abierto.', 'Open eye.', 'Puerta cerrada.', 'Closed door.', 'Ojo (Eye)')
@@ -238,7 +192,7 @@ export const VOCABULARY_DATA: { date: string, words: Word[] }[] = [
   {
     date: '2026-02-10',
     words: [
-      v('parecer', 'parecer', 'To seem', 'Irregular Yo (Parezco).', 'Parezco feliz.', 'I seem happy.', 'Pareces triste.', 'You seem sad.', 'Feliz (Happy)', 'parez[co], pareces, parece, parecemos, parecéis, parecen', false),
+      v('parecer', 'parecer', 'To seem', 'Irregular Yo (Parezco).', 'Parezco feliz.', 'I seem happy.', 'Pareces triste.', 'You seem sad.', 'Feliz (Happy)', 'parez[co], pareces, parece, parecemos, parecéis, aparecen', false),
       v('quedar', 'quedar', 'To stay/remain', 'Regular AR.', 'Quedo aquí.', 'I stay here.', 'Quedas solo.', 'You stay alone.', 'Solo (Alone)', '', true),
       v('ayudar', 'ayudar', 'To help', 'Regular AR.', 'Ayudo mucho.', 'I help a lot.', 'Ayudas poco.', 'You help little.', 'Poco (Little)', '', true),
       v('pagar', 'pagar', 'To pay', 'Regular AR.', 'Pago yo.', 'I pay.', 'Pagas tú.', 'You pay.', 'Cuenta (Bill)', '', true),
@@ -265,5 +219,4 @@ export const VOCABULARY_DATA: { date: string, words: Word[] }[] = [
       a('satisfecho', 'satisfecho', 'Satisfied', 'insatisfecho', 'Dissatisfied', 'Feeling.', 'Cliente satisfecho.', 'Satisfied client.', 'Hombre insatisfecho.', 'Dissatisfied man.', 'Cliente (Client)')
     ]
   }
-  // (More data follows, but structure is updated)
 ];

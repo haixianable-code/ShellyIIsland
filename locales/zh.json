@@ -1,0 +1,66 @@
+
+{
+  "ui": {
+    "nav": {
+      "home": "岛屿首页",
+      "pocket": "我的口袋",
+      "menu": "菜单"
+    },
+    "dashboard": {
+      "welcome": "欢迎来到 Shelly 西班牙语岛！",
+      "new_seeds": "新种子",
+      "daily_care": "每日呵护",
+      "start_planting": "开始播种",
+      "dig_into": "探索 {{count}} 个新单词",
+      "no_seeds": "没有选中的新种子",
+      "recently_planted": "今日已播种",
+      "water_garden": "浇灌花园",
+      "refresh_grown": "复习 {{count}} 个已掌握单词",
+      "island_quiet": "岛屿很宁静...",
+      "crate_msg": "所有家务都做完了！瞧，一个补给箱被冲上了岸。",
+      "open_crate": "打开补给箱 (+10)",
+      "slang_title": "岛屿俚语！"
+    },
+    "actions": {
+      "save_forever": "永久保存进度",
+      "backup": "备份记忆",
+      "restore": "还原记忆",
+      "reset": "重置岛屿",
+      "logout": "退出登录",
+      "sound_on": "声音开启",
+      "sound_off": "静音",
+      "next_word": "下一个",
+      "finish": "结束课程"
+    },
+    "study": {
+      "grammar_pocket": "语法口袋",
+      "usage_examples": "用法示例",
+      "vocab_note": "词汇笔记",
+      "how_well": "这个词你掌握得如何？",
+      "forgot": "忘记了",
+      "hard": "有点难",
+      "good": "还不错",
+      "perfect": "太完美了",
+      "skip_details": "跳过详情",
+      "hard_mode": "困难",
+      "normal_mode": "普通"
+    }
+  },
+  "vocab": {
+    "ser": { "t": "是 (本质)", "tip": "用于永久特征、职业或出身。" },
+    "estar": { "t": "是 (状态)", "tip": "用于临时状态、情感或地理位置。" },
+    "tener": { "t": "有", "tip": "用于表示拥有、年龄或某些生理感觉。" },
+    "hacer": { "t": "做/制造", "tip": "用于具体的动作或描述天气。" },
+    "ir": { "t": "去", "tip": "表示目的地。常用搭配 'Ir a + 地点'。" },
+    "poder": { "t": "能够/可以", "tip": "表示能力或许可。词根变化 O -> UE。" },
+    "decir": { "t": "说/告诉", "tip": "表示言语表达。变位不规则。" },
+    "dar": { "t": "给", "tip": "表示赠予。第一人称单数 Yo Doy。" },
+    "saber": { "t": "知道", "tip": "表示知道事实或掌握某种技能。" },
+    "ver": { "t": "看", "tip": "表示视觉感知。第一人称单数 Yo Veo。" },
+    "grande": { "t": "大的", "tip": "形容词。在名词前有时简写为 'Gran'。" },
+    "largo": { "t": "长的", "tip": "注意！它不表示'巨大的'（那是 Large）。" },
+    "alto": { "t": "高的", "tip": "用于身高或音量。" },
+    "ancho": { "t": "宽的", "tip": "描述空间或维度。" },
+    "grueso": { "t": "厚的", "tip": "描述物体的厚度。" }
+  }
+}
