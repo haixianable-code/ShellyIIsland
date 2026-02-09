@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Word, ProgressMap, WordLevel, WordTopic } from '../types';
-import { Search, ShoppingBag, CircleDot, Sprout, Flower2, TreeDeciduous, ChevronRight, Filter, Plane, Apple, Briefcase, Leaf, Home, Heart, Users, Brain, Cpu, Palette, PenTool, Sparkles, Clock, User, Calculator, FlaskConical } from 'lucide-react';
+import { Search, ShoppingBag, CircleDot, Sprout, Flower2, TreeDeciduous, ChevronRight, Filter, Plane, Apple, Briefcase, Leaf, Home, Heart, Users, Brain, Cpu, Palette, PenTool, Sparkles, Clock, User, Calculator, FlaskConical, Shovel } from 'lucide-react';
 import WordExpansionPack from './WordExpansionPack';
 import ExpansionModal from './ExpansionModal';
 import { EXTRA_CANDIDATES } from '../constants';
@@ -44,13 +44,34 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
   const [selectedLevel, setSelectedLevel] = useState<WordLevel | 'ALL'>('ALL');
   const [selectedTopic, setSelectedTopic] = useState<WordTopic | 'ALL'>('ALL');
 
-  const filteredWords = words.filter(w => {
-    const matchesSearch = w.s.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          t(`vocab.${w.id}.t`, { defaultValue: w.t }).toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLevel = selectedLevel === 'ALL' || w.level === selectedLevel;
-    const matchesTopic = selectedTopic === 'ALL' || w.topic === selectedTopic;
-    return matchesSearch && matchesLevel && matchesTopic;
-  });
+  // Core Filter: Must be in progress AND match search/filters
+  const filteredWords = useMemo(() => {
+    return words.filter(w => {
+      // 1. Only show words that the user has actually "planted" (exists in progress)
+      if (!progress[w.id]) return false;
+
+      const matchesSearch = w.s.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            t(`vocab.${w.id}.t`, { defaultValue: w.t }).toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesLevel = selectedLevel === 'ALL' || w.level === selectedLevel;
+      const matchesTopic = selectedTopic === 'ALL' || w.topic === selectedTopic;
+      return matchesSearch && matchesLevel && matchesTopic;
+    });
+  }, [words, progress, searchTerm, selectedLevel, selectedTopic, t]);
+
+  // Dynamically calculate which Levels and Topics exist in the user's pocket
+  const ownedWords = useMemo(() => words.filter(w => !!progress[w.id]), [words, progress]);
+  
+  const availableLevels = useMemo(() => {
+    const levels = new Set<WordLevel>();
+    ownedWords.forEach(w => levels.add(w.level));
+    return Array.from(levels).sort();
+  }, [ownedWords]);
+
+  const availableTopics = useMemo(() => {
+    const topics = new Set<WordTopic>();
+    ownedWords.forEach(w => topics.add(w.topic));
+    return Array.from(topics).sort();
+  }, [ownedWords]);
 
   const unlearnedExtra = EXTRA_CANDIDATES.filter(w => !progress[w.id]);
 
@@ -71,7 +92,7 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
           <div>
             <h2 className="text-5xl font-black text-[#4b7d78] drop-shadow-sm">{t('ui.nav.pocket')}</h2>
             <p className="text-[#8d99ae] font-bold text-sm uppercase tracking-widest mt-1">
-              {words.length} {t('ui.dashboard.recently_planted')}
+              {ownedWords.length} {t('ui.dashboard.recently_planted')}
             </p>
           </div>
         </div>
@@ -97,50 +118,75 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
 
       {/* --- FILTERS --- */}
       <div className="space-y-4">
-        {/* Level Filter */}
-        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-           {['ALL', 'A1', 'A2', 'B1'].map((lvl) => (
-             <button
-               key={lvl}
-               onClick={() => { playSwish(); setSelectedLevel(lvl as any); }}
-               className={`px-4 py-2 rounded-xl border-2 font-black text-xs uppercase tracking-widest transition-all whitespace-nowrap active:scale-95 ${
-                 selectedLevel === lvl 
-                 ? 'bg-[#4b7d78] text-white border-[#4b7d78] shadow-md' 
-                 : 'bg-white text-[#8d99ae] border-[#f0f0f0] hover:border-[#b0bec5]'
-               }`}
-             >
-               {lvl === 'ALL' ? 'All Levels' : `Level ${lvl}`}
-             </button>
-           ))}
-        </div>
+        {/* Level Filter - Dynamically hidden based on ownership */}
+        {availableLevels.length > 0 && (
+          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+            <button
+              onClick={() => { playSwish(); setSelectedLevel('ALL'); }}
+              className={`px-4 py-2 rounded-xl border-2 font-black text-xs uppercase tracking-widest transition-all whitespace-nowrap active:scale-95 ${
+                selectedLevel === 'ALL' 
+                ? 'bg-[#4b7d78] text-white border-[#4b7d78] shadow-md' 
+                : 'bg-white text-[#8d99ae] border-[#f0f0f0] hover:border-[#b0bec5]'
+              }`}
+            >
+              All Levels
+            </button>
+            {availableLevels.map((lvl) => (
+              <button
+                key={lvl}
+                onClick={() => { playSwish(); setSelectedLevel(lvl); }}
+                className={`px-4 py-2 rounded-xl border-2 font-black text-xs uppercase tracking-widest transition-all whitespace-nowrap active:scale-95 ${
+                  selectedLevel === lvl 
+                  ? 'bg-[#4b7d78] text-white border-[#4b7d78] shadow-md' 
+                  : 'bg-white text-[#8d99ae] border-[#f0f0f0] hover:border-[#b0bec5]'
+                }`}
+              >
+                Level {lvl}
+              </button>
+            ))}
+          </div>
+        )}
         
-        {/* Topic Filter */}
-        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-           {['ALL', 'travel', 'food', 'work', 'nature', 'daily', 'feelings', 'society', 'abstract', 'tech', 'art', 'quantity', 'science'].map((topic) => {
-             const Icon = topic === 'ALL' ? Filter : TOPIC_ICONS[topic as WordTopic];
-             return (
-               <button
-                 key={topic}
-                 onClick={() => { playSwish(); setSelectedTopic(topic as any); }}
-                 className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 font-black text-xs uppercase tracking-widest transition-all whitespace-nowrap active:scale-95 ${
-                   selectedTopic === topic 
-                   ? 'bg-[#8bc34a] text-white border-[#8bc34a] shadow-md' 
-                   : 'bg-white text-[#8d99ae] border-[#f0f0f0] hover:border-[#b0bec5]'
-                 }`}
-               >
-                 {Icon && <Icon size={14} />}
-                 {topic}
-               </button>
-             );
-           })}
-        </div>
+        {/* Topic Filter - Dynamically hidden based on ownership */}
+        {availableTopics.length > 0 && (
+          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+            <button
+              onClick={() => { playSwish(); setSelectedTopic('ALL'); }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 font-black text-xs uppercase tracking-widest transition-all whitespace-nowrap active:scale-95 ${
+                selectedTopic === 'ALL' 
+                ? 'bg-[#8bc34a] text-white border-[#8bc34a] shadow-md' 
+                : 'bg-white text-[#8d99ae] border-[#f0f0f0] hover:border-[#b0bec5]'
+              }`}
+            >
+              <Filter size={14} />
+              All Topics
+            </button>
+            {availableTopics.map((topic) => {
+              const Icon = TOPIC_ICONS[topic];
+              return (
+                <button
+                  key={topic}
+                  onClick={() => { playSwish(); setSelectedTopic(topic); }}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 font-black text-xs uppercase tracking-widest transition-all whitespace-nowrap active:scale-95 ${
+                    selectedTopic === topic 
+                    ? 'bg-[#8bc34a] text-white border-[#8bc34a] shadow-md' 
+                    : 'bg-white text-[#8d99ae] border-[#f0f0f0] hover:border-[#b0bec5]'
+                  }`}
+                >
+                  {Icon && <Icon size={14} />}
+                  {topic}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {filteredWords.map((word, idx) => {
           const stats = progress[word.id];
           const level = stats?.level || 0;
-          const { icon: StageIcon, color, bg, label } = getGrowthIcon(level);
+          const { icon: StageIcon, color, bg } = getGrowthIcon(level);
           const theme = getTypeTheme(word);
           
           return (
@@ -182,6 +228,33 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
           );
         })}
       </div>
+
+      {filteredWords.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-24 bg-white/40 rounded-[4rem] border-4 border-dashed border-[#e0d9b4] text-center px-8 relative overflow-hidden">
+          {/* Decorative background sprout */}
+          <div className="absolute -bottom-10 -right-10 opacity-5 -rotate-12">
+            <Sprout size={240} />
+          </div>
+          
+          <div className="bg-white p-6 rounded-full shadow-lg border-4 border-[#8bc34a]/20 mb-8 animate-bounce-slight">
+            <Sprout className="text-[#8bc34a]" size={64} />
+          </div>
+          
+          <h3 className="text-2xl md:text-3xl font-black text-[#4b7d78] mb-4 tracking-tight">
+            {t('ui.pocket.empty_title', { defaultValue: 'Your pocket is waiting for its first seed.' })}
+          </h3>
+          
+          <p className="text-sm md:text-base font-bold text-[#8d99ae] max-w-sm leading-relaxed">
+            {t('ui.pocket.empty_subtitle', { defaultValue: 'Go to the Supply Crate or Start Planting to fill it up!' })}
+          </p>
+
+          <div className="mt-8 flex gap-4 opacity-20">
+            <Shovel size={24} className="text-[#4b7d78]" />
+            <div className="w-px h-6 bg-[#4b7d78]" />
+            <Leaf size={24} className="text-[#4b7d78]" />
+          </div>
+        </div>
+      )}
       
       {isModalOpen && (
         <ExpansionModal 

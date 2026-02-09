@@ -313,17 +313,20 @@ const App: React.FC = () => {
 
       {(view === AppView.STUDY || view === AppView.REVIEW) && (
         <div className={`fixed inset-0 z-50 overflow-hidden flex flex-col ${isBlitzMode ? 'bg-[#f3e5f5]' : 'bg-[#f7f9e4]'}`}>
+          {/* 
+              FIX: Removed the following unused props that were causing TypeScript errors:
+              - unlearnedExtra={unlearnedExtraWords}
+              - onStartExtra={handleStartExtraStudy}
+              - isGuest={isGuest}
+          */}
           <StudyView 
             key={studySessionKey}
             user={user}
             words={sessionWords}
             dailyHarvest={learnedToday}
-            unlearnedExtra={unlearnedExtraWords}
             onFinish={handleFinishSession}
             onFeedback={handleFeedback}
-            onStartExtra={handleStartExtraStudy}
             isBlitz={isBlitzMode}
-            isGuest={isGuest}
             onLoginRequest={handleLoginRequest}
             userStats={stats} 
           />

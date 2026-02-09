@@ -45,7 +45,9 @@ export default {
       "expansion_pack_title": "Island Expansion Pack",
       "expansion_pack_desc": "Add A1-B1 high-frequency words to your garden!",
       "explore_seeds": "Explore {{count}} Seeds",
-      "all_seeds_planted": "All Seeds Planted"
+      "all_seeds_planted": "All Seeds Planted",
+      "empty_title": "Your pocket is waiting for its first seed.",
+      "empty_subtitle": "Go to the Supply Crate or Start Planting to fill it up!"
     },
     "expansion": {
       "title": "SSI Supply Crate",

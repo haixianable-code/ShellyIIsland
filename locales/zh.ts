@@ -4,7 +4,14 @@ export default {
     "nav": { "home": "岛屿首页", "pocket": "我的口袋", "menu": "功能菜单", "passport": "岛屿护照" },
     "grammar": { "yo": "我 (Yo)", "tu": "你 (Tú)", "el": "他/她 (Él/Ella)", "nos": "我们 (Nos)", "vos": "你们 (Vos)", "ellos": "他们 (Ellos)", "sing": "单数", "plur": "复数", "masc": "阳性", "fem": "阴性", "masc_pl": "阳复", "fem_pl": "阴复" },
     "dashboard": { "welcome": "欢迎来到 Shelly 西班牙语岛！", "new_seeds": "新种子", "daily_care": "待复习", "start_planting": "开始播种", "dig_into": "探索 {{count}} 个新单词", "no_seeds": "今天没有新种子", "recently_planted": "今日已收获", "water_garden": "浇灌花园", "refresh_grown": "复习 {{count}} 个已掌握单词", "island_quiet": "岛屿很宁静...", "crate_msg": "今天的任务都完成啦！瞧，一个补给箱被冲上了岸。", "open_crate": "打开补给箱 (+10)", "slang_title": "岛屿俚语！", "mission": "任务：", "crate_unlocked": "补给箱已解锁！", "crate_found": "你发现了 {{count}} 颗新种子！", "rest_msg_1": "今日任务已完成", "rest_msg_2": "明天再来，让大脑休息一下。" },
-    "pocket": { "expansion_pack_title": "岛屿扩充包", "expansion_pack_desc": "为你的花园添加 A1-B1 高频词汇！", "explore_seeds": "探索 {{count}} 颗种子", "all_seeds_planted": "所有种子已播种" },
+    "pocket": { 
+      "expansion_pack_title": "岛屿扩充包", 
+      "expansion_pack_desc": "为你的花园添加 A1-B1 高频词汇！", 
+      "explore_seeds": "探索 {{count}} 颗种子", 
+      "all_seeds_planted": "所有种子已播种",
+      "empty_title": "口袋正在等待它的第一颗种子。",
+      "empty_subtitle": "前往补给箱或开始播种，让你的花园热闹起来！"
+    },
     "expansion": { 
       "title": "SSI 补给箱", 
       "select_limit": "最多选择", 
@@ -93,7 +100,7 @@ export default {
     "ver": { "t": "看", "tip": "表示视觉感知。第一人称单数 Yo Veo。", "notes": "Sol (太阳)。" },
     "dar": { "t": "给", "tip": "表示赠予。第一人称单数 Yo Doy。", "notes": "Flor (花)。" },
     "grande": { "t": "大的", "tip": "形容词。在单数名词前有时简写为 'Gran'。", "notes": "Isla (岛)。" },
-    "bueno": { "t": "好的", "tip": "在阳性单数名词前简写为 'Buen'。", "notes": "Libro (书)。" },
+    "bueno": { "t": "好的", "tip": "在单数名词前简写为 'Buen'。", "notes": "Libro (书)。" },
     "nuevo": { "t": "新的", "tip": "名词后=崭新的；名词前=新获得的。", "notes": "Coche (车)。" },
     "alto": { "t": "高的", "tip": "用于身高或建筑物高度。", "notes": "Edificio (建筑物)。" },
     "largo": { "t": "长的", "tip": "注意！它不表示'巨大的'（那是 Large）。", "notes": "Pelo (头发)。" },
