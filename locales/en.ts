@@ -85,7 +85,8 @@ export default {
       "protect_harvest": "Protect Your Harvest",
       "protect_desc": "We found {{count}} words not yet backed up. Log in to save them forever.",
       "issue_date": "Date of Arrival",
-      "id_number": "Citizen ID"
+      "id_number": "Citizen ID",
+      "share_history": "Share Achievement Scroll"
     },
     "auth": {
       "login_title": "Save Your Journey",
@@ -107,6 +108,31 @@ export default {
         "subtitle": "Please sign your name on the island registry to receive your official passport.",
         "placeholder": "Your traveler name...",
         "button": "Enter the Island"
+      },
+      "returning": {
+        "good_morning": "¡Buenos días!",
+        "good_afternoon": "¡Buenas tardes!",
+        "good_evening": "¡Buenas noches!",
+        "welcome_back": "Welcome back, {{name}}!",
+        "log_title": "Daily Arrival Log",
+        "arrived_stamp": "ARRIVED",
+        "status_reviews": "{{count}} words need watering.",
+        "status_seeds": "{{count}} new seeds are waiting.",
+        "status_streak": "You have guarded the island for {{count}} days.",
+        "enter_btn": "Enter My Island"
+      }
+    },
+    "achievement": {
+      "title": "Honorary Citizen Scroll",
+      "certified": "OFFICIALLY CERTIFIED",
+      "words_grown": "Total Words Grown",
+      "max_streak": "Max Day Streak",
+      "rank": "Island Rank",
+      "scan_msg": "Scan to start your island journey",
+      "ranks": {
+        "novice": "Island Explorer",
+        "guide": "Island Guide",
+        "lord": "Language Lord"
       }
     },
     "actions": {

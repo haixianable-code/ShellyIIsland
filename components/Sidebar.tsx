@@ -2,7 +2,7 @@
 import React, { useRef, useState } from 'react';
 import { AppView } from '../types';
 import { User } from '@supabase/supabase-js';
-import { Home, Briefcase, Leaf, Heart, RotateCcw, Download, Volume2, VolumeX, CloudUpload, LogOut, ShieldAlert, ShieldCheck, Fingerprint, ChevronRight, UserPlus, Menu } from 'lucide-react';
+import { Home, Briefcase, Leaf, Heart, RotateCcw, Download, Volume2, VolumeX, CloudUpload, LogOut, ShieldAlert, ShieldCheck, Fingerprint, ChevronRight, UserPlus, Menu, Trophy } from 'lucide-react';
 import { toggleMute, getMuteState, playClick, playSparkle } from '../utils/sfx';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -15,9 +15,10 @@ interface SidebarProps {
   isSupabaseConfigured: boolean;
   onLoginRequest: () => void;
   onLogout: () => void;
+  onShareAchievement: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayName, isSupabaseConfigured, onLoginRequest, onLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayName, isSupabaseConfigured, onLoginRequest, onLogout, onShareAchievement }) => {
   const { t } = useTranslation();
   const [isMuted, setIsMuted] = useState(getMuteState());
   const isGuest = isSupabaseConfigured && !user;
@@ -106,22 +107,31 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
             <div className="absolute -right-2 -bottom-2 text-[10px] font-black border-2 border-white/10 text-white/10 px-2 py-0.5 rounded rotate-12">UNOFFICIAL</div>
           </button>
         ) : user ? (
-          <button 
-             onClick={() => { playClick(); setView(AppView.SETTINGS); }}
-             className={`w-full text-left bg-white p-5 rounded-[2.5rem] border-4 ${currentView === AppView.SETTINGS ? 'border-[#ffa600]' : 'border-[#e0d9b4]'} shadow-sm relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md group`}
-          >
-             <div className="flex items-center gap-4">
-                <div className="bg-[#78c850] p-2.5 rounded-xl border-2 border-white shadow-inner">
-                   <ShieldCheck className="text-white" size={20} />
-                </div>
-                <div className="flex-1 min-w-0">
-                   <h4 className="text-[#4b7d78] text-xs font-black uppercase leading-none mb-1 truncate">{displayName}</h4>
-                   <p className="text-[#8bc34a] text-[9px] font-black uppercase tracking-widest italic">SSI CITIZEN</p>
-                </div>
-                <ChevronRight size={16} className="text-[#e0d9b4] group-hover:text-[#ffa600] group-hover:translate-x-1 transition-all" />
-             </div>
-             <div className="absolute -right-2 -bottom-2 text-[10px] font-black border-2 border-[#8bc34a]/10 text-[#8bc34a]/10 px-2 py-0.5 rounded rotate-12">OFFICIAL</div>
-          </button>
+          <div className="space-y-2">
+            <button 
+               onClick={() => { playClick(); setView(AppView.SETTINGS); }}
+               className={`w-full text-left bg-white p-5 rounded-[2.5rem] border-4 ${currentView === AppView.SETTINGS ? 'border-[#ffa600]' : 'border-[#e0d9b4]'} shadow-sm relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md group`}
+            >
+               <div className="flex items-center gap-4">
+                  <div className="bg-[#78c850] p-2.5 rounded-xl border-2 border-white shadow-inner">
+                     <ShieldCheck className="text-white" size={20} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                     <h4 className="text-[#4b7d78] text-xs font-black uppercase leading-none mb-1 truncate">{displayName}</h4>
+                     <p className="text-[#8bc34a] text-[9px] font-black uppercase tracking-widest italic">SSI CITIZEN</p>
+                  </div>
+                  <ChevronRight size={16} className="text-[#e0d9b4] group-hover:text-[#ffa600] group-hover:translate-x-1 transition-all" />
+               </div>
+               <div className="absolute -right-2 -bottom-2 text-[10px] font-black border-2 border-[#8bc34a]/10 text-[#8bc34a]/10 px-2 py-0.5 rounded rotate-12">OFFICIAL</div>
+            </button>
+            <button 
+               onClick={() => { playSparkle(); onShareAchievement(); }}
+               className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#ffa600]/10 text-[#ffa600] font-black text-[10px] uppercase tracking-widest hover:bg-[#ffa600]/20 transition-all border border-dashed border-[#ffa600]/30"
+            >
+               <Trophy size={14} />
+               <span>{t('ui.passport.share_history')}</span>
+            </button>
+          </div>
         ) : null}
       </div>
 

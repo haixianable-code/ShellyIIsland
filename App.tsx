@@ -11,6 +11,8 @@ import StreakModal from './components/StreakModal';
 import DailyHarvestModal from './components/DailyHarvestModal';
 import SyncCompleteModal from './components/SyncCompleteModal';
 import ProfileEntryModal from './components/ProfileEntryModal';
+import ReturningWelcomeModal from './components/ReturningWelcomeModal';
+import AchievementShareModal from './components/AchievementShareModal';
 import { AuthView } from './components/AuthView';
 import WelcomeView from './components/WelcomeView';
 import { useSRS } from './hooks/useSRS';
@@ -36,6 +38,8 @@ const App: React.FC = () => {
   const [isGuest, setIsGuest] = useState(false);
   const [showAuthView, setShowAuthView] = useState(false);
   const [showSyncCelebration, setShowSyncCelebration] = useState(false);
+  const [showReturningWelcome, setShowReturningWelcome] = useState(false);
+  const [showAchievementShare, setShowAchievementShare] = useState(false);
   
   // Profile Hook
   const { profile, updateProfile, loading: profileLoading } = useProfile(user);
@@ -65,11 +69,16 @@ const App: React.FC = () => {
     return allAvailableWords.filter(w => progress[w.id]);
   }, [allAvailableWords, progress]);
   
-  // Check for Celebration Flag on User Load
+  // Check for Celebration Flag or Welcome Flag on User Load
   useEffect(() => {
-    if (user && sessionStorage.getItem('show_sync_celebration') === 'true') {
-       setShowSyncCelebration(true);
-       sessionStorage.removeItem('show_sync_celebration');
+    if (user) {
+      if (sessionStorage.getItem('show_sync_celebration') === 'true') {
+         setShowSyncCelebration(true);
+         sessionStorage.removeItem('show_sync_celebration');
+      } else if (!sessionStorage.getItem('session_welcomed')) {
+         // Show returning welcome only once per session if not doing initial sync celebration
+         setShowReturningWelcome(true);
+      }
     }
   }, [user]);
 
@@ -83,7 +92,7 @@ const App: React.FC = () => {
       await supabase.auth.signOut();
       setIsGuest(false);
       setShowAuthView(false);
-      // Optional: force a reload to clear all state
+      sessionStorage.removeItem('session_welcomed');
       window.location.reload();
     }
   };
@@ -115,9 +124,7 @@ const App: React.FC = () => {
   }, [addExtraWordsToProgress]);
 
   const handleStartBlitz = useCallback((wordsToReview?: Word[]) => {
-    // Allows passing specific words (from selection) or defaulting to all learned today
     const targetWords = wordsToReview || learnedToday;
-    
     if (targetWords.length === 0) return;
     setIsBlitzMode(true);
     setSessionVersion(v => v + 1);
@@ -138,9 +145,7 @@ const App: React.FC = () => {
   }, []);
 
   const handleFeedback = useCallback(async (wordId: string, quality: FeedbackQuality) => {
-    if (isBlitzMode) {
-      return; 
-    }
+    if (isBlitzMode) return; 
     const needsRetry = await updateProgress(wordId, quality);
     if (needsRetry) {
       const word = wordMap.get(wordId);
@@ -154,6 +159,11 @@ const App: React.FC = () => {
 
   const handleSaveProfileName = async (name: string) => {
     await updateProfile({ traveler_name: name });
+  };
+
+  const handleCloseReturningWelcome = () => {
+    setShowReturningWelcome(false);
+    sessionStorage.setItem('session_welcomed', 'true');
   };
 
   const studySessionKey = useMemo(() => `session-${sessionVersion}`, [sessionVersion]);
@@ -224,6 +234,7 @@ const App: React.FC = () => {
         isSupabaseConfigured={isSupabaseConfigured}
         onLoginRequest={handleLoginRequest}
         onLogout={handleLogout}
+        onShareAchievement={() => setShowAchievementShare(true)}
       />
       
       {/* Mobile Bottom Navigation */}
@@ -287,6 +298,7 @@ const App: React.FC = () => {
               isSupabaseConfigured={isSupabaseConfigured}
               onLoginRequest={handleLoginRequest}
               onLogout={handleLogout}
+              onShareAchievement={() => setShowAchievementShare(true)}
             />
           ) : null}
         </div>
@@ -321,6 +333,27 @@ const App: React.FC = () => {
       {/* Profile Name Entry Modal - If logged in but no name found yet */}
       {user && !profile?.traveler_name && !profileLoading && (
         <ProfileEntryModal onSave={handleSaveProfileName} />
+      )}
+
+      {/* Returning Welcome Modal */}
+      {showReturningWelcome && (
+        <ReturningWelcomeModal 
+          name={travelerName}
+          reviewsCount={reviewWords.length}
+          newSeedsCount={newWordsForToday.length}
+          streak={stats?.current_streak || 0}
+          onEnter={handleCloseReturningWelcome}
+        />
+      )}
+
+      {/* Total Achievement Share Modal */}
+      {showAchievementShare && (
+        <AchievementShareModal 
+          name={travelerName}
+          totalWords={stats?.total_words_learned || 0}
+          streak={stats?.current_streak || 0}
+          onClose={() => setShowAchievementShare(false)}
+        />
       )}
 
       {showSyncCelebration && (

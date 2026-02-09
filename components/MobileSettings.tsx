@@ -7,9 +7,9 @@ import {
   LogOut, Volume2, VolumeX, RotateCcw, 
   Leaf, Settings, Heart,
   Flame, Sprout, ShieldCheck, ChevronRight, Ticket, Mail, Send,
-  ShieldAlert, Fingerprint, Speaker, Trash2
+  ShieldAlert, Fingerprint, Speaker, Trash2, Trophy
 } from 'lucide-react';
-import { toggleMute, getMuteState, playClick } from '../utils/sfx';
+import { toggleMute, getMuteState, playClick, playSparkle } from '../utils/sfx';
 import { playAudio } from '../utils/audio'; // Import for test button
 import { useTranslation } from 'react-i18next';
 
@@ -20,6 +20,7 @@ interface MobileSettingsProps {
   isSupabaseConfigured: boolean;
   onLoginRequest: () => void;
   onLogout: () => void;
+  onShareAchievement: () => void;
 }
 
 const MobileSettings: React.FC<MobileSettingsProps> = ({ 
@@ -28,7 +29,8 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
   displayName,
   isSupabaseConfigured, 
   onLoginRequest, 
-  onLogout 
+  onLogout,
+  onShareAchievement
 }) => {
   const { t } = useTranslation();
   const [isMuted, setIsMuted] = useState(getMuteState());
@@ -195,7 +197,26 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
          </div>
       </div>
 
-      {/* Share Card */}
+      {/* Share achievement trigger for logged in users */}
+      {user && (
+         <button 
+           onClick={() => { playSparkle(); onShareAchievement(); }}
+           className="w-full bg-white p-6 rounded-[2.5rem] border-4 border-[#e0d9b4] shadow-sm flex items-center justify-between group active:scale-95 transition-all"
+         >
+           <div className="flex items-center gap-5">
+              <div className="bg-[#ffa600]/10 p-4 rounded-2xl border-2 border-[#ffa600]/20">
+                 <Trophy className="text-[#ffa600]" size={28} />
+              </div>
+              <div className="text-left">
+                 <h3 className="text-xl font-black text-[#4b7d78] leading-none">{t('ui.passport.share_history')}</h3>
+                 <p className="text-[10px] font-bold text-[#8d99ae] uppercase tracking-widest mt-1.5">Show your island progress</p>
+              </div>
+           </div>
+           <ChevronRight className="text-[#e0d9b4]" size={20} />
+         </button>
+      )}
+
+      {/* Share Card (Invite) */}
       <button 
         onClick={handleShareStats}
         className="w-full bg-[#ff7b72] p-6 rounded-[2.5rem] border-4 border-[#ff8a80] shadow-[0_8px_0_#d32f2f] flex items-center justify-between group active:scale-95 transition-all relative overflow-hidden"

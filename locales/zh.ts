@@ -17,7 +17,33 @@ export default {
       "cats": { "all": "全部", "island": "岛屿战利品", "connector": "毛线球", "time": "魔法时钟", "preposition": "便利贴", "quantity": "调味罐", "interrogative": "神秘钥匙" },
       "tags": { "yarn": "连词", "clock": "时间", "sticky": "介词", "spice": "量词", "key": "疑问", "loot": "物品" }
     },
-    "passport": { "temp_pass": "临时通行证", "official_passport": "正式岛屿护照", "unverified": "未验证访客", "citizen": "正式岛民", "verify_warning": "进度仅存于本地，随时可能遗失", "citizen_desc": "您的进度已加密备份至云端", "apply_now": "正式登岛", "protect_harvest": "保卫我的果实", "protect_desc": "检测到您有 {{count}} 个单词进度尚未备份。登录后可永久保存。", "issue_date": "入岛日期", "id_number": "岛民编号" },
+    "passport": { 
+      "temp_pass": "临时通行证", 
+      "official_passport": "正式岛屿护照", 
+      "unverified": "未验证访客", 
+      "citizen": "正式岛民", 
+      "verify_warning": "进度仅存于本地，随时可能遗失", 
+      "citizen_desc": "您的进度已加密备份至云端", 
+      "apply_now": "正式登岛", 
+      "protect_harvest": "保卫我的果实", 
+      "protect_desc": "检测到您有 {{count}} 个单词进度尚未备份。登录后可永久保存。", 
+      "issue_date": "入岛日期", 
+      "id_number": "岛民编号",
+      "share_history": "分享成就卷轴"
+    },
+    "achievement": {
+      "title": "荣誉岛民卷轴",
+      "certified": "岛屿官方权威认证",
+      "words_grown": "累计词汇量",
+      "max_streak": "最高连续天数",
+      "rank": "岛屿头衔",
+      "scan_msg": "扫描航标，开启你的岛屿之旅",
+      "ranks": {
+        "novice": "初级探险家",
+        "guide": "岛屿向导",
+        "lord": "西语领主"
+      }
+    },
     "auth": { 
       "login_title": "永久保存旅程", 
       "login_subtitle": "绑定邮箱以在不同设备间同步进度。", 
@@ -38,6 +64,18 @@ export default {
         "subtitle": "请在岛屿名录上签下你的名字，以签发正式护照。",
         "placeholder": "你的旅客名称...",
         "button": "正式登岛"
+      },
+      "returning": {
+        "good_morning": "¡Buenos días!",
+        "good_afternoon": "¡Buenas tardes!",
+        "good_evening": "¡Buenas noches!",
+        "welcome_back": "欢迎回来，{{name}}!",
+        "log_title": "每日航海日志",
+        "arrived_stamp": "已抵达",
+        "status_reviews": "岛上有 {{count}} 颗作物渴了（待复习）。",
+        "status_seeds": "海浪冲上了 {{count}} 颗新种子（新单词）。",
+        "status_streak": "你已经守护这座岛屿 {{count}} 天了。",
+        "enter_btn": "进入我的岛屿"
       }
     },
     "actions": { "save_forever": "正式登岛", "backup": "导出备份", "restore": "恢复数据", "search": "搜索...", "reset": "重置岛屿", "clear_progress": "重塑岛屿", "clear_warning": "确定要‘重塑小岛’吗？这会把记忆还给大海，花园会变回最初空旷的样子，那些努力种出的单词果实都会消失哦~", "wipe_data": "把记忆还给大海，让一切重新开始吧~", "system_pref": "系统偏好", "test_audio": "测试音频引擎", "check_voice": "检查西语语音是否正常", "logout": "退出登录", "sound_on": "声音已开启", "sound_off": "已静音", "next_word": "下一个", "finish": "结束课程", "share_island": "分享我的成就", "copy_link": "复制链接", "copied": "文案已复制！", "continue_learning": "继续学习", "share_harvest": "分享今日收获", "generating": "正在绘制...", "use_items": "立即使用", "stash": "稍后放入", "added_prefix": "您已添加", "added_suffix": "到您的库存", "magic_items": "个魔法道具", "add_inventory": "收入囊中" },
