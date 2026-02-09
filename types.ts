@@ -14,7 +14,7 @@ export interface WordNuance {
 }
 
 export type WordLevel = 'A1' | 'A2' | 'B1';
-export type WordTopic = 'travel' | 'food' | 'work' | 'nature' | 'daily' | 'feelings' | 'society' | 'abstract' | 'tech' | 'art' | 'grammar' | 'time' | 'social' | 'body' | 'life';
+export type WordTopic = 'travel' | 'food' | 'work' | 'nature' | 'daily' | 'feelings' | 'society' | 'abstract' | 'tech' | 'art' | 'grammar' | 'time' | 'social' | 'body' | 'life' | 'quantity' | 'science';
 
 export interface Word {
   id: string;

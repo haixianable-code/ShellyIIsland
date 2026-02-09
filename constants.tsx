@@ -14,13 +14,20 @@ const N_OIR_ESCUCHAR: WordNuance = { type: 'warning', label: 'Hearing', note: 'O
 const N_VER_MIRAR: WordNuance = { type: 'warning', label: 'Vision', note: 'Ver = To see (passive). Mirar = To look at/watch (active).' };
 const N_TOCAR_JUGAR: WordNuance = { type: 'warning', label: 'Play', note: 'Jugar = Sports/Games. Tocar = Instrument/Touch.' };
 const N_LLEVAR_TRAER: WordNuance = { type: 'warning', label: 'Direction', note: 'Llevar = Take (there). Traer = Bring (here).' };
+const N_AMAR_QUERER: WordNuance = { type: 'upgrade', label: 'Love Levels', note: 'Querer = Want/Like. Amar = Deep/Romantic love.' };
+const N_LISTO: WordNuance = { type: 'upgrade', label: 'Double Meaning', note: 'Ser listo = Smart. Estar listo = Ready.' };
+const N_SEGURO: WordNuance = { type: 'upgrade', label: 'Double Meaning', note: 'Ser seguro = Safe. Estar seguro = Certain.' };
+const N_VIEJO_ANCIANO: WordNuance = { type: 'upgrade', label: 'Politeness', note: 'Viejo = Old object. Anciano = Elderly person.' };
+const N_OYE_ESCUCHA: WordNuance = { type: 'warning', label: 'Usage', note: 'Oye = Hey (Attention). Escucha = Listen (Command).' };
+const N_DEJAR_SALIR: WordNuance = { type: 'warning', label: 'To Leave', note: 'Salir = Go out. Dejar = Leave something/someone.' };
+const N_PERDER_FALTAR: WordNuance = { type: 'warning', label: 'Missing', note: 'Perder = To lose. Faltar = To be missing.' };
 
-// --- HELPERS (Updated with Level & Topic) ---
-// v(id, span, eng, level, topic, tip, ...)
-const v = (id: string, s: string, t: string, level: WordLevel, topic: WordTopic, tip: string, ex1: string, ex1t: string, ex2: string, ex2t: string, nn: string, forms: string = '', reg: boolean = true, nuance?: WordNuance): Word => {
-  let computedForms = forms;
-  if (reg && !computedForms) computedForms = generateRegularForms(s);
-  return { id, s, t, level, topic, type: 'verb', category: 'island', reg, forms: computedForms, grammarTip: tip, examples: [{ txt: ex1, eng: ex1t }, { txt: ex2, eng: ex2t }], nounNotes: nn, nuance };
+// --- HELPERS ---
+const v = (id: string, s: string, t: string, level: WordLevel, topic: WordTopic, tip: string, ex1: string, ex1t: string, ex2: string, ex2t: string, nn: string, forms?: string, reg?: boolean, nuance?: WordNuance): Word => {
+  const effectiveReg = reg ?? true;
+  let computedForms = forms || '';
+  if (effectiveReg && !computedForms) computedForms = generateRegularForms(s);
+  return { id, s, t, level, topic, type: 'verb', category: 'island', reg: effectiveReg, forms: computedForms, grammarTip: tip, examples: [{ txt: ex1, eng: ex1t }, { txt: ex2, eng: ex2t }], nounNotes: nn, nuance };
 };
 
 const a = (id: string, s: string, t: string, level: WordLevel, topic: WordTopic, ant: string, antT: string, tip: string, ex1: string, ex1t: string, ex2: string, ex2t: string, nn: string, nuance?: WordNuance): Word => {
@@ -29,319 +36,206 @@ const a = (id: string, s: string, t: string, level: WordLevel, topic: WordTopic,
   return { id, s, t, level, topic, type: 'adj', category: 'island', ant, antT, grammarTip: tip, forms, examples: [{ txt: ex1, eng: ex1t }, { txt: ex2, eng: ex2t }], nounNotes: nn, nuance };
 };
 
-const n = (id: string, s: string, t: string, level: WordLevel, topic: WordTopic, gender: 'm' | 'f', tip: string, ex1: string, ex1t: string, ex2: string, ex2t: string, nn: string): Word => {
+const n = (id: string, s: string, t: string, level: WordLevel, topic: WordTopic, gender: 'm' | 'f', tip: string, ex1: string, ex1t: string, ex2: string, ex2t: string, category?: string): Word => {
+  const finalCategory = category || 'island';
   const article = gender === 'm' ? 'El' : 'La'; const pluralArticle = gender === 'm' ? 'Los' : 'Las';
   const forms = `${article} ${s}, ${pluralArticle} ${pluralize(s)}`;
-  return { id, s, t, level, topic, type: 'noun', category: 'island', forms, grammarTip: `${gender === 'm' ? 'Masc' : 'Fem'}. ${tip}`, examples: [{ txt: ex1, eng: ex1t }, { txt: ex2, eng: ex2t }], nounNotes: nn };
+  return { id, s, t, level, topic, type: 'noun', category: finalCategory, forms, grammarTip: `${gender === 'm' ? 'Masc' : 'Fem'}. ${tip}`, examples: [{ txt: ex1, eng: ex1t }, { txt: ex2, eng: ex2t }], nounNotes: '' };
 };
 
 const m = (id: string, s: string, t: string, level: WordLevel, topic: WordTopic, tip: string, ex1: string, ex1t: string, ex2: string, ex2t: string, category: string): Word => ({
   id, s, t, level, topic, type: 'misc', category, grammarTip: tip, forms: '', examples: [{ txt: ex1, eng: ex1t }, { txt: ex2, eng: ex2t }], nounNotes: 'Function Word'
 });
 
-export const EXTRA_CANDIDATES: Word[] = [
-  m('y', 'y', 'And', 'A1', 'grammar', 'Change "y" to "e" if next word starts with "i-".', 'Tú y yo.', 'You and I.', 'Pan y agua.', 'Bread and water.', 'connector'),
-  m('o', 'o', 'Or', 'A1', 'grammar', 'Change "o" to "u" if next word starts with "o-".', '¿Té o café?', 'Tea or coffee?', 'Blanco o negro.', 'White or black.', 'connector'),
-  m('pero', 'pero', 'But', 'A1', 'grammar', 'Contrast ideas.', 'Pobre pero feliz.', 'Poor but happy.', 'Es tarde pero voy.', 'It is late but I go.', 'connector'),
-  m('porque', 'porque', 'Because', 'A1', 'grammar', 'One word = because.', 'Como porque tengo hambre.', 'I eat because hungry.', 'Lloro porque duele.', 'I cry because it hurts.', 'connector'),
-  m('si', 'si', 'If', 'A1', 'grammar', 'No accent mark! "Sí" = Yes.', 'Si puedes, ven.', 'If you can, come.', 'Si llueve, no voy.', 'If rains, no go.', 'connector'),
-  m('cuando', 'cuando', 'When', 'A1', 'time', 'No accent.', 'Cuando llegues.', 'When you arrive.', 'Cuando como.', 'When I eat.', 'connector'),
-  m('ahora', 'ahora', 'Now', 'A1', 'time', 'Right now.', 'Hazlo ahora.', 'Do it now.', 'Ahora o nunca.', 'Now or never.', 'time'),
-  n('tiempo', 'tiempo', 'Time/Weather', 'A1', 'nature', 'm', 'Both clock and weather.', 'Hace buen tiempo.', 'Weather is good.', 'No tengo tiempo.', 'No time.', 'Buen (Good)'),
-];
-
-export const ISLAND_SLANG = [
-  { s: "¡Qué fuerte!", t: "No way!", note: "For shocking news." },
-  { s: "Postureo", t: "Showing off", note: "Posing for social media." },
-  { s: "Estar de chill", t: "Chilling", note: "Relaxing." }
-];
-
-// --- 30-DAY CURRICULUM ---
+// --- MAIN VOCABULARY DATA (DAY PACKS) ---
 export const VOCABULARY_DATA: DayPack[] = [
   {
-    id: 'day-1',
-    title: 'Day 1: The Foundation',
+    id: 'day1',
+    title: 'Welcome to the Island',
     words: [
-      v('ser', 'ser', 'To be (Essence)', 'A1', 'daily', 'Permanent traits.', 'Soy de aquí.', 'I am from here.', 'Eres alto.', 'You are tall.', 'Aquí (Here)', '[soy], [eres], [es], [somos], [sois], [son]', false, N_SER_ESTAR),
-      v('estar', 'estar', 'To be (State)', 'A1', 'daily', 'Temporary/Location.', 'Estoy bien.', 'I am well.', 'Estás en casa.', 'You are home.', 'Casa (House)', 'est[oy], est[ás], est[á], estamos, estáis, est[án]', false, N_SER_ESTAR),
-      v('tener', 'tener', 'To have', 'A1', 'daily', 'Age/Possession.', 'Tengo frío.', 'I am cold.', 'Tienes un gato.', 'You have a cat.', 'Gato (Cat)', 'ten[go], t[ie]nes, t[ie]ne, tenemos, tenéis, t[ie]nen', false),
-      v('hacer', 'hacer', 'To do/make', 'A1', 'work', 'Weather/Actions.', 'Hago la cama.', 'I make bed.', 'Hace sol.', 'It is sunny.', 'Cama (Bed)', 'ha[go], haces, hace, hacemos, hacéis, hacen', false),
-      v('ir', 'ir', 'To go', 'A1', 'travel', 'Destination.', 'Voy al mar.', 'I go to sea.', 'Vas lejos.', 'You go far.', 'Mar (Sea)', '[voy], [vas], [va], [vamos], [vais], [van]', false),
-      v('poder', 'poder', 'To be able', 'A1', 'abstract', 'O->UE.', 'Puedo ver.', 'I can see.', 'No puedes comer.', 'Cannot eat.', 'Ver (See)', 'p[ue]do, p[ue]des, p[ue]de, podemos, podéis, p[ue]den', false),
-      v('saber', 'saber', 'To know', 'A1', 'abstract', 'Facts/Skills.', 'Sé cocinar.', 'I know cooking.', 'Sabes el camino.', 'Know the way.', 'Camino (Way)', '[sé], sabes, sabe, sabemos, sabéis, saben', false, N_SABER_CONOCER),
-      v('querer', 'querer', 'To want', 'A1', 'feelings', 'E->IE.', 'Quiero agua.', 'Want water.', 'Quieres comer.', 'Want to eat.', 'Agua (Water)', 'qu[ie]ro, qu[ie]res, qu[ie]re, queremos, queréis, qu[ie]ren', false),
-      v('ver', 'ver', 'To see', 'A1', 'daily', 'Vision.', 'Veo el sol.', 'I see sun.', 'Ves la luna.', 'See moon.', 'Luna (Moon)', 'v[eo], ves, ve, vemos, veis, ven', false, N_VER_MIRAR),
-      v('dar', 'dar', 'To give', 'A1', 'social', 'Yo Doy.', 'Doy una flor.', 'Give flower.', 'Das amor.', 'Give love.', 'Flor (Flower)', 'd[oy], das, da, damos, dais, dan', false),
-      a('grande', 'grande', 'Big', 'A1', 'daily', 'pequeño', 'Small', 'Shortens to "gran".', 'Isla grande.', 'Big island.', 'Ojo grande.', 'Big eye.', 'Ojo (Eye)'),
-      a('bueno', 'bueno', 'Good', 'A1', 'daily', 'malo', 'Bad', 'Shortens to "buen".', 'Buen día.', 'Good day.', 'Libro bueno.', 'Good book.', 'Día (Day)'),
-      a('nuevo', 'nuevo', 'New', 'A1', 'daily', 'viejo', 'Old', 'Brand new vs New to you.', 'Coche nuevo.', 'New car.', 'Nuevo coche.', 'New (to me) car.', 'Coche (Car)'),
-      a('alto', 'alto', 'Tall/High', 'A1', 'daily', 'bajo', 'Short', 'Height.', 'Edificio alto.', 'Tall building.', 'Muro alto.', 'High wall.', 'Edificio (Building)'),
-      a('largo', 'largo', 'Long', 'A1', 'daily', 'corto', 'Short', 'Not "Large"!', 'Pelo largo.', 'Long hair.', 'Camino largo.', 'Long road.', 'Pelo (Hair)'),
-      a('mucho', 'mucho', 'Many', 'A1', 'abstract', 'poco', 'Few', 'Quantity.', 'Mucho dinero.', 'Much money.', 'Muchas gracias.', 'Many thanks.', 'Dinero (Money)'),
-      a('mayor', 'mayor', 'Older', 'A1', 'social', 'menor', 'Younger', 'Comparison.', 'Hermano mayor.', 'Older brother.', 'Problema mayor.', 'Major problem.', 'Hermano (Brother)'),
-      a('mejor', 'mejor', 'Better', 'A1', 'abstract', 'peor', 'Worse', 'Irregular.', 'Es mejor.', 'It is better.', 'Mejor amigo.', 'Best friend.', 'Amigo (Friend)'),
-      a('abierto', 'abierto', 'Open', 'A1', 'daily', 'cerrado', 'Closed', 'State.', 'Puerta abierta.', 'Open door.', 'Ojos abiertos.', 'Open eyes.', 'Puerta (Door)'),
-      a('posible', 'posible', 'Possible', 'A1', 'abstract', 'imposible', 'Impossible', 'Feasibility.', 'Es posible.', 'It is possible.', 'Misión posible.', 'Possible mission.', 'Misión (Mission)')
+      v('ser', 'ser', 'To be (Essence)', 'A1', 'grammar', 'Permanent traits/origin.', 'Soy de España.', 'I am from Spain.', 'Eres alto.', 'You are tall.', 'Use for identity.', undefined, false, N_SER_ESTAR),
+      v('estar', 'estar', 'To be (State)', 'A1', 'grammar', 'Temporary states/location.', 'Estoy cansado.', 'I am tired.', 'Está en casa.', 'He is at home.', 'Use for location/feeling.', undefined, false, N_SER_ESTAR),
+      v('tener', 'tener', 'To have', 'A1', 'grammar', 'Possession/Age.', 'Tengo un gato.', 'I have a cat.', 'Tiene frío.', 'He is cold (has cold).', 'Also used for age.', undefined, false),
+      v('hacer', 'hacer', 'To do/make', 'A1', 'work', 'Actions/Weather.', 'Hago la cama.', 'I make the bed.', 'Hace sol.', 'It is sunny.', 'Go-verb (Hago).', undefined, false),
+      v('ir', 'ir', 'To go', 'A1', 'travel', 'Movement.', 'Voy a la playa.', 'I go to the beach.', 'Vamos a comer.', 'We are going to eat.', 'Highly irregular.', undefined, false),
+      v('poder', 'poder', 'Can/To be able', 'A1', 'grammar', 'Ability.', 'Puedo nadar.', 'I can swim.', 'No puedes pasar.', 'You cannot pass.', 'Stem changer O->UE.', undefined, false),
+      v('decir', 'decir', 'To say/tell', 'A1', 'social', 'Communication.', 'Digo la verdad.', 'I tell the truth.', 'Dices hola.', 'You say hello.', 'Go-verb (Digo).', undefined, false),
+      v('dar', 'dar', 'To give', 'A1', 'social', 'Offering.', 'Te doy mi mano.', 'I give you my hand.', 'Damos gracias.', 'We give thanks.', 'Irregular Yo form (Doy).', undefined, false),
+      v('saber', 'saber', 'To know (Fact)', 'A1', 'grammar', 'Knowledge.', 'Sé cocinar.', 'I know how to cook.', 'Sabes mi nombre.', 'You know my name.', 'Irregular Yo form (Sé).', undefined, false, N_SABER_CONOCER),
+      v('querer', 'querer', 'To want', 'A1', 'feelings', 'Desire.', 'Quiero agua.', 'I want water.', 'Te quiero.', 'I love you.', 'Stem changer E->IE.', undefined, false, N_AMAR_QUERER),
+      v('ver', 'ver', 'To see', 'A1', 'body', 'Vision.', 'Veo el mar.', 'I see the sea.', 'Vemos la tele.', 'We watch TV.', 'Irregular Yo form (Veo).', undefined, false, N_VER_MIRAR),
+      a('grande', 'grande', 'Big', 'A1', 'quantity', 'pequeño', 'Small', 'Size.', 'Casa grande.', 'Big house.', 'Gran hombre.', 'Great man (before noun).', 'Shortens to Gran before singular nouns.'),
+      a('bueno', 'bueno', 'Good', 'A1', 'feelings', 'malo', 'Bad', 'Quality.', 'Buen día.', 'Good day.', 'Es bueno.', 'It is good.', 'Shortens to Buen before masc. sing. nouns.'),
+      a('nuevo', 'nuevo', 'New', 'A1', 'time', 'viejo', 'Old', 'Freshness.', 'Coche nuevo.', 'New car (brand new).', 'Nuevo coche.', 'New car (to me).', 'Meaning changes with position.'),
+      a('alto', 'alto', 'Tall/High', 'A1', 'body', 'bajo', 'Short', 'Height.', 'Edificio alto.', 'Tall building.', 'Música alta.', 'Loud music.', 'Also volume.'),
+      a('largo', 'largo', 'Long', 'A1', 'quantity', 'corto', 'Short', 'Length.', 'Pelo largo.', 'Long hair.', 'Viaje largo.', 'Long trip.', 'False friend: Not Large!'),
+      a('mucho', 'mucho', 'Much/Many', 'A1', 'quantity', 'poco', 'Little', 'Quantity.', 'Mucho dinero.', 'Much money.', 'Muchas gracias.', 'Many thanks.', 'Agrees in gender/number.'),
+      a('mayor', 'mayor', 'Older/Bigger', 'A1', 'social', 'menor', 'Younger', 'Comparison.', 'Hermano mayor.', 'Older brother.', 'Es mayor que yo.', 'He is older than me.', 'Comparative of Grande.'),
+      a('mejor', 'mejor', 'Better', 'A1', 'feelings', 'peor', 'Worse', 'Quality.', 'Mi mejor amigo.', 'My best friend.', 'Es mejor así.', 'It is better this way.', 'Comparative of Bueno.'),
+      a('abierto', 'abierto', 'Open', 'A1', 'daily', 'cerrado', 'Closed', 'State.', 'Puerta abierta.', 'Open door.', 'Soy abierto.', 'I am open-minded.', 'Past participle of Abrir.')
     ]
   },
   {
-    id: 'day-2',
-    title: 'Day 2: Senses & Colors',
+    id: 'day2',
+    title: 'Island Basics',
     words: [
-      v('decir', 'decir', 'To say', 'A1', 'social', 'Go-verb.', 'Digo hola.', 'I say hello.', 'Dices adiós.', 'You say bye.', 'Hola (Hello)', 'di[go], d[ic]es, d[ic]e, decimos, decís, d[ic]en', false),
-      v('venir', 'venir', 'To come', 'A1', 'travel', 'Go-verb.', 'Vengo aquí.', 'I come here.', 'Vienes tarde.', 'Come late.', 'Tarde (Late)', 'ven[go], v[ie]nes, v[ie]ne, venimos, venís, v[ie]nen', false),
-      v('oír', 'oír', 'To hear', 'A1', 'daily', 'Irregular.', 'Oigo ruido.', 'Hear noise.', 'Oyes música.', 'Hear music.', 'Ruido (Noise)', 'oi[go], o[y]es, o[y]e, oímos, oís, o[y]en', false, N_OIR_ESCUCHAR),
-      v('gustar', 'gustar', 'To like', 'A1', 'feelings', 'Backwards.', 'Me gusta.', 'I like it.', 'Te gusta.', 'You like it.', 'Me (To me)', 'gusto, gustas, gusta, gustamos, gustáis, gustan', true),
-      v('comer', 'comer', 'To eat', 'A1', 'food', 'Regular.', 'Como pan.', 'Eat bread.', 'Comes fruta.', 'Eat fruit.', 'Pan (Bread)', '', true),
-      v('beber', 'beber', 'To drink', 'A1', 'food', 'Regular.', 'Bebo agua.', 'Drink water.', 'Bebes vino.', 'Drink wine.', 'Vino (Wine)', '', true),
-      v('dormir', 'dormir', 'To sleep', 'A1', 'daily', 'O->UE.', 'Duermo bien.', 'Sleep well.', 'Duermes mucho.', 'Sleep a lot.', 'Bien (Well)', 'd[ue]rmo, d[ue]rmes, d[ue]rme, dormimos, dormís, d[ue]rmen', false),
-      v('jugar', 'jugar', 'To play', 'A1', 'daily', 'U->UE.', 'Juego fútbol.', 'Play soccer.', 'Juegas bien.', 'Play well.', 'Fútbol (Soccer)', 'j[ue]go, j[ue]gas, j[ue]ga, jugamos, jugáis, j[ue]gan', false, N_TOCAR_JUGAR),
-      v('hablar', 'hablar', 'To speak', 'A1', 'social', 'Regular.', 'Hablo español.', 'Speak Spanish.', 'Hablas rápido.', 'Speak fast.', 'Rápido (Fast)', '', true),
-      v('llamar', 'llamar', 'To call', 'A1', 'social', 'Regular.', 'Llamo a mamá.', 'Call mom.', 'Llamas un taxi.', 'Call taxi.', 'Mamá (Mom)', '', true),
-      a('rojo', 'rojo', 'Red', 'A1', 'art', '', '', 'Color.', 'Coche rojo.', 'Red car.', 'Flor roja.', 'Red flower.', 'Flor (Flower)'),
-      a('azul', 'azul', 'Blue', 'A1', 'art', '', '', 'Color.', 'Cielo azul.', 'Blue sky.', 'Mar azul.', 'Blue sea.', 'Cielo (Sky)'),
-      a('blanco', 'blanco', 'White', 'A1', 'art', 'negro', 'Black', 'Color.', 'Nieve blanca.', 'White snow.', 'Casa blanca.', 'White house.', 'Nieve (Snow)'),
-      a('negro', 'negro', 'Black', 'A1', 'art', 'blanco', 'White', 'Color.', 'Gato negro.', 'Black cat.', 'Noche negra.', 'Black night.', 'Noche (Night)'),
-      a('verde', 'verde', 'Green', 'A1', 'art', '', '', 'Color.', 'Árbol verde.', 'Green tree.', 'Luz verde.', 'Green light.', 'Árbol (Tree)'),
-      a('amarillo', 'amarillo', 'Yellow', 'A1', 'art', '', '', 'Color.', 'Sol amarillo.', 'Yellow sun.', 'Flor amarilla.', 'Yellow flower.', 'Sol (Sun)'),
-      a('dulce', 'dulce', 'Sweet', 'A1', 'food', 'salado', 'Salty', 'Taste.', 'Fruta dulce.', 'Sweet fruit.', 'Caramelo dulce.', 'Sweet candy.', 'Fruta (Fruit)'),
-      a('fuerte', 'fuerte', 'Strong', 'A1', 'body', 'débil', 'Weak', 'Strength.', 'Café fuerte.', 'Strong coffee.', 'Viento fuerte.', 'Strong wind.', 'Viento (Wind)'),
-      a('claro', 'claro', 'Clear', 'A1', 'art', 'oscuro', 'Dark', 'Light.', 'Día claro.', 'Clear day.', 'Agua clara.', 'Clear water.', 'Agua (Water)'),
-      a('oscuro', 'oscuro', 'Dark', 'A1', 'art', 'claro', 'Light', 'Light.', 'Cuarto oscuro.', 'Dark room.', 'Noche oscura.', 'Dark night.', 'Cuarto (Room)')
-    ]
-  },
-  {
-    id: 'day-3',
-    title: 'Day 3: Movement',
-    words: [
-      v('salir', 'salir', 'To leave', 'A1', 'travel', 'Go-verb.', 'Salgo ahora.', 'Leave now.', 'Sales pronto.', 'Leave soon.', 'Pronto (Soon)', 'sal[go], sales, sale, salimos, salís, salen', false),
-      v('entrar', 'entrar', 'To enter', 'A1', 'travel', 'Regular.', 'Entro en casa.', 'Enter home.', 'Entras ahí.', 'Enter there.', 'Ahí (There)', '', true),
-      v('volver', 'volver', 'To return', 'A1', 'travel', 'O->UE.', 'Vuelvo tarde.', 'Return late.', 'Vuelves a casa.', 'Return home.', 'Tarde (Late)', 'v[ue]lvo, v[ue]lves, v[ue]lve, volvemos, volvéis, v[ue]lven', false),
-      v('caer', 'caer', 'To fall', 'A2', 'daily', 'Irregular.', 'Caigo bien.', 'I am liked.', 'Caes al suelo.', 'Fall to ground.', 'Suelo (Ground)', 'cai[go], caes, cae, caemos, caéis, caen', false),
-      v('traer', 'traer', 'To bring', 'A2', 'daily', 'Irregular.', 'Traigo pan.', 'Bring bread.', 'Traes vino.', 'Bring wine.', 'Vino (Wine)', 'trai[go], traes, trae, traemos, traéis, traen', false, N_LLEVAR_TRAER),
-      v('llegar', 'llegar', 'To arrive', 'A1', 'travel', 'Regular.', 'Llego hoy.', 'Arrive today.', 'Llegas mañana.', 'Arrive tomorrow.', 'Hoy (Today)', '', true),
-      v('llevar', 'llevar', 'To carry/wear', 'A1', 'daily', 'Regular.', 'Llevo gafas.', 'Wear glasses.', 'Llevas una caja.', 'Carry box.', 'Gafas (Glasses)', '', true, N_LLEVAR_TRAER),
-      v('andar', 'andar', 'To walk', 'A1', 'travel', 'Regular.', 'Ando mucho.', 'Walk a lot.', 'Andas rápido.', 'Walk fast.', 'Mucho (A lot)', '', true),
-      v('correr', 'correr', 'To run', 'A1', 'travel', 'Regular.', 'Corro rápido.', 'Run fast.', 'Corres lejos.', 'Run far.', 'Lejos (Far)', '', true),
-      v('viajar', 'viajar', 'To travel', 'A1', 'travel', 'Regular.', 'Viajo en tren.', 'Travel by train.', 'Viajas solo.', 'Travel alone.', 'Tren (Train)', '', true),
-      a('pequeño', 'pequeño', 'Small', 'A1', 'daily', 'grande', 'Big', 'Size.', 'Mundo pequeño.', 'Small world.', 'Casa pequeña.', 'Small house.', 'Mundo (World)'),
-      a('malo', 'malo', 'Bad', 'A1', 'abstract', 'bueno', 'Good', 'Quality.', 'Día malo.', 'Bad day.', 'Idea mala.', 'Bad idea.', 'Idea (Idea)'),
-      a('viejo', 'viejo', 'Old', 'A1', 'daily', 'nuevo', 'New', 'Age.', 'Libro viejo.', 'Old book.', 'Ropa vieja.', 'Old clothes.', 'Libro (Book)'),
-      a('bajo', 'bajo', 'Short', 'A1', 'daily', 'alto', 'Tall', 'Height.', 'Techo bajo.', 'Low ceiling.', 'Precio bajo.', 'Low price.', 'Techo (Ceiling)'),
-      a('corto', 'corto', 'Short', 'A1', 'daily', 'largo', 'Long', 'Length.', 'Tiempo corto.', 'Short time.', 'Vida corta.', 'Short life.', 'Tiempo (Time)'),
-      a('poco', 'poco', 'Little/Few', 'A1', 'abstract', 'mucho', 'Much', 'Quantity.', 'Poco dinero.', 'Little money.', 'Poca gente.', 'Few people.', 'Gente (People)'),
-      a('menor', 'menor', 'Younger', 'A2', 'social', 'mayor', 'Older', 'Comparison.', 'Hermana menor.', 'Younger sister.', 'Mal menor.', 'Lesser evil.', 'Hermana (Sister)'),
-      a('peor', 'peor', 'Worse', 'A1', 'abstract', 'mejor', 'Better', 'Comparison.', 'Es peor.', 'It is worse.', 'Peor enemigo.', 'Worst enemy.', 'Enemigo (Enemy)'),
-      a('cerrado', 'cerrado', 'Closed', 'A1', 'daily', 'abierto', 'Open', 'State.', 'Tienda cerrada.', 'Closed shop.', 'Caso cerrado.', 'Case closed.', 'Tienda (Shop)'),
-      a('imposible', 'imposible', 'Impossible', 'A1', 'abstract', 'posible', 'Possible', 'Feasibility.', 'Nada imposible.', 'Nothing impossible.', 'Misión imposible.', 'Mission impossible.', 'Nada (Nothing)')
-    ]
-  },
-  {
-    id: 'day-4',
-    title: 'Day 4: Mind & Emotion',
-    words: [
-      v('pensar', 'pensar', 'To think', 'A2', 'abstract', 'E->IE.', 'Pienso eso.', 'Think so.', 'Piensas bien.', 'Think well.', 'Eso (That)', 'p[ie]nso, p[ie]nsas, p[ie]nsa, pensamos, pensáis, p[ie]nsan', false),
-      v('creer', 'creer', 'To believe', 'A2', 'abstract', 'Regular.', 'Creo en ti.', 'Believe in you.', 'Crees en Dios.', 'Believe in God.', 'Ti (You)', '', true),
-      v('sentir', 'sentir', 'To feel', 'A2', 'feelings', 'E->IE.', 'Siento pena.', 'Feel pity.', 'Sientes frío.', 'Feel cold.', 'Pena (Pity)', 's[ie]nto, s[ie]ntes, s[ie]nte, sentimos, sentís, s[ie]nten', false),
-      v('entender', 'entender', 'To understand', 'A2', 'abstract', 'E->IE.', 'Entiendo todo.', 'Understand all.', 'Entiendes nada.', 'Understand nothing.', 'Todo (All)', 'ent[ie]ndo, ent[ie]ndes, ent[ie]nde, entendemos, entendéis, ent[ie]nden', false),
-      v('conocer', 'conocer', 'To know', 'A2', 'social', 'Irregular.', 'Conozco a Ana.', 'Know Ana.', 'Conoces París.', 'Know Paris.', 'Ana (Name)', 'conoz[co], conoces, conoce, conocemos, conocéis, conocen', false, N_SABER_CONOCER),
-      v('recordar', 'recordar', 'To remember', 'A2', 'abstract', 'O->UE.', 'Recuerdo tu cara.', 'Recall face.', 'Recuerdas el día.', 'Recall day.', 'Cara (Face)', 'rec[ue]rdo, rec[ue]rdas, rec[ue]rda, recordamos, recordáis, rec[ue]rdan', false),
-      v('olvidar', 'olvidar', 'To forget', 'A2', 'abstract', 'Regular.', 'Olvido nombres.', 'Forget names.', 'Olvidas todo.', 'Forget all.', 'Nombres (Names)', '', true),
-      v('esperar', 'esperar', 'To wait/hope', 'A2', 'abstract', 'Regular.', 'Espero el bus.', 'Wait for bus.', 'Esperas ganar.', 'Hope to win.', 'Bus (Bus)', '', true),
-      v('buscar', 'buscar', 'To search', 'A1', 'daily', 'Regular.', 'Busco trabajo.', 'Look for work.', 'Buscas las llaves.', 'Look for keys.', 'Trabajo (Work)', '', true),
-      v('encontrar', 'encontrar', 'To find', 'A2', 'daily', 'O->UE.', 'Encuentro paz.', 'Find peace.', 'Encuentras oro.', 'Find gold.', 'Paz (Peace)', 'enc[ue]ntro, enc[ue]ntras, enc[ue]ntra, encontramos, encontráis, enc[ue]ntran', false),
-      a('feliz', 'feliz', 'Happy', 'A1', 'feelings', 'triste', 'Sad', 'Emotion.', 'Soy feliz.', 'I am happy.', 'Final feliz.', 'Happy ending.', 'Final (Ending)'),
-      a('triste', 'triste', 'Sad', 'A1', 'feelings', 'feliz', 'Happy', 'Emotion.', 'Estoy triste.', 'I am sad.', 'Canción triste.', 'Sad song.', 'Canción (Song)'),
-      a('inteligente', 'inteligente', 'Intelligent', 'A1', 'social', 'tonto', 'Stupid', 'Mind.', 'Chica inteligente.', 'Smart girl.', 'Perro inteligente.', 'Smart dog.', 'Chica (Girl)'),
-      a('tonto', 'tonto', 'Silly', 'A1', 'social', 'listo', 'Smart', 'Mind.', 'No seas tonto.', 'Don\'t be silly.', 'Pregunta tonta.', 'Silly question.', 'Pregunta (Question)'),
-      a('interesante', 'interesante', 'Interesting', 'A1', 'abstract', 'aburrido', 'Boring', 'Mind.', 'Libro interesante.', 'Interesting book.', 'Vida interesante.', 'Interesting life.', 'Vida (Life)'),
-      a('aburrido', 'aburrido', 'Boring', 'A1', 'abstract', 'divertido', 'Fun', 'Ser=Boring, Estar=Bored.', 'Estoy aburrido.', 'I am bored.', 'Es aburrido.', 'It is boring.', 'Es (It is)'),
-      a('importante', 'importante', 'Important', 'A1', 'abstract', '', '', 'Value.', 'Cosa importante.', 'Important thing.', 'Día importante.', 'Important day.', 'Cosa (Thing)'),
-      a('necesario', 'necesario', 'Necessary', 'A2', 'abstract', 'innecesario', 'Unnecessary', 'Need.', 'Es necesario.', 'It is necessary.', 'Mal necesario.', 'Necessary evil.', 'Mal (Evil)'),
-      a('solo', 'solo', 'Alone', 'A2', 'social', 'juntos', 'Together', 'Social.', 'Estoy solo.', 'I am alone.', 'Café solo.', 'Black coffee.', 'Café (Coffee)'),
-      a('juntos', 'juntos', 'Together', 'A1', 'social', 'separados', 'Separated', 'Social.', 'Vamos juntos.', 'Go together.', 'Estamos juntos.', 'Are together.', 'Vamos (We go)')
-    ]
-  },
-  {
-    id: 'day-5',
-    title: 'Day 5: Daily Routine',
-    words: [
-      v('lavar', 'lavar', 'To wash', 'A1', 'daily', 'Regular.', 'Lavo la ropa.', 'Wash clothes.', 'Lavas el coche.', 'Wash car.', 'Ropa (Clothes)', '', true),
-      v('limpiar', 'limpiar', 'To clean', 'A1', 'daily', 'Regular.', 'Limpio la casa.', 'Clean house.', 'Limpias la mesa.', 'Clean table.', 'Mesa (Table)', '', true),
-      v('cocinar', 'cocinar', 'To cook', 'A1', 'food', 'Regular.', 'Cocino arroz.', 'Cook rice.', 'Cocinas muy bien.', 'Cook well.', 'Arroz (Rice)', '', true),
-      v('comprar', 'comprar', 'To buy', 'A1', 'daily', 'Regular.', 'Compro pan.', 'Buy bread.', 'Compras leche.', 'Buy milk.', 'Leche (Milk)', '', true),
-      v('vender', 'vender', 'To sell', 'A1', 'work', 'Regular.', 'Vendo flores.', 'Sell flowers.', 'Vendes libros.', 'Sell books.', 'Libros (Books)', '', true),
-      v('abrir', 'abrir', 'To open', 'A1', 'daily', 'Regular.', 'Abro la puerta.', 'Open door.', 'Abres la caja.', 'Open box.', 'Puerta (Door)', '', true),
-      v('cerrar', 'cerrar', 'To close', 'A1', 'daily', 'E->IE.', 'Cierro los ojos.', 'Close eyes.', 'Cierras la boca.', 'Close mouth.', 'Boca (Mouth)', 'c[ie]rro, c[ie]rras, c[ie]rra, cerramos, cerráis, c[ie]rran', false),
-      v('poner', 'poner', 'To put', 'A1', 'daily', 'Go-verb.', 'Pongo la mesa.', 'Set table.', 'Pones sal.', 'Put salt.', 'Sal (Salt)', 'pon[go], pones, pone, ponemos, ponéis, ponen', false),
-      v('tomar', 'tomar', 'To take/drink', 'A1', 'daily', 'Regular.', 'Tomo café.', 'Take coffee.', 'Tomas el bus.', 'Take bus.', 'Bus (Bus)', '', true),
-      v('vivir', 'vivir', 'To live', 'A1', 'daily', 'Regular.', 'Vivo aquí.', 'Live here.', 'Vives bien.', 'Live well.', 'Aquí (Here)', '', true),
-      a('limpio', 'limpio', 'Clean', 'A1', 'daily', 'sucio', 'Dirty', 'Hygiene.', 'Agua limpia.', 'Clean water.', 'Aire limpio.', 'Clean air.', 'Aire (Air)'),
-      a('sucio', 'sucio', 'Dirty', 'A1', 'daily', 'limpio', 'Clean', 'Hygiene.', 'Suelo sucio.', 'Dirty floor.', 'Mano sucia.', 'Dirty hand.', 'Suelo (Floor)'),
-      a('lleno', 'lleno', 'Full', 'A2', 'daily', 'vacío', 'Empty', 'Capacity.', 'Vaso lleno.', 'Full glass.', 'Luna llena.', 'Full moon.', 'Vaso (Glass)'),
-      a('vacío', 'vacío', 'Empty', 'A2', 'daily', 'lleno', 'Full', 'Capacity.', 'Caja vacía.', 'Empty box.', 'Calle vacía.', 'Empty street.', 'Calle (Street)'),
-      a('seco', 'seco', 'Dry', 'A2', 'nature', 'mojado', 'Wet', 'State.', 'Ropa seca.', 'Dry clothes.', 'Clima seco.', 'Dry climate.', 'Clima (Climate)'),
-      a('mojado', 'mojado', 'Wet', 'A2', 'nature', 'seco', 'Dry', 'State.', 'Pelo mojado.', 'Wet hair.', 'Suelo mojado.', 'Wet floor.', 'Pelo (Hair)'),
-      a('caliente', 'caliente', 'Hot', 'A1', 'nature', 'frío', 'Cold', 'Temp.', 'Agua caliente.', 'Hot water.', 'Plato caliente.', 'Hot dish.', 'Plato (Dish)'),
-      a('frío', 'frío', 'Cold', 'A1', 'nature', 'caliente', 'Hot', 'Temp.', 'Viento frío.', 'Cold wind.', 'Invierno frío.', 'Cold winter.', 'Invierno (Winter)'),
-      a('rápido', 'rápido', 'Fast', 'A1', 'travel', 'lento', 'Slow', 'Speed.', 'Coche rápido.', 'Fast car.', 'Comida rápida.', 'Fast food.', 'Comida (Food)'),
-      a('lento', 'lento', 'Slow', 'A1', 'travel', 'rápido', 'Fast', 'Speed.', 'Tortuga lenta.', 'Slow turtle.', 'Internet lento.', 'Slow internet.', 'Tortuga (Turtle)')
-    ]
-  },
-  {
-    id: 'day-6',
-    title: 'Day 6: Communication',
-    words: [
-      v('preguntar', 'preguntar', 'To ask', 'A1', 'social', 'Regular.', 'Pregunto por qué.', 'Ask why.', 'Preguntas la hora.', 'Ask time.', 'Hora (Time)', '', true, N_PEDIR_PREGUNTAR),
-      v('contestar', 'contestar', 'To answer', 'A2', 'social', 'Regular.', 'Contesto todo.', 'Answer all.', 'Contestas mal.', 'Answer badly.', 'Mal (Badly)', '', true),
-      v('escribir', 'escribir', 'To write', 'A1', 'art', 'Regular.', 'Escribo cartas.', 'Write letters.', 'Escribes libros.', 'Write books.', 'Cartas (Letters)', '', true),
-      v('leer', 'leer', 'To read', 'A1', 'art', 'Regular.', 'Leo noticias.', 'Read news.', 'Lees mucho.', 'Read a lot.', 'Noticias (News)', '', true),
-      v('escuchar', 'escuchar', 'To listen', 'A1', 'daily', 'Regular.', 'Escucho música.', 'Listen to music.', 'Escuchas bien.', 'Listen well.', 'Música (Music)', '', true, N_OIR_ESCUCHAR),
-      v('enseñar', 'enseñar', 'To teach', 'A2', 'social', 'Regular.', 'Enseño español.', 'Teach Spanish.', 'Enseñas fotos.', 'Show photos.', 'Fotos (Photos)', '', true),
-      v('aprender', 'aprender', 'To learn', 'A1', 'social', 'Regular.', 'Aprendo rápido.', 'Learn fast.', 'Aprendes a leer.', 'Learn to read.', 'Rápido (Fast)', '', true),
-      v('estudiar', 'estudiar', 'To study', 'A1', 'social', 'Regular.', 'Estudio arte.', 'Study art.', 'Estudias hoy.', 'Study today.', 'Arte (Art)', '', true),
-      v('comprender', 'comprender', 'To comprehend', 'A2', 'abstract', 'Regular.', 'Comprendo.', 'I comprehend.', 'Comprendes.', 'You comprehend.', 'Sí (Yes)', '', true),
-      v('explicar', 'explicar', 'To explain', 'A2', 'social', 'Regular.', 'Explico la regla.', 'Explain rule.', 'Explicas el plan.', 'Explain plan.', 'Regla (Rule)', '', true),
-      a('fácil', 'fácil', 'Easy', 'A1', 'abstract', 'difícil', 'Difficult', 'Difficulty.', 'Es fácil.', 'It is easy.', 'Español fácil.', 'Easy Spanish.', 'Español (Spanish)'),
-      a('difícil', 'difícil', 'Difficult', 'A1', 'abstract', 'fácil', 'Easy', 'Difficulty.', 'Trabajo difícil.', 'Hard work.', 'Vida difícil.', 'Hard life.', 'Trabajo (Work)'),
-      a('correcto', 'correcto', 'Correct', 'A2', 'abstract', 'incorrecto', 'Incorrect', 'Accuracy.', 'Respuesta correcta.', 'Correct answer.', 'Es correcto.', 'It is correct.', 'Respuesta (Answer)'),
-      a('falso', 'falso', 'False', 'A2', 'abstract', 'verdadero', 'True', 'Truth.', 'Amigo falso.', 'Fake friend.', 'Noticia falsa.', 'Fake news.', 'Noticia (News)'),
-      a('libre', 'libre', 'Free', 'A2', 'social', 'ocupado', 'Busy', 'Availability.', 'Soy libre.', 'I am free.', 'Silla libre.', 'Free chair.', 'Silla (Chair)'),
-      a('ocupado', 'ocupado', 'Busy', 'A2', 'social', 'libre', 'Free', 'Availability.', 'Estoy ocupado.', 'I am busy.', 'Línea ocupada.', 'Busy line.', 'Línea (Line)'),
-      a('público', 'público', 'Public', 'B1', 'society', 'privado', 'Private', 'Social.', 'Baño público.', 'Public toilet.', 'Vida pública.', 'Public life.', 'Baño (Toilet)'),
-      a('privado', 'privado', 'Private', 'B1', 'society', 'público', 'Public', 'Social.', 'Fiesta privada.', 'Private party.', 'Número privado.', 'Private number.', 'Fiesta (Party)'),
-      a('listo', 'listo', 'Ready/Smart', 'A2', 'daily', '', '', 'Ser=Smart, Estar=Ready.', 'Estoy listo.', 'I am ready.', 'Es listo.', 'He is smart.', 'Él (He)'),
-      a('seguro', 'seguro', 'Sure/Safe', 'A2', 'abstract', 'inseguro', 'Unsure', 'Certainty.', 'Estoy seguro.', 'I am sure.', 'Lugar seguro.', 'Safe place.', 'Lugar (Place)')
-    ]
-  },
-  {
-    id: 'day-7',
-    title: 'Day 7: Exchange',
-    words: [
-      v('pagar', 'pagar', 'To pay', 'A1', 'work', 'Regular.', 'Pago la cuenta.', 'Pay bill.', 'Pagas tú.', 'You pay.', 'Cuenta (Bill)', '', true),
-      v('costar', 'costar', 'To cost', 'A1', 'work', 'O->UE.', 'Cuesta mucho.', 'Costs a lot.', 'Cuestan poco.', 'Cost little.', 'Poco (Little)', 'c[ue]sto, c[ue]stas, c[ue]sta, costamos, costáis, c[ue]stan', false),
-      v('cambiar', 'cambiar', 'To change', 'A2', 'abstract', 'Regular.', 'Cambio dinero.', 'Change money.', 'Cambias de idea.', 'Change mind.', 'Idea (Mind)', '', true),
-      v('deber', 'deber', 'To owe/must', 'A2', 'work', 'Regular.', 'Debo ir.', 'Must go.', 'Debes dinero.', 'Owe money.', 'Dinero (Money)', '', true),
-      v('necesitar', 'necesitar', 'To need', 'A1', 'daily', 'Regular.', 'Necesito ayuda.', 'Need help.', 'Necesitas tiempo.', 'Need time.', 'Ayuda (Help)', '', true),
-      v('ganar', 'ganar', 'To win/earn', 'A2', 'work', 'Regular.', 'Gano dinero.', 'Earn money.', 'Ganas el juego.', 'Win game.', 'Juego (Game)', '', true),
-      v('perder', 'perder', 'To lose', 'A2', 'work', 'E->IE.', 'Pierdo peso.', 'Lose weight.', 'Pierdes tiempo.', 'Lose time.', 'Peso (Weight)', 'p[ie]rdo, p[ie]rdes, p[ie]rde, perdemos, perdéis, p[ie]rden', false),
-      v('ayudar', 'ayudar', 'To help', 'A1', 'social', 'Regular.', 'Ayudo en casa.', 'Help at home.', 'Ayudas a mamá.', 'Help mom.', 'Casa (Home)', '', true),
-      v('recibir', 'recibir', 'To receive', 'A2', 'work', 'Regular.', 'Recibo email.', 'Receive email.', 'Recibes cartas.', 'Receive letters.', 'Cartas (Letters)', '', true),
-      v('enviar', 'enviar', 'To send', 'A2', 'work', 'Regular.', 'Envío flores.', 'Send flowers.', 'Envías dinero.', 'Send money.', 'Flores (Flowers)', '', true),
-      a('rico', 'rico', 'Rich/Tasty', 'A1', 'work', 'pobre', 'Poor', 'Wealth.', 'Hombre rico.', 'Rich man.', 'País rico.', 'Rich country.', 'País (Country)', N_RICO),
-      a('pobre', 'pobre', 'Poor', 'A1', 'work', 'rico', 'Rich', 'Wealth.', 'Mujer pobre.', 'Poor woman.', 'Idea pobre.', 'Poor idea.', 'Mujer (Woman)'),
-      a('caro', 'caro', 'Expensive', 'A1', 'work', 'barato', 'Cheap', 'Cost.', 'Coche caro.', 'Expensive car.', 'Vida cara.', 'Expensive life.', 'Coche (Car)'),
-      a('barato', 'barato', 'Cheap', 'A1', 'work', 'caro', 'Expensive', 'Cost.', 'Vino barato.', 'Cheap wine.', 'Ropa barata.', 'Cheap clothes.', 'Vino (Wine)'),
-      a('gratis', 'gratis', 'Free (Cost)', 'A2', 'work', 'pagado', 'Paid', 'Cost.', 'Entrada gratis.', 'Free entry.', 'Comida gratis.', 'Free food.', 'Entrada (Entry)'),
-      a('propio', 'propio', 'Own', 'A2', 'abstract', 'ajeno', 'Others', 'Possession.', 'Casa propia.', 'Own house.', 'Ojos propios.', 'Own eyes.', 'Ojos (Eyes)'),
-      a('ajeno', 'ajeno', 'Others', 'B1', 'society', 'propio', 'Own', 'Possession.', 'Dolor ajeno.', 'Others\' pain.', 'Cosa ajena.', 'Other\'s thing.', 'Dolor (Pain)'),
-      a('útil', 'útil', 'Useful', 'A2', 'abstract', 'inútil', 'Useless', 'Utility.', 'Herramienta útil.', 'Useful tool.', 'Dato útil.', 'Useful fact.', 'Dato (Fact)'),
-      a('inútil', 'inútil', 'Useless', 'A2', 'abstract', 'útil', 'Useful', 'Utility.', 'Es inútil.', 'It is useless.', 'Gasto inútil.', 'Useless expense.', 'Gasto (Expense)'),
-      a('suficiente', 'suficiente', 'Enough', 'A2', 'abstract', 'insuficiente', 'Insufficient', 'Quantity.', 'Es suficiente.', 'It is enough.', 'Dinero suficiente.', 'Enough money.', 'Dinero (Money)')
-    ]
-  },
-  {
-    id: 'day-8',
-    title: 'Day 8: Creation',
-    words: [
-      v('crear', 'crear', 'To create', 'A2', 'art', 'Regular.', 'Creo arte.', 'Create art.', 'Creas mundos.', 'Create worlds.', 'Mundo (World)', '', true),
-      v('construir', 'construir', 'To build', 'A2', 'work', 'Irregular.', 'Construyo casas.', 'Build houses.', 'Construyes puentes.', 'Build bridges.', 'Casas (Houses)', 'constru[y]o, constru[y]es, constru[y]e, construimos, construís, constru[y]en', false),
-      v('romper', 'romper', 'To break', 'A2', 'daily', 'Regular.', 'Rompo el vaso.', 'Break glass.', 'Rompes la ley.', 'Break law.', 'Ley (Law)', '', true),
-      v('cortar', 'cortar', 'To cut', 'A2', 'daily', 'Regular.', 'Corto papel.', 'Cut paper.', 'Cortas pelo.', 'Cut hair.', 'Papel (Paper)', '', true),
-      v('pegar', 'pegar', 'To stick/hit', 'A2', 'art', 'Regular.', 'Pego el sello.', 'Stick stamp.', 'Pegas fuerte.', 'Hit hard.', 'Sello (Stamp)', '', true),
-      v('pintar', 'pintar', 'To paint', 'A1', 'art', 'Regular.', 'Pinto paredes.', 'Paint walls.', 'Pintas cuadros.', 'Paint pictures.', 'Paredes (Walls)', '', true),
-      v('arreglar', 'arreglar', 'To fix', 'A2', 'daily', 'Regular.', 'Arreglo el coche.', 'Fix car.', 'Arreglas todo.', 'Fix everything.', 'Todo (Everything)', '', true),
-      v('preparar', 'preparar', 'To prepare', 'A1', 'daily', 'Regular.', 'Preparo cena.', 'Prepare dinner.', 'Preparas café.', 'Prepare coffee.', 'Cena (Dinner)', '', true),
-      v('usar', 'usar', 'To use', 'A1', 'daily', 'Regular.', 'Uso el móvil.', 'Use mobile.', 'Usas gafas.', 'Use glasses.', 'Móvil (Mobile)', '', true),
-      v('funcionar', 'funcionar', 'To function', 'A2', 'tech', 'Regular.', 'Funciona bien.', 'Works well.', 'No funciona.', 'Doesn\'t work.', 'Bien (Well)', '', true),
-      a('roto', 'roto', 'Broken', 'A2', 'daily', 'entero', 'Whole', 'State.', 'Vaso roto.', 'Broken glass.', 'Corazón roto.', 'Broken heart.', 'Vaso (Glass)'),
-      a('entero', 'entero', 'Whole', 'A2', 'abstract', 'roto', 'Broken', 'State.', 'Día entero.', 'Whole day.', 'Mundo entero.', 'Whole world.', 'Mundo (World)'),
-      a('perfecto', 'perfecto', 'Perfect', 'A1', 'abstract', 'imperfecto', 'Imperfect', 'Quality.', 'Día perfecto.', 'Perfect day.', 'Nadie es perfecto.', 'No one is perfect.', 'Nadie (No one)'),
-      a('bonito', 'bonito', 'Pretty', 'A1', 'art', 'feo', 'Ugly', 'Beauty.', 'Flor bonita.', 'Pretty flower.', 'Pueblo bonito.', 'Pretty town.', 'Pueblo (Town)'),
-      a('feo', 'feo', 'Ugly', 'A1', 'art', 'bonito', 'Pretty', 'Beauty.', 'Pato feo.', 'Ugly duck.', 'Clima feo.', 'Ugly weather.', 'Clima (Weather)'),
-      a('hermoso', 'hermoso', 'Beautiful', 'A2', 'art', 'horrible', 'Horrible', 'Beauty.', 'Mujer hermosa.', 'Beautiful woman.', 'Paisaje hermoso.', 'Beautiful landscape.', 'Paisaje (Landscape)'),
-      a('maravilloso', 'maravilloso', 'Wonderful', 'A2', 'feelings', 'terrible', 'Terrible', 'Quality.', 'Vida maravillosa.', 'Wonderful life.', 'Idea maravillosa.', 'Wonderful idea.', 'Vida (Life)'),
-      a('terrible', 'terrible', 'Terrible', 'A2', 'feelings', 'maravilloso', 'Wonderful', 'Quality.', 'Dolor terrible.', 'Terrible pain.', 'Noticia terrible.', 'Terrible news.', 'Noticia (News)'),
-      a('simple', 'simple', 'Simple', 'A2', 'abstract', 'complejo', 'Complex', 'Complexity.', 'Plan simple.', 'Simple plan.', 'Vida simple.', 'Simple life.', 'Plan (Plan)'),
-      a('complejo', 'complejo', 'Complex', 'B1', 'abstract', 'simple', 'Simple', 'Complexity.', 'Sistema complejo.', 'Complex system.', 'Tema complejo.', 'Complex topic.', 'Tema (Topic)')
-    ]
-  },
-  {
-    id: 'day-9',
-    title: 'Day 9: Position',
-    words: [
-      v('subir', 'subir', 'To go up', 'A2', 'travel', 'Regular.', 'Subo escaleras.', 'Go up stairs.', 'Subes fotos.', 'Upload photos.', 'Escaleras (Stairs)', '', true),
-      v('bajar', 'bajar', 'To go down', 'A2', 'travel', 'Regular.', 'Bajo rápido.', 'Go down fast.', 'Bajas el precio.', 'Lower price.', 'Precio (Price)', '', true),
-      v('quedar', 'quedar', 'To stay', 'A2', 'travel', 'Regular.', 'Me quedo.', 'I stay.', 'Quedan dos.', 'Two remain.', 'Dos (Two)', '', true),
-      v('esperar', 'esperar', 'To wait', 'A2', 'travel', 'Regular.', 'Espero aquí.', 'Wait here.', 'Esperas fuera.', 'Wait outside.', 'Fuera (Outside)', '', true),
-      v('parar', 'parar', 'To stop', 'A2', 'travel', 'Regular.', 'Paro el coche.', 'Stop car.', 'No paras.', 'Don\'t stop.', 'Coche (Car)', '', true),
-      v('seguir', 'seguir', 'To follow', 'A2', 'travel', 'E->I.', 'Sigo el camino.', 'Follow path.', 'Sigues recto.', 'Continue straight.', 'Camino (Path)', 's[i]go, s[i]gues, s[i]gue, seguimos, seguís, s[i]guen', false),
-      v('empezar', 'empezar', 'To start', 'A2', 'daily', 'E->IE.', 'Empiezo hoy.', 'Start today.', 'Empiezas mañana.', 'Start tomorrow.', 'Hoy (Today)', 'emp[ie]zo, emp[ie]zas, emp[ie]za, empezamos, empezáis, emp[ie]zan', false),
-      v('terminar', 'terminar', 'To finish', 'A2', 'daily', 'Regular.', 'Termino el libro.', 'Finish book.', 'Terminas tarde.', 'Finish late.', 'Libro (Book)', '', true),
-      v('nacer', 'nacer', 'To be born', 'A2', 'life', 'Irregular.', 'Nazco en abril.', 'Born in April.', 'Naces en mayo.', 'Born in May.', 'Abril (April)', 'naz[co], naces, nace, nacemos, nacéis, nacen', false),
-      v('morir', 'morir', 'To die', 'A2', 'life', 'O->UE.', 'Muero de risa.', 'Die of laughter.', 'Mueres de amor.', 'Die of love.', 'Risa (Laughter)', 'm[ue]ro, m[ue]res, m[ue]re, morimos, morís, m[ue]ren', false),
-      a('primero', 'primero', 'First', 'A1', 'abstract', 'último', 'Last', 'Order.', 'Primer día.', 'First day.', 'Primera vez.', 'First time.', 'Vez (Time)'),
-      a('último', 'último', 'Last', 'A1', 'abstract', 'primero', 'First', 'Order.', 'Último mes.', 'Last month.', 'Última hora.', 'Last hour.', 'Mes (Month)'),
-      a('próximo', 'próximo', 'Next', 'A2', 'time', 'anterior', 'Previous', 'Order.', 'Próximo año.', 'Next year.', 'Próxima parada.', 'Next stop.', 'Año (Year)'),
-      a('anterior', 'anterior', 'Previous', 'A2', 'time', 'posterior', 'Later', 'Order.', 'Día anterior.', 'Previous day.', 'Vida anterior.', 'Previous life.', 'Día (Day)'),
-      a('cerca', 'cerca', 'Close', 'A1', 'travel', 'lejos', 'Far', 'Distance.', 'Está cerca.', 'It is close.', 'Casa cerca.', 'House nearby.', 'Casa (House)'),
-      a('lejos', 'lejos', 'Far', 'A1', 'travel', 'cerca', 'Close', 'Distance.', 'Está lejos.', 'It is far.', 'Viaje lejos.', 'Travel far.', 'Viaje (Trip)'),
-      a('derecho', 'derecho', 'Right', 'A1', 'travel', 'izquierdo', 'Left', 'Direction.', 'Mano derecha.', 'Right hand.', 'Lado derecho.', 'Right side.', 'Mano (Hand)'),
-      a('izquierdo', 'izquierdo', 'Left', 'A1', 'travel', 'derecho', 'Right', 'Direction.', 'Pie izquierdo.', 'Left foot.', 'Ojo izquierdo.', 'Left eye.', 'Pie (Foot)'),
-      a('arriba', 'arriba', 'Up', 'A1', 'travel', 'abajo', 'Down', 'Direction.', 'Mira arriba.', 'Look up.', 'Piso de arriba.', 'Upstairs.', 'Mira (Look)'),
-      a('abajo', 'abajo', 'Down', 'A1', 'travel', 'arriba', 'Up', 'Direction.', 'Mira abajo.', 'Look down.', 'Piso de abajo.', 'Downstairs.', 'Piso (Floor)')
-    ]
-  },
-  {
-    id: 'day-10',
-    title: 'Day 10: Abstract',
-    words: [
-      v('cambiar', 'cambiar', 'To change', 'A2', 'abstract', 'Regular.', 'Cambio de plan.', 'Change plan.', 'Cambias el mundo.', 'Change world.', 'Plan (Plan)', '', true),
-      v('ocurrir', 'ocurrir', 'To occur', 'A2', 'abstract', 'Regular.', 'Ocurre a veces.', 'Occurs sometimes.', '¿Qué ocurre?', 'What is happening?', 'A veces (Sometimes)', '', true),
-      v('parecer', 'parecer', 'To seem', 'A2', 'abstract', 'Irregular.', 'Parece fácil.', 'Seems easy.', 'Pareces cansado.', 'Seem tired.', 'Cansado (Tired)', 'parez[co], pareces, parece, parecemos, parecéis, aparecen', false),
-      v('servir', 'servir', 'To serve', 'A2', 'daily', 'E->I.', 'Sirvo café.', 'Serve coffee.', 'Sirve para esto.', 'Works for this.', 'Esto (This)', 's[i]rvo, s[i]rves, s[i]rve, servimos, servís, s[i]rven', false),
-      v('permitir', 'permitir', 'To allow', 'B1', 'society', 'Regular.', 'Permito pasar.', 'Allow passing.', 'Permites fotos.', 'Allow photos.', 'Pasar (Pass)', '', true),
-      v('repetir', 'repetir', 'To repeat', 'A2', 'daily', 'E->I.', 'Repito la clase.', 'Repeat class.', 'Repites el curso.', 'Repeat course.', 'Clase (Class)', 'rep[i]to, rep[i]tes, rep[i]te, repetimos, repetís, rep[i]ten', false),
-      v('decidir', 'decidir', 'To decide', 'A2', 'abstract', 'Regular.', 'Decido ir.', 'Decide to go.', 'Decides tú.', 'You decide.', 'Tú (You)', '', true),
-      v('suponer', 'suponer', 'To suppose', 'B1', 'abstract', 'Go-verb.', 'Supongo que sí.', 'Suppose so.', 'Supones mal.', 'Suppose wrong.', 'Sí (Yes)', 'supon[go], supones, supone, suponemos, suponéis, suponen', false),
-      v('cumplir', 'cumplir', 'To fulfill', 'B1', 'society', 'Regular.', 'Cumplo años.', 'Turn years.', 'Cumples promesa.', 'Keep promise.', 'Años (Years)', '', true),
-      v('olvidar', 'olvidar', 'To forget', 'A2', 'abstract', 'Regular.', 'Olvido la llave.', 'Forget key.', 'Olvidas todo.', 'Forget all.', 'Llave (Key)', '', true),
-      a('real', 'real', 'Real', 'A2', 'abstract', 'irreal', 'Unreal', 'Reality.', 'Vida real.', 'Real life.', 'Mundo real.', 'Real world.', 'Mundo (World)'),
-      a('falso', 'falso', 'False', 'A2', 'abstract', 'verdadero', 'True', 'Truth.', 'Nombre falso.', 'Fake name.', 'Alarma falsa.', 'False alarm.', 'Alarma (Alarm)'),
-      a('igual', 'igual', 'Equal/Same', 'A2', 'abstract', 'diferente', 'Different', 'Comparison.', 'Es igual.', 'It is same.', 'Da igual.', 'Doesn\'t matter.', 'Da (Gives)'),
-      a('diferente', 'diferente', 'Different', 'A1', 'abstract', 'igual', 'Same', 'Comparison.', 'Es diferente.', 'It is different.', 'Gente diferente.', 'Different people.', 'Gente (People)'),
-      a('normal', 'normal', 'Normal', 'A1', 'abstract', 'raro', 'Weird', 'Normality.', 'Día normal.', 'Normal day.', 'Es normal.', 'It is normal.', 'Día (Day)'),
-      a('raro', 'raro', 'Weird', 'A2', 'abstract', 'común', 'Common', 'Frequency.', 'Bicho raro.', 'Weirdo.', 'Caso raro.', 'Rare case.', 'Caso (Case)'),
-      a('extraño', 'extraño', 'Strange', 'B1', 'abstract', 'conocido', 'Known', 'Familiarity.', 'Ruido extraño.', 'Strange noise.', 'Hombre extraño.', 'Strange man.', 'Ruido (Noise)'),
-      a('loco', 'loco', 'Crazy', 'A1', 'feelings', 'cuerdo', 'Sane', 'Mind.', 'Mundo loco.', 'Crazy world.', 'Estás loco.', 'You are crazy.', 'Estás (You are)'),
-      a('serio', 'serio', 'Serious', 'A2', 'feelings', 'gracioso', 'Funny', 'Personality.', 'Hombre serio.', 'Serious man.', 'Problema serio.', 'Serious problem.', 'Problema (Problem)'),
-      a('gracioso', 'gracioso', 'Funny', 'A2', 'feelings', 'serio', 'Serious', 'Personality.', 'Chiste gracioso.', 'Funny joke.', 'Cara graciosa.', 'Funny face.', 'Chiste (Joke)')
-    ]
-  },
-  {
-    id: 'day-11',
-    title: 'Day 11: Nature',
-    words: [
-      v('llover', 'llover', 'To rain', 'A2', 'nature', 'O->UE.', 'Llueve mucho.', 'Rains a lot.', 'Va a llover.', 'Going to rain.', 'Mucho (A lot)', 'll[ue]ve (impersonal)', false),
-      v('nevar', 'nevar', 'To snow', 'A2', 'nature', 'E->IE.', 'Nieva hoy.', 'Snows today.', 'Nieve blanca.', 'White snow.', 'Hoy (Today)', 'n[ie]va (impersonal)', false),
-      v('brillar', 'brillar', 'To shine', 'A2', 'nature', 'Regular.', 'El sol brilla.', 'Sun shines.', 'Brillas hoy.', 'Shine today.', 'Sol (Sun)', '', true),
-      v('quemar', 'quemar', 'To burn', 'A2', 'nature', 'Regular.', 'El fuego quema.', 'Fire burns.', 'Me quemo.', 'I burn.', 'Fuego (Fire)', '', true),
-      v('crecer', 'crecer', 'To grow', 'A2', 'nature', 'Irregular.', 'Crezco rápido.', 'Grow fast.', 'La planta crece.', 'Plant grows.', 'Planta (Plant)', 'crez[co], creces, crece, crecemos, crecéis, crecen', false),
-      v('florecer', 'florecer', 'To bloom', 'B1', 'nature', 'Irregular.', 'Florece en mayo.', 'Blooms in May.', 'Flores florecen.', 'Flowers bloom.', 'Mayo (May)', 'florez[co], floreces, florece, florecemos, florecéis, florecen', false),
-      v('volar', 'volar', 'To fly', 'A2', 'nature', 'O->UE.', 'Vuelo lejos.', 'Fly far.', 'El pájaro vuela.', 'Bird flies.', 'Pájaro (Bird)', 'v[ue]lo, v[ue]las, v[ue]la, volamos, voláis, v[ue]lan', false),
-      v('nadar', 'nadar', 'To swim', 'A1', 'nature', 'Regular.', 'Nado en el mar.', 'Swim in sea.', 'Nadas bien.', 'Swim well.', 'Mar (Sea)', '', true),
-      v('pescar', 'pescar', 'To fish', 'A2', 'nature', 'Regular.', 'Pesco en el río.', 'Fish in river.', 'Pescas nada.', 'Catch nothing.', 'Río (River)', '', true),
-      v('cazar', 'cazar', 'To hunt', 'B1', 'nature', 'Regular.', 'El gato caza.', 'Cat hunts.', 'Cazo ideas.', 'Hunt ideas.', 'Gato (Cat)', '', true),
-      a('natural', 'natural', 'Natural', 'A1', 'nature', 'artificial', 'Artificial', 'Nature.', 'Luz natural.', 'Natural light.', 'Agua natural.', 'Plain water.', 'Luz (Light)'),
-      a('salvaje', 'salvaje', 'Wild', 'A2', 'nature', 'doméstico', 'Domestic', 'Nature.', 'Animal salvaje.', 'Wild animal.', 'Vida salvaje.', 'Wild life.', 'Animal (Animal)'),
-      a('fresco', 'fresco', 'Fresh', 'A2', 'nature', 'podrido', 'Rotten', 'State.', 'Aire fresco.', 'Fresh air.', 'Agua fresca.', 'Fresh water.', 'Aire (Air)'),
-      a('puro', 'puro', 'Pure', 'A2', 'nature', 'impuro', 'Impure', 'Quality.', 'Aire puro.', 'Pure air.', 'Alma pura.', 'Pure soul.', 'Alma (Soul)'),
-      a('profundo', 'profundo', 'Deep', 'B1', 'nature', 'superficial', 'Shallow', 'Dimension.', 'Mar profundo.', 'Deep sea.', 'Sueño profundo.', 'Deep sleep.', 'Mar (Sea)'),
-      a('plano', 'plano', 'Flat', 'B1', 'nature', 'rugoso', 'Rugged', 'Texture.', 'Tierra plana.', 'Flat earth.', 'Superficie plana.', 'Flat surface.', 'Tierra (Earth)'),
-      a('redondo', 'redondo', 'Round', 'A2', 'abstract', 'cuadrado', 'Square', 'Shape.', 'Mesa redonda.', 'Round table.', 'Mundo redondo.', 'Round world.', 'Mesa (Table)'),
-      a('cuadrado', 'cuadrado', 'Square', 'A2', 'abstract', 'redondo', 'Round', 'Shape.', 'Caja cuadrada.', 'Square box.', 'Metro cuadrado.', 'Square meter.', 'Caja (Box)'),
-      a('brillante', 'brillante', 'Bright', 'A2', 'nature', 'opaco', 'Dull', 'Light.', 'Estrella brillante.', 'Bright star.', 'Futuro brillante.', 'Bright future.', 'Estrella (Star)'),
-      a('transparente', 'transparente', 'Transparent', 'B1', 'nature', 'opaco', 'Opaque', 'Light.', 'Agua transparente.', 'Clear water.', 'Cristal transparente.', 'Clear glass.', 'Agua (Water)')
+      v('llegar', 'llegar', 'To arrive', 'A1', 'travel', 'Arrival.', 'Llego a casa.', 'I arrive home.', 'El tren llega.', 'The train arrives.', 'Regular AR.', undefined, true),
+      v('creer', 'creer', 'To believe', 'A1', 'abstract', 'Belief.', 'Creo en ti.', 'I believe in you.', 'Creo que sí.', 'I think so.', 'Regular ER.', undefined, true),
+      v('dejar', 'dejar', 'To leave/let', 'A1', 'social', 'Permission.', 'Déjame ir.', 'Let me go.', 'Dejo el libro.', 'I leave the book.', 'Regular AR.', undefined, true, N_DEJAR_SALIR),
+      v('parecer', 'parecer', 'To seem', 'A1', 'abstract', 'Appearance.', 'Parece bien.', 'It seems good.', 'Me parece.', 'It seems to me.', 'Irregular Yo (Parezco).', undefined, false),
+      v('hablar', 'hablar', 'To speak', 'A1', 'social', 'Speech.', 'Hablo español.', 'I speak Spanish.', 'Hablas rápido.', 'You speak fast.', 'Regular AR.', undefined, true),
+      n('tiempo', 'tiempo', 'Time/Weather', 'A1', 'time', 'm', 'Duration.', 'Mucho tiempo.', 'Long time.', 'Hace mal tiempo.', 'Bad weather.', 'Double meaning.'),
+      n('mujer', 'mujer', 'Woman/Wife', 'A1', 'social', 'f', 'Person.', 'Mujer fuerte.', 'Strong woman.', 'Mi mujer.', 'My wife.', 'Double meaning.'),
+      n('hombre', 'hombre', 'Man', 'A1', 'social', 'm', 'Person.', 'Hombre alto.', 'Tall man.', '¡Hombre!', 'Hey man!', 'Also generic mankind.'),
+      n('dia', 'día', 'Day', 'A1', 'time', 'm', 'Time unit.', 'Buenos días.', 'Good morning.', 'Todo el día.', 'All day.', 'Masculine ending in A!'),
+      n('vida', 'vida', 'Life', 'A1', 'life', 'f', 'Existence.', 'Vida loca.', 'Crazy life.', 'Toda la vida.', 'All life.', 'Essential noun.'),
+      n('parte', 'parte', 'Part', 'A1', 'abstract', 'f', 'Fraction.', 'Gran parte.', 'Large part.', 'Parte de mí.', 'Part of me.', 'Common noun.'),
+      n('casa', 'casa', 'House/Home', 'A1', 'daily', 'f', 'Dwelling.', 'En casa.', 'At home.', 'Voy a casa.', 'I go home.', 'No article needed for "at home".'),
+      n('mundo', 'mundo', 'World', 'A1', 'nature', 'm', 'Place.', 'Hola mundo.', 'Hello world.', 'Todo el mundo.', 'Everyone (All the world).', 'Idiom: Todo el mundo.'),
+      n('vez', 'vez', 'Time (Instance)', 'A1', 'time', 'f', 'Occurrence.', 'Una vez.', 'One time.', 'Otra vez.', 'Again (Another time).', 'Plural: Veces.'),
+      n('agua', 'agua', 'Water', 'A1', 'nature', 'm', 'Liquid.', 'El agua fría.', 'The cold water.', 'Bebe agua.', 'Drink water.', 'Fem noun, but uses El to avoid sound clash.'),
+      n('amigo', 'amigo', 'Friend', 'A1', 'social', 'm', 'Relationship.', 'Mi mejor amigo.', 'My best friend.', 'Hola amigo.', 'Hello friend.', 'Fem: Amiga.'),
+      n('verdad', 'verdad', 'Truth', 'A1', 'abstract', 'f', 'Reality.', 'Es verdad.', 'It is true.', 'De verdad.', 'Really.', 'Idiom: De verdad.'),
+      n('noche', 'noche', 'Night', 'A1', 'time', 'f', 'Time.', 'Buenas noches.', 'Good evening.', 'De noche.', 'At night.', 'Feminine.'),
+      n('cosa', 'cosa', 'Thing', 'A1', 'abstract', 'f', 'Object.', 'Cosas buenas.', 'Good things.', '¿Qué cosa?', 'What thing?', 'Generic object.'),
+      n('lugar', 'lugar', 'Place', 'A1', 'travel', 'm', 'Location.', 'En su lugar.', 'In his place.', 'Lugar bonito.', 'Beautiful place.', 'Common noun.')
     ]
   }
+];
+
+// --- EXPANSION PACKS: CONTAINER A (THE TOOLKIT) ---
+export const EXTRA_CANDIDATES: Word[] = [
+  // --- 1. LOGIC I (BASIC CONNECTORS) ---
+  m('y', 'y', 'And', 'A1', 'grammar', 'Use "e" if next word starts with i/hi.', 'Tú y yo.', 'You and I.', 'Blanco y negro.', 'Black and white.', 'connector'),
+  m('o', 'o', 'Or', 'A1', 'grammar', 'Use "u" if next word starts with o/ho.', 'Agua o vino.', 'Water or wine.', 'Uno o dos.', 'One or two.', 'connector'),
+  m('pero', 'pero', 'But', 'A1', 'grammar', 'Soft contrast.', 'Quiero, pero no puedo.', 'I want, but I cannot.', 'Es pequeño pero bueno.', 'It is small but good.', 'connector'),
+  m('porque', 'porque', 'Because', 'A1', 'grammar', 'Explains why.', 'Como porque tengo hambre.', 'I eat because I have hunger.', 'Lloro porque duele.', 'I cry because it hurts.', 'connector'),
+  m('si_cond', 'si', 'If', 'A1', 'grammar', 'No accent mark = If.', 'Si puedes, ven.', 'If you can, come.', 'Si llueve, no voy.', 'If it rains, I don\'t go.', 'connector'),
+  m('tambien', 'también', 'Also/Too', 'A1', 'grammar', 'Agreement (Positive).', 'Yo también.', 'Me too.', 'Voy también.', 'I go also.', 'connector'),
+  m('tampoco', 'tampoco', 'Neither', 'A1', 'grammar', 'Agreement (Negative).', 'Yo tampoco.', 'Me neither.', 'No como tampoco.', 'I don\'t eat either.', 'connector'),
+  
+  // --- 2. LOGIC II (ADVANCED LINKING) ---
+  m('aunque', 'aunque', 'Although', 'A2', 'grammar', 'Contrast.', 'Aunque llueva, voy.', 'Although it rains, I go.', 'Es caro, aunque bueno.', 'It is expensive, although good.', 'connector'),
+  m('sin_embargo', 'sin embargo', 'However', 'B1', 'grammar', 'Formal contrast.', 'Es difícil; sin embargo, posible.', 'It is hard; however, possible.', 'No vino, sin embargo.', 'He didn\'t come, however.', 'connector'),
+  m('entonces', 'entonces', 'So/Then', 'A1', 'time', 'Consequence.', 'Pienso, entonces existo.', 'I think, therefore I exist.', '¿Entonces qué?', 'So what?', 'connector'),
+  m('por_eso', 'por eso', 'That\'s why', 'A1', 'grammar', 'Reason.', 'Estoy enfermo, por eso no voy.', 'I am sick, that is why I don\'t go.', 'Es tarde, por eso corro.', 'It is late, that is why I run.', 'connector'),
+  m('mientras', 'mientras', 'While', 'A2', 'time', 'Simultaneous.', 'Leo mientras como.', 'I read while I eat.', 'Mientras tú duermes.', 'While you sleep.', 'connector'),
+  m('o_sea', 'o sea', 'In other words', 'B1', 'grammar', 'Clarification.', 'No vino, o sea, se olvidó.', 'He didn\'t come, I mean, he forgot.', '', '', 'connector'),
+  
+  // --- 3. THE DETECTIVE (INTERROGATIVES) ---
+  m('que_q', 'qué', 'What', 'A1', 'grammar', 'Accent mark is crucial.', '¿Qué es esto?', 'What is this?', '¿Qué pasa?', 'What is happening?', 'interrogative'),
+  m('quien', 'quién', 'Who', 'A1', 'grammar', 'For people.', '¿Quién es él?', 'Who is he?', '¿Quién llama?', 'Who calls?', 'interrogative'),
+  m('cuando', 'cuándo', 'When', 'A1', 'time', 'Time.', '¿Cuándo vamos?', 'When do we go?', '¿Cuándo es?', 'When is it?', 'interrogative'),
+  m('donde', 'dónde', 'Where', 'A1', 'travel', 'Location.', '¿Dónde estás?', 'Where are you?', '¿Dónde vives?', 'Where do you live?', 'interrogative'),
+  m('por_que', 'por qué', 'Why', 'A1', 'grammar', 'Two words + Accent.', '¿Por qué lloras?', 'Why do you cry?', '¿Por qué no?', 'Why not?', 'interrogative'),
+  m('como', 'cómo', 'How', 'A1', 'grammar', 'Manner.', '¿Cómo estás?', 'How are you?', '¿Cómo te llamas?', 'What (How) is your name?', 'interrogative'),
+  m('cuanto', 'cuánto', 'How much', 'A1', 'quantity', 'Amount.', '¿Cuánto cuesta?', 'How much does it cost?', '¿Cuánto tiempo?', 'How much time?', 'interrogative'),
+  m('cual', 'cuál', 'Which', 'A1', 'grammar', 'Choice.', '¿Cuál quieres?', 'Which one do you want?', 'Which is your name?', 'Which is your name?', 'interrogative'),
+
+  // --- 4. THE COUNTER I (0-10) ---
+  m('cero', 'cero', 'Zero', 'A1', 'quantity', '0', 'Tengo cero.', 'I have zero.', 'Número cero.', 'Number zero.', 'quantity'),
+  m('uno', 'uno', 'One', 'A1', 'quantity', '1. Becomes "Un" before masc noun.', 'Un gato.', 'One cat.', 'Número uno.', 'Number one.', 'quantity'),
+  m('dos', 'dos', 'Two', 'A1', 'quantity', '2', 'Dos manos.', 'Two hands.', 'Son las dos.', 'It is two o\'clock.', 'quantity'),
+  m('tres', 'tres', 'Three', 'A1', 'quantity', '3', 'Tres deseos.', 'Three wishes.', 'Son las tres.', 'It is three o\'clock.', 'quantity'),
+  m('cuatro', 'cuatro', 'Four', 'A1', 'quantity', '4', 'Cuatro patas.', 'Four legs.', 'Cuatro estaciones.', 'Four seasons.', 'quantity'),
+  m('cinco', 'cinco', 'Five', 'A1', 'quantity', '5', 'Cinco dedos.', 'Five fingers.', 'Dame cinco.', 'Give me five.', 'quantity'),
+  m('seis', 'seis', 'Six', 'A1', 'quantity', '6', 'Seis meses.', 'Six months.', 'A las seis.', 'At six.', 'quantity'),
+  m('siete', 'siete', 'Seven', 'A1', 'quantity', '7', 'Siete días.', 'Seven days.', 'Siete mares.', 'Seven seas.', 'quantity'),
+  m('ocho', 'ocho', 'Eight', 'A1', 'quantity', '8', 'Ocho horas.', 'Eight hours.', 'A las ocho.', 'At eight.', 'quantity'),
+  m('nueve', 'nueve', 'Nine', 'A1', 'quantity', '9', 'Nueve vidas.', 'Nine lives.', 'Nueve meses.', 'Nine months.', 'quantity'),
+  m('diez', 'diez', 'Ten', 'A1', 'quantity', '10', 'Diez puntos.', 'Ten points.', 'Top diez.', 'Top ten.', 'quantity'),
+  n('numero', 'número', 'Number', 'A1', 'quantity', 'm', 'Generic term.', '¿Qué número?', 'What number?', 'Número de teléfono.', 'Phone number.', 'quantity'),
+
+  // --- 5. THE COUNTER II (11-100 & MONEY) ---
+  m('once', 'once', 'Eleven', 'A1', 'quantity', '11', 'Once jugadores.', 'Eleven players.', 'Son las once.', 'It is eleven.', 'quantity'),
+  m('doce', 'doce', 'Twelve', 'A1', 'quantity', '12', 'Doce meses.', 'Twelve months.', 'A las doce.', 'At twelve.', 'quantity'),
+  m('veinte', 'veinte', 'Twenty', 'A1', 'quantity', '20', 'Veinte años.', 'Twenty years.', 'Veinte euros.', 'Twenty euros.', 'quantity'),
+  m('treinta', 'treinta', 'Thirty', 'A1', 'quantity', '30', 'Treinta días.', 'Thirty days.', 'Más de treinta.', 'More than thirty.', 'quantity'),
+  m('cincuenta', 'cincuenta', 'Fifty', 'A1', 'quantity', '50', 'Cincuenta por ciento.', 'Fifty percent.', 'Cincuenta sombras.', 'Fifty shades.', 'quantity'),
+  m('cien', 'cien', 'One Hundred', 'A1', 'quantity', '100. "Ciento" if >100.', 'Cien años.', 'One hundred years.', 'Cien veces.', 'One hundred times.', 'quantity'),
+  m('mil', 'mil', 'One Thousand', 'A1', 'quantity', '1000', 'Mil gracias.', 'A thousand thanks.', 'Dos mil.', 'Two thousand.', 'quantity'),
+  n('millon', 'millón', 'Million', 'A1', 'quantity', 'm', 'Needs "de" (Millón de...).', 'Un millón de amigos.', 'A million friends.', 'Un millón.', 'One million.', 'quantity'),
+  n('euro', 'euro', 'Euro', 'A1', 'work', 'm', 'Currency.', 'Cinco euros.', 'Five euros.', 'Pagar en euros.', 'Pay in euros.', 'quantity'),
+  n('dolar', 'dólar', 'Dollar', 'A1', 'work', 'm', 'Currency.', 'Un dólar.', 'One dollar.', 'Muchos dólares.', 'Many dollars.', 'quantity'),
+  
+  // --- 6. THE COUNTER III (MATH & QUANTITY) ---
+  m('mas', 'más', 'More/Plus', 'A1', 'quantity', 'Addition.', 'Más o menos.', 'More or less.', 'Uno más uno.', 'One plus one.', 'quantity'),
+  m('menos', 'menos', 'Less/Minus', 'A1', 'quantity', 'Subtraction.', 'Menos mal.', 'Thank goodness (Less bad).', 'Cinco menos dos.', 'Five minus two.', 'quantity'),
+  n('mitad', 'mitad', 'Half', 'A1', 'quantity', 'f', 'Fraction.', 'La mitad.', 'The half.', 'Mitad y mitad.', 'Half and half.', 'quantity'),
+  n('par', 'par', 'Pair/Couple', 'A1', 'quantity', 'm', 'Two of something.', 'Un par de zapatos.', 'A pair of shoes.', 'Somos un par.', 'We are a couple.', 'quantity'),
+  n('precio', 'precio', 'Price', 'A1', 'work', 'm', 'Cost.', 'Buen precio.', 'Good price.', '¿Qué precio?', 'What price?', 'quantity'),
+  n('cuenta', 'cuenta', 'Bill/Account', 'A1', 'work', 'f', 'Payment.', 'La cuenta, por favor.', 'The bill, please.', 'Cuenta bancaria.', 'Bank account.', 'quantity'),
+  n('total', 'total', 'Total', 'A1', 'quantity', 'm', 'Sum.', 'El total es...', 'The total is...', 'En total.', 'In total.', 'quantity'),
+  m('demasiado', 'demasiado', 'Too much', 'A2', 'quantity', 'Excess.', 'Demasiado calor.', 'Too much heat.', 'Hablas demasiado.', 'You talk too much.', 'quantity'),
+  m('bastante', 'bastante', 'Enough/Quite', 'A2', 'quantity', 'Sufficient.', 'Es bastante.', 'It is enough.', 'Bastante bien.', 'Quite good.', 'quantity'),
+
+  // --- 7. NAVIGATOR I (STATIC LOCATION) ---
+  m('en', 'en', 'In/On', 'A1', 'travel', 'General location.', 'En casa.', 'At home.', 'En la mesa.', 'On the table.', 'preposition'),
+  m('sobre', 'sobre', 'On/Over', 'A2', 'travel', 'Surface.', 'Sobre la mesa.', 'On the table.', 'Sobre todo.', 'Above all.', 'preposition'),
+  m('bajo', 'bajo', 'Under', 'A2', 'travel', 'Beneath.', 'Bajo el sol.', 'Under the sun.', 'Bajo control.', 'Under control.', 'preposition'),
+  m('dentro', 'dentro', 'Inside', 'A2', 'travel', 'Interior.', 'Dentro de la caja.', 'Inside the box.', 'Hay algo dentro.', 'There is something inside.', 'preposition'),
+  m('fuera', 'fuera', 'Outside', 'A2', 'travel', 'Exterior.', 'Fuera de casa.', 'Outside the house.', '¡Fuera!', 'Get out!', 'preposition'),
+  m('aqui', 'aquí', 'Here', 'A1', 'travel', 'This place.', 'Estoy aquí.', 'I am here.', 'Ven aquí.', 'Come here.', 'preposition'),
+  m('alli', 'allí', 'There', 'A1', 'travel', 'That place.', 'Está allí.', 'It is there.', 'Mira allí.', 'Look there.', 'preposition'),
+  n('lado', 'lado', 'Side', 'A1', 'travel', 'm', 'Position.', 'Al otro lado.', 'On the other side.', 'A mi lado.', 'By my side.', 'preposition'),
+  n('centro', 'centro', 'Center', 'A1', 'travel', 'm', 'Middle.', 'En el centro.', 'In the center.', 'Centro de la ciudad.', 'City center.', 'preposition'),
+  
+  // --- 8. NAVIGATOR II (MOVEMENT & DIRECTION) ---
+  m('a', 'a', 'To/At', 'A1', 'travel', 'Direction.', 'Voy a casa.', 'I go home.', 'A las tres.', 'At three.', 'preposition'),
+  m('de', 'de', 'Of/From', 'A1', 'travel', 'Origin/Possession.', 'Soy de España.', 'I am from Spain.', 'Libro de Ana.', 'Ana\'s book.', 'preposition'),
+  m('desde', 'desde', 'Since/From', 'A2', 'time', 'Start point.', 'Desde ayer.', 'Since yesterday.', 'Desde aquí.', 'From here.', 'preposition'),
+  m('hasta', 'hasta', 'Until', 'A1', 'time', 'End point.', 'Hasta mañana.', 'Until tomorrow.', 'Hasta el fin.', 'Until the end.', 'preposition'),
+  m('hacia', 'hacia', 'Towards', 'A2', 'travel', 'Direction.', 'Voy hacia el sol.', 'I go towards the sun.', 'Mirar hacia atrás.', 'Look back.', 'preposition'),
+  m('por', 'por', 'By/Through', 'A1', 'travel', 'Transit/Cause.', 'Por la calle.', 'Through the street.', 'Por favor.', 'Please (By favor).', 'preposition'),
+  m('para', 'para', 'For/To', 'A1', 'travel', 'Goal/Recipient.', 'Para ti.', 'For you.', 'Para comer.', 'In order to eat.', 'preposition'),
+  m('entre', 'entre', 'Between', 'A2', 'travel', 'Middle.', 'Entre tú y yo.', 'Between you and me.', 'Entre dos aguas.', 'Between two waters.', 'preposition'),
+  n('direccion', 'dirección', 'Direction/Address', 'A2', 'travel', 'f', 'Path.', 'Buena dirección.', 'Good direction.', 'Mi dirección.', 'My address.', 'preposition'),
+
+  // --- 9. IDENTITY (PRONOUNS & BASICS) ---
+  m('yo', 'yo', 'I', 'A1', 'social', 'Subject.', 'Yo soy.', 'I am.', 'Yo voy.', 'I go.', 'island'),
+  m('tu', 'tú', 'You', 'A1', 'social', 'Subject (Informal).', 'Tú eres.', 'You are.', 'Para ti.', 'For you.', 'island'),
+  m('el_pron', 'él', 'He', 'A1', 'social', 'Subject.', 'Él come.', 'He eats.', 'Con él.', 'With him.', 'island'),
+  m('ella', 'ella', 'She', 'A1', 'social', 'Subject.', 'Ella canta.', 'She sings.', 'A ella.', 'To her.', 'island'),
+  m('nosotros', 'nosotros', 'We', 'A1', 'social', 'Subject.', 'Nosotros vamos.', 'We go.', 'Para nosotros.', 'For us.', 'island'),
+  m('ellos', 'ellos', 'They', 'A1', 'social', 'Subject.', 'Ellos son.', 'They are.', 'Con ellos.', 'With them.', 'island'),
+  m('mio', 'mío', 'Mine', 'A2', 'social', 'Possessive.', 'Es mío.', 'It is mine.', 'El mío.', 'The mine (one).', 'island'),
+  m('tuyo', 'tuyo', 'Yours', 'A2', 'social', 'Possessive.', 'Es tuyo.', 'It is yours.', 'El tuyo.', 'The yours (one).', 'island'),
+  n('nombre', 'nombre', 'Name', 'A1', 'social', 'm', 'Identity.', 'Mi nombre es.', 'My name is.', 'Buen nombre.', 'Good name.', 'island')
+];
+
+// --- ISLAND SLANG (Fun Bonus Content) ---
+export const ISLAND_SLANG = [
+  // 🟢 Daily Life
+  { s: "¡Qué guay!", t: "How cool!", note: "Spain. Like 'Awesome!'." },
+  { s: "¡Vale!", t: "Okay!", note: "Spain's favorite word. Agreed/Understood." },
+  { s: "¡No manches!", t: "No way!", note: "Mexican slang. Surprise/Disbelief." },
+  { s: "¡Chévere!", t: "Cool/Great!", note: "Caribbean/South American vibes." },
+  { s: "¡Pura Vida!", t: "Pure Life!", note: "Costa Rican philosophy. All good." },
+  { s: "¡Aguas!", t: "Watch out!", note: "Mexican warning. Lit: 'Waters!'." },
+  { s: "Tío / Tía", t: "Dude/Mate", note: "Spain. Lit: Uncle/Aunt." },
+  { s: "Chamba", t: "Work/Gig", note: "Latin America. 'Tengo mucha chamba'." },
+  { s: "Resaca", t: "Hangover", note: "The morning after the fiesta." },
+  { s: "Buena onda", t: "Good vibes", note: "Cool person/atmosphere. Ant: Mala onda." },
+  { s: "Me importa un pepino", t: "I don't give a damn", note: "Lit: I care a cucumber." },
+  { s: "Estar sin blanca", t: "To be broke", note: "Lit: To be without white coin." },
+  { s: "¡Ojo!", t: "Watch out!", note: "Lit: Eye! Pay attention." },
+  { s: "¡Che, boludo!", t: "Hey, buddy/fool!", note: "Argentina. Context is key!" },
+  { s: "Flipante", t: "Mind-blowing", note: "Spain. Amazing or shocking." },
+  
+  // 🌶️ Spicy / Vulgar
+  { s: "Joder", t: "F*ck / Damn", note: "Spain. Very common. Spicy!", spicy: true },
+  { s: "Mierda", t: "Sh*t", note: "Universal expression of frustration. Spicy!", spicy: true },
+  { s: "Coño", t: "Damn it", note: "Spain. Lit: Anatomy. High freq. Spicy!", spicy: true },
+  { s: "Hostia", t: "Holy cow!", note: "Spain. Lit: Host. Surprise/Anger. Spicy!", spicy: true },
+  { s: "Cabrón", t: "Bastard / Badass", note: "Insult or praise depending on tone. Spicy!", spicy: true },
+  { s: "Pinche", t: "F*cking / Damn", note: "Mexico. Adj: Pinche tráfico. Spicy!", spicy: true },
+  { s: "Pendejo", t: "Idiot / Asshole", note: "Latin America. Very offensive. Spicy!", spicy: true },
+  { s: "Gilipollas", t: "Douchebag", note: "Spain. Very common insult. Spicy!", spicy: true },
+  { s: "Carajo", t: "Hell / Damn", note: "Vete al carajo = Go to hell. Spicy!", spicy: true },
+  { s: "Verga", t: "Sh*t / Damn", note: "Mexico/Venezuela. Very vulgar. Spicy!", spicy: true },
+  { s: "Puta", t: "B*tch / Whore", note: "Also intensifier: Puta vida. Spicy!", spicy: true },
+  { s: "De puta madre", t: "Awesome / Great", note: "Spain. Vulgar but positive! Spicy!", spicy: true },
+  { s: "Hijo de puta", t: "Son of a b*tch", note: "High offense. Spicy!", spicy: true },
+  { s: "Cagarla", t: "To screw up", note: "Lit: To sh*t it. Spicy!", spicy: true },
+  { s: "No me jodas", t: "You gotta be kidding", note: "Lit: Don't f*ck me. Spicy!", spicy: true }
 ];

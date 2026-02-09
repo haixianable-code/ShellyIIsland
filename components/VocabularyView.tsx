@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Word, ProgressMap, WordLevel, WordTopic } from '../types';
-import { Search, ShoppingBag, CircleDot, Sprout, Flower2, TreeDeciduous, ChevronRight, Filter, Plane, Apple, Briefcase, Leaf, Home, Heart, Users, Brain, Cpu, Palette, PenTool, Sparkles, Clock, User } from 'lucide-react';
+import { Search, ShoppingBag, CircleDot, Sprout, Flower2, TreeDeciduous, ChevronRight, Filter, Plane, Apple, Briefcase, Leaf, Home, Heart, Users, Brain, Cpu, Palette, PenTool, Sparkles, Clock, User, Calculator, FlaskConical } from 'lucide-react';
 import WordExpansionPack from './WordExpansionPack';
 import ExpansionModal from './ExpansionModal';
 import { EXTRA_CANDIDATES } from '../constants';
@@ -32,7 +32,9 @@ const TOPIC_ICONS: Record<WordTopic, React.ElementType> = {
   time: Clock,
   social: Users,
   body: User,
-  life: Sparkles
+  life: Sparkles,
+  quantity: Calculator,
+  science: FlaskConical
 };
 
 const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWordClick, onAddExtraWords, onStartExtraStudy }) => {
@@ -114,7 +116,7 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
         
         {/* Topic Filter */}
         <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-           {['ALL', 'travel', 'food', 'work', 'nature', 'daily', 'feelings', 'society', 'abstract', 'tech', 'art'].map((topic) => {
+           {['ALL', 'travel', 'food', 'work', 'nature', 'daily', 'feelings', 'society', 'abstract', 'tech', 'art', 'quantity', 'science'].map((topic) => {
              const Icon = topic === 'ALL' ? Filter : TOPIC_ICONS[topic as WordTopic];
              return (
                <button

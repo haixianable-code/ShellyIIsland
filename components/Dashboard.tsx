@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Word, UserStats } from '../types';
 import { ISLAND_SLANG, VOCABULARY_DATA } from '../constants';
 import { playClick, playSparkle, playSwish } from '../utils/sfx';
+import CrateRevealModal from './CrateRevealModal';
 import { 
   Sprout, 
   CloudRain, 
@@ -19,7 +20,13 @@ import {
   PackagePlus,
   Gift,
   MoreHorizontal,
-  Sun
+  Sun,
+  CheckCircle2,
+  Moon,
+  Coffee,
+  List,
+  Flame,
+  AlertTriangle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useTranslation } from 'react-i18next';
@@ -29,7 +36,7 @@ interface DashboardProps {
   stats: UserStats | null;
   wordsDue: number;
   newWordsAvailable: number;
-  unlearnedExtraCount: number;
+  unlearnedExtraWords: Word[];
   newWordsList?: Word[];
   learnedToday?: Word[];
   onStartStudy: () => void;
@@ -45,7 +52,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   stats,
   wordsDue, 
   newWordsAvailable, 
-  unlearnedExtraCount,
+  unlearnedExtraWords,
   newWordsList = [],
   learnedToday = [],
   onStartStudy, 
@@ -55,38 +62,87 @@ const Dashboard: React.FC<DashboardProps> = ({
   onViewAllHarvest
 }) => {
   const { t } = useTranslation();
-  const [slangIndex, setSlangIndex] = useState(0);
+  
+  // Randomize initial slang index
+  const [slangIndex, setSlangIndex] = useState(() => Math.floor(Math.random() * ISLAND_SLANG.length));
   const [isRotating, setIsRotating] = useState(false);
   const [titleWord, setTitleWord] = useState(TITLE_WORDS[0]);
+  const [showCrateModal, setShowCrateModal] = useState(false);
+
+  // Daily Crate Tracking
+  const [crateTracker, setCrateTracker] = useState<{date: string, count: number}>({ date: '', count: 0 });
 
   useEffect(() => {
     const random = TITLE_WORDS[Math.floor(Math.random() * TITLE_WORDS.length)];
     setTitleWord(random);
+
+    // Initialize Crate Tracker
+    const today = new Date().toISOString().split('T')[0];
+    const stored = localStorage.getItem('ssi_crate_tracker');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.date === today) {
+        setCrateTracker(parsed);
+      } else {
+        const newTracker = { date: today, count: 0 };
+        localStorage.setItem('ssi_crate_tracker', JSON.stringify(newTracker));
+        setCrateTracker(newTracker);
+      }
+    } else {
+       const newTracker = { date: today, count: 0 };
+       localStorage.setItem('ssi_crate_tracker', JSON.stringify(newTracker));
+       setCrateTracker(newTracker);
+    }
   }, []);
 
   const rotateSlang = () => {
     playSwish();
     setIsRotating(true);
     setTimeout(() => {
-      setSlangIndex((prev) => (prev + 1) % ISLAND_SLANG.length);
+      // Ensure we pick a new index that is different from the current one
+      let nextIndex;
+      do {
+          nextIndex = Math.floor(Math.random() * ISLAND_SLANG.length);
+      } while (nextIndex === slangIndex && ISLAND_SLANG.length > 1);
+      
+      setSlangIndex(nextIndex);
       setIsRotating(false);
     }, 150);
   };
 
-  const handleOpenPack = () => {
-    playSparkle();
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#ffa600', '#8bc34a', '#ffffff']
-    });
+  const handleOpenPackClick = () => {
+    playClick();
+    setShowCrateModal(true);
+  };
+
+  const handleConfirmCrate = () => {
     onGetSeedPack();
+    setShowCrateModal(false);
+    
+    // Update Crate Tracker
+    const newCount = crateTracker.count + 1;
+    const newTracker = { ...crateTracker, count: newCount };
+    setCrateTracker(newTracker);
+    localStorage.setItem('ssi_crate_tracker', JSON.stringify(newTracker));
   };
 
   const currentSlang = ISLAND_SLANG[slangIndex];
-  const canGetPack = newWordsAvailable === 0 && unlearnedExtraCount > 0;
-  const isIslandQuiet = wordsDue === 0 && newWordsAvailable === 0;
+  const isSpicy = (currentSlang as any).spicy;
+  
+  const unlearnedExtraCount = unlearnedExtraWords.length;
+  
+  // Daily Limit Logic
+  const DAILY_CRATE_LIMIT = 3;
+  const isCrateLimitReached = crateTracker.count >= DAILY_CRATE_LIMIT;
+
+  // Logic: Only show crate if main words are exhausted (or quota met) AND we have extra supplies AND limit not reached
+  const canGetPack = newWordsAvailable === 0 && unlearnedExtraCount > 0 && !isCrateLimitReached;
+  
+  // If we can't get a pack and new words are 0, then we are truly done for the day (or hit the limit)
+  const isDailyGoalMet = (newWordsAvailable === 0 && unlearnedExtraCount === 0) || (newWordsAvailable === 0 && isCrateLimitReached);
+  
+  // Island quiet only if absolutely nothing to do and no crates available (or limit reached)
+  const isIslandQuiet = wordsDue === 0 && isDailyGoalMet;
 
   const RECENT_LIMIT = 8;
   const showViewAllRecent = learnedToday.length > RECENT_LIMIT;
@@ -96,12 +152,12 @@ const Dashboard: React.FC<DashboardProps> = ({
     return t(`vocab.${word.id}.t`, { defaultValue: word.t });
   };
 
-  // Determine the current mission title based on the new words available
   const currentDayPack = useMemo(() => {
     if (newWordsList.length === 0) return null;
-    // Find the day pack that contains the first word of the new list
     return VOCABULARY_DATA.find(day => day.words.some(w => w.id === newWordsList[0].id));
   }, [newWordsList]);
+
+  const nextCrateWords = useMemo(() => unlearnedExtraWords.slice(0, 10), [unlearnedExtraWords]);
 
   return (
     <div className="p-4 max-w-2xl mx-auto space-y-8 animate-fadeIn pb-2">
@@ -138,9 +194,10 @@ const Dashboard: React.FC<DashboardProps> = ({
       </header>
 
       <div className="grid grid-cols-2 gap-3 md:gap-6">
+        {/* Dynamic First Card: Shows Crate if Quota Met, otherwise Planting Status */}
         {canGetPack ? (
            <button 
-             onClick={handleOpenPack}
+             onClick={handleOpenPackClick}
              className="bg-[#ffa600] p-4 md:px-6 md:py-8 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_6px_0_#e65100] md:shadow-[0_8px_0_#e65100] border-4 border-white flex flex-col items-center justify-center relative overflow-hidden group hover:bg-[#ffb74d] transition-all active:translate-y-2 active:shadow-none bubble-button h-full min-h-[160px]"
            >
              <div className="bg-white/30 p-3 md:p-4 rounded-2xl shadow-sm mb-2 md:mb-3 border-2 border-white/50 z-10 animate-bounce">
@@ -149,15 +206,44 @@ const Dashboard: React.FC<DashboardProps> = ({
              <span className="text-lg md:text-2xl font-black text-white z-10 uppercase tracking-tighter leading-none text-center">{t('ui.dashboard.open_crate')}</span>
              <span className="text-[9px] md:text-[10px] font-black uppercase text-white/80 tracking-widest mt-1 z-10 text-center">+10 Words</span>
              <PackagePlus className="absolute -bottom-4 -left-4 text-white/20 -rotate-12" size={60} />
+             {/* Limit Indicator */}
+             <div className="absolute top-3 right-3 bg-white/20 px-2 py-0.5 rounded-lg text-[9px] font-black text-white border border-white/20">
+                {crateTracker.count}/{DAILY_CRATE_LIMIT}
+             </div>
            </button>
         ) : (
-          <div className="bg-white p-4 md:px-6 md:py-8 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_6px_0_#e0e0e0] md:shadow-[0_8px_0_#e0e0e0] border-4 border-[#f0f0f0] flex flex-col items-center justify-center relative overflow-hidden group h-full min-h-[160px]">
-            <div className="bg-[#ffcc80] p-3 md:p-4 rounded-2xl shadow-sm mb-2 md:mb-3 border-2 border-white z-10">
-              <Sprout className="text-white fill-current group-hover:scale-110 transition-transform" size={24} />
+          <div className={`p-4 md:px-6 md:py-8 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_6px_0_rgba(0,0,0,0.1)] border-4 flex flex-col items-center justify-center relative overflow-hidden group h-full min-h-[160px] ${isDailyGoalMet ? 'bg-[#3949ab] border-[#5c6bc0] shadow-[#283593]' : 'bg-white border-[#f0f0f0] shadow-[#e0e0e0]'}`}>
+            <div className={`p-3 md:p-4 rounded-2xl shadow-sm mb-2 md:mb-3 border-2 z-10 ${isDailyGoalMet ? 'bg-white/20 border-white/30' : 'bg-[#ffcc80] border-white'}`}>
+              {isDailyGoalMet ? (
+                 <Moon className="text-[#e8eaf6] fill-current" size={24} />
+              ) : (
+                 <Sprout className="text-white fill-current group-hover:scale-110 transition-transform" size={24} />
+              )}
             </div>
-            <span className="text-4xl md:text-5xl font-black text-[#4b7d78] z-10">{newWordsAvailable}</span>
-            <span className="text-[9px] md:text-[10px] font-black uppercase text-[#8d99ae] tracking-widest mt-1 z-10 text-center">{t('ui.dashboard.new_seeds')}</span>
-            <Leaf className="absolute -bottom-2 -left-2 text-[#ffcc80]/10 -rotate-12" size={50} />
+            {isDailyGoalMet ? (
+               <div className="text-center z-10">
+                 <span className="block text-xl md:text-2xl font-black text-white tracking-tight leading-none mb-1">{t('ui.dashboard.rest_msg_1')}</span>
+                 <span className="block text-[9px] md:text-[10px] font-bold text-[#c5cae9] uppercase tracking-widest">{t('ui.dashboard.rest_msg_2')}</span>
+               </div>
+            ) : (
+              <>
+                 <span className="text-4xl md:text-5xl font-black z-10 text-[#4b7d78]">
+                   {newWordsAvailable}
+                 </span>
+                 <span className="text-[9px] md:text-[10px] font-black uppercase text-[#8d99ae] tracking-widest mt-1 z-10 text-center">
+                   {t('ui.dashboard.new_seeds')}
+                 </span>
+              </>
+            )}
+            
+            {isDailyGoalMet ? (
+               <div className="absolute inset-0 pointer-events-none">
+                  <Star className="absolute top-4 left-4 text-white/10" size={12} />
+                  <Star className="absolute bottom-6 right-8 text-white/10" size={16} />
+               </div>
+            ) : (
+               <Leaf className="absolute -bottom-2 -left-2 text-[#ffcc80]/10 -rotate-12" size={50} />
+            )}
           </div>
         )}
 
@@ -204,9 +290,22 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <Flower2 size={16} className="text-[#2e7d32] group-hover:rotate-45 transition-transform" />
                 <h3 className="text-[10px] md:text-[11px] font-black text-[#2e7d32] uppercase tracking-[0.2em]">{t('ui.dashboard.recently_planted')}</h3>
               </div>
-              <span className="bg-white px-2 py-0.5 rounded-full text-[10px] font-black text-[#2e7d32] border border-[#8bc34a]">
-                {learnedToday.length}
-              </span>
+              <div className="flex items-center gap-2">
+                  <span className="bg-white px-2 py-0.5 rounded-full text-[10px] font-black text-[#2e7d32] border border-[#8bc34a]">
+                    {learnedToday.length}
+                  </span>
+                  <button 
+                    onClick={(e) => { 
+                        e.stopPropagation(); 
+                        playClick(); 
+                        onViewAllHarvest?.(); 
+                    }}
+                    className="bg-white p-2 rounded-xl text-[#2e7d32] hover:bg-[#c8e6c9] hover:scale-105 active:scale-95 transition-all shadow-sm border border-[#8bc34a] flex items-center justify-center"
+                    title="Manage List"
+                  >
+                    <List size={16} strokeWidth={3} /> 
+                  </button>
+              </div>
             </div>
             <div className="flex flex-wrap gap-2">
               {displayedRecent.map(word => (
@@ -245,7 +344,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         </button>
       </div>
 
-      {isIslandQuiet && canGetPack && (
+      {isIslandQuiet && (
         <div className="bg-[#fff3e0] p-6 md:p-8 rounded-[3rem] border-4 border-[#ffb74d] shadow-[0_10px_0_#ef6c00] text-center relative overflow-hidden animate-slideUp">
            <div className="relative z-10 flex flex-col items-center">
              <div className="bg-white p-5 rounded-[2rem] border-4 border-[#ffb74d] shadow-sm mb-4 animate-bounce">
@@ -255,34 +354,43 @@ const Dashboard: React.FC<DashboardProps> = ({
              <p className="text-[#ef6c00] font-bold mb-6 max-w-xs mx-auto text-sm leading-relaxed">
                {t('ui.dashboard.crate_msg')}
              </p>
-             <button 
-               onClick={handleOpenPack}
-               className="bg-[#ef6c00] text-white px-8 py-4 rounded-[2rem] font-black shadow-[0_6px_0_#bf360c] border-2 border-[#ffe0b2] hover:bg-[#f57c00] transition-colors bubble-button flex items-center gap-2"
-             >
-               <PackagePlus size={20} />
-               {t('ui.dashboard.open_crate')}
-             </button>
            </div>
         </div>
       )}
 
-      <div className="bg-[#fff9c4] rounded-[2.5rem] p-5 md:p-6 border-4 border-dashed border-[#fdd835] flex items-start space-x-4 md:space-x-5 shadow-sm relative overflow-hidden group">
-        <div className="bg-white p-2 md:p-3 rounded-2xl shadow-md border-2 border-[#fdd835] shrink-0 z-10">
-          <Snail className="text-[#795548] fill-current group-hover:translate-x-1 transition-transform w-5 h-5 md:w-6 md:h-6" />
+      {/* SLANG CARD */}
+      <div className={`rounded-[2.5rem] p-5 md:p-6 border-4 border-dashed flex items-start space-x-4 md:space-x-5 shadow-sm relative overflow-hidden group transition-colors ${isSpicy ? 'bg-rose-50 border-rose-300' : 'bg-[#fff9c4] border-[#fdd835]'}`}>
+        <div className={`p-2 md:p-3 rounded-2xl shadow-md border-2 shrink-0 z-10 ${isSpicy ? 'bg-white border-rose-300' : 'bg-white border-[#fdd835]'}`}>
+          {isSpicy ? (
+             <Flame className="text-rose-500 fill-current w-5 h-5 md:w-6 md:h-6" />
+          ) : (
+             <Snail className="text-[#795548] fill-current group-hover:translate-x-1 transition-transform w-5 h-5 md:w-6 md:h-6" />
+          )}
         </div>
-        <div className={`text-sm text-[#5d4037] font-bold leading-snug flex-1 z-10 transition-all duration-150 ${isRotating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-            <strong className="text-[#e91e63] text-xs font-black uppercase tracking-widest block mb-1">{t('ui.dashboard.slang_title')}</strong>
-            <span className="text-[#d32f2f] font-black text-lg md:text-xl italic block mb-0.5 leading-tight">"{currentSlang.s}"</span>
+        <div className={`text-sm font-bold leading-snug flex-1 z-10 transition-all duration-150 ${isRotating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'} ${isSpicy ? 'text-rose-900' : 'text-[#5d4037]'}`}>
+            <div className="flex items-center gap-2 mb-1">
+               <strong className={`text-xs font-black uppercase tracking-widest block ${isSpicy ? 'text-rose-500' : 'text-[#e91e63]'}`}>{t('ui.dashboard.slang_title')}</strong>
+               {isSpicy && <span className="bg-white/80 text-[8px] font-black text-rose-500 border border-rose-200 px-1.5 py-0.5 rounded uppercase tracking-wider">🔞 Spicy</span>}
+            </div>
+            <span className={`font-black text-lg md:text-xl italic block mb-0.5 leading-tight ${isSpicy ? 'text-rose-600' : 'text-[#d32f2f]'}`}>"{currentSlang.s}"</span>
             <p className="text-[10px] md:text-[11px] opacity-70 italic mb-1">{currentSlang.t}</p>
-            <p className="text-[9px] text-[#795548]/60 font-black uppercase tracking-wider">Lit: {currentSlang.note}</p>
+            <p className={`text-[9px] font-black uppercase tracking-wider ${isSpicy ? 'text-rose-800/60' : 'text-[#795548]/60'}`}>Lit: {currentSlang.note}</p>
         </div>
         <button 
           onClick={rotateSlang}
-          className="bg-white p-2 md:p-3 rounded-2xl border-2 border-[#fdd835] text-[#fbc02d] shadow-sm hover:bg-[#fdd835] hover:text-white transition-all active:scale-90 z-20"
+          className={`bg-white p-2 md:p-3 rounded-2xl border-2 shadow-sm transition-all active:scale-90 z-20 ${isSpicy ? 'border-rose-300 text-rose-400 hover:bg-rose-400 hover:text-white' : 'border-[#fdd835] text-[#fbc02d] hover:bg-[#fdd835] hover:text-white'}`}
         >
           <RotateCw className={`w-4 h-4 md:w-[18px] md:h-[18px] ${isRotating ? 'animate-spin' : ''}`} />
         </button>
       </div>
+
+      {showCrateModal && (
+        <CrateRevealModal 
+          words={nextCrateWords}
+          onClose={() => setShowCrateModal(false)}
+          onConfirm={handleConfirmCrate}
+        />
+      )}
     </div>
   );
 };

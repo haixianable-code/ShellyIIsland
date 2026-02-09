@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { AppView, Word, FeedbackQuality } from './types';
 import Sidebar from './components/Sidebar';
@@ -47,7 +46,7 @@ const App: React.FC = () => {
     newWordsForToday, 
     unlearnedExtraWords,
     learnedToday,
-    updateProgress,
+    updateProgress, 
     wordMap,
     addExtraWordsToProgress,
     loadingSrs,
@@ -109,11 +108,14 @@ const App: React.FC = () => {
     setView(AppView.STUDY);
   }, [addExtraWordsToProgress]);
 
-  const handleStartBlitz = useCallback(() => {
-    if (learnedToday.length === 0) return;
+  const handleStartBlitz = useCallback((wordsToReview?: Word[]) => {
+    // Allows passing specific words (from selection) or defaulting to all learned today
+    const targetWords = wordsToReview || learnedToday;
+    
+    if (targetWords.length === 0) return;
     setIsBlitzMode(true);
     setSessionVersion(v => v + 1);
-    setSessionWords([...learnedToday].sort(() => 0.5 - Math.random()));
+    setSessionWords([...targetWords].sort(() => 0.5 - Math.random()));
     setShowHarvestModal(false);
     setView(AppView.STUDY);
   }, [learnedToday]);
@@ -222,7 +224,7 @@ const App: React.FC = () => {
         </button>
       </div>
 
-      <main className="flex-1 md:ml-64 p-4 md:p-12 overflow-y-auto mb-24 md:mb-0 flex flex-col">
+      <main className="flex-1 md:ml-72 p-4 md:p-12 overflow-y-auto mb-24 md:mb-0 flex flex-col">
         {/* Desktop Header Sync Indicator */}
         <div className="hidden md:flex absolute top-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] text-[#4b7d78] font-black border border-[#e0d9b4] items-center gap-2">
              {user ? (
@@ -242,7 +244,7 @@ const App: React.FC = () => {
               stats={stats}
               wordsDue={reviewWords.length}
               newWordsAvailable={newWordsForToday.length}
-              unlearnedExtraCount={unlearnedExtraWords.length}
+              unlearnedExtraWords={unlearnedExtraWords}
               newWordsList={newWordsForToday}
               learnedToday={learnedToday}
               onStartStudy={handleStartStudy}

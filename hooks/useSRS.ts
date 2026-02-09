@@ -1,11 +1,12 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
-import { Word, ProgressMap, SRSData, FeedbackQuality } from '../types';
+import { Word, SRSData, FeedbackQuality, ProgressMap } from '../types';
 import { VOCABULARY_DATA, EXTRA_CANDIDATES, SRS_INTERVALS, TODAY_SIMULATED } from '../constants';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 
 const STORAGE_KEY = 'hola_word_srs_v3_offline';
+const DAILY_GOAL = 20; // Max automatic new words per day
 
 export const useSRS = (user: User | null) => {
   const [progress, setProgress] = useState<ProgressMap>({});
@@ -151,43 +152,53 @@ export const useSRS = (user: User | null) => {
       .filter((w): w is Word => w !== undefined);
   }, [progress, wordMap, todayTimestamp]);
 
-  // --- NEW LOGIC: SEQUENTIAL LEVEL UNLOCKING ---
-  const newWordsForToday = useMemo(() => {
-    // Iterate through the ordered Day Packs
-    for (const dayPack of VOCABULARY_DATA) {
-      // Find unlearned words in this specific day
-      const unlearnedInPack = dayPack.words.filter(w => !progress[w.id]);
-      
-      // If we find ANY unlearned words in this day, THIS is the current active level.
-      // Return these words and STOP looking further. 
-      // Users must clear Day 1 before Day 2 words appear here.
-      if (unlearnedInPack.length > 0) {
-        return unlearnedInPack;
-      }
-    }
-
-    // If all levels are cleared, fallback to manually added words from the expansion pack
-    const seedPackWords = (Object.entries(progress) as [string, SRSData][])
-      .filter(([_, data]) => data.level === 1)
-      .map(([id]) => wordMap.get(id))
-      .filter((w): w is Word => w !== undefined);
-
-    return seedPackWords;
-  }, [progress, wordMap]);
-
-  const unlearnedExtraWords = useMemo(() => {
-    return EXTRA_CANDIDATES.filter(w => !progress[w.id]);
-  }, [progress]);
-
   const learnedToday = useMemo(() => {
     return Object.keys(progress)
       .map(id => wordMap.get(id))
       .filter((w): w is Word => w !== undefined)
       .filter(w => {
           const stats = progress[w.id];
+          // Simple heuristic: if next review is in the future, it was likely interacted with today or recently.
+          // For exact "learned today", we'd need a timestamp in the data, but this works for general tracking.
           return stats && getNormalizedDate(stats.nextReviewDate) > todayTimestamp;
       });
   }, [progress, todayTimestamp, wordMap]);
+
+  const newWordsForToday = useMemo(() => {
+    // 1. Priority: Manual/Extra words (Supply Crate)
+    // If we have any words at Level 1 (just added), show them immediately, ignoring the daily limit.
+    const activeManualWords = (Object.entries(progress) as [string, SRSData][])
+      .filter(([_, data]) => data.level === 1)
+      .map(([id]) => wordMap.get(id))
+      .filter((w): w is Word => w !== undefined);
+
+    if (activeManualWords.length > 0) {
+      return activeManualWords;
+    }
+
+    // 2. Daily Goal Check
+    // If user has learned >= 20 words today, STOP automatic progression.
+    if (learnedToday.length >= DAILY_GOAL) {
+      return [];
+    }
+
+    // 3. Automatic Day Progression
+    for (const dayPack of VOCABULARY_DATA) {
+      const unlearnedInPack = dayPack.words.filter(w => !progress[w.id]);
+      
+      // If we find unlearned words in this day, return them.
+      // This enforces doing Day 1 before Day 2.
+      if (unlearnedInPack.length > 0) {
+        return unlearnedInPack;
+      }
+    }
+
+    return [];
+  }, [progress, wordMap, learnedToday]);
+
+  const unlearnedExtraWords = useMemo(() => {
+    return EXTRA_CANDIDATES.filter(w => !progress[w.id]);
+  }, [progress]);
 
   const updateProgress = useCallback(async (wordId: string, quality: FeedbackQuality) => {
     const currentData = progress[wordId] || { level: 1, nextReviewDate: TODAY_SIMULATED };

@@ -1,7 +1,6 @@
-
 import React, { useState, useMemo } from 'react';
 import { Word, ProgressMap } from '../types';
-import { X, Flower2, Calendar, Sprout, Zap, Filter, CheckCircle2, Volume2, TreeDeciduous } from 'lucide-react';
+import { X, Calendar, Sprout, Zap, Filter, CheckCircle2, Volume2, TreeDeciduous, Circle, Play } from 'lucide-react';
 import { playAudio } from '../utils/audio';
 import { playClick } from '../utils/sfx';
 import { useTranslation } from 'react-i18next';
@@ -11,12 +10,13 @@ interface DailyHarvestModalProps {
   progress: ProgressMap;
   onClose: () => void;
   onWordClick: (word: Word) => void;
-  onStartBlitz: () => void;
+  onStartBlitz: (words?: Word[]) => void;
 }
 
 const DailyHarvestModal: React.FC<DailyHarvestModalProps> = ({ words, progress, onClose, onWordClick, onStartBlitz }) => {
   const { t } = useTranslation();
   const [filter, setFilter] = useState<'all' | 'new' | 'review'>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { newCount, reviewCount, displayWords } = useMemo(() => {
     const newSeeds = words.filter(w => (progress[w.id]?.level || 0) <= 3);
@@ -39,11 +39,31 @@ const DailyHarvestModal: React.FC<DailyHarvestModalProps> = ({ words, progress, 
     try { playClick(); } catch (err) {}
   };
 
+  const toggleSelection = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    playClick();
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setSelectedIds(newSet);
+  };
+
+  const handleMainAction = () => {
+    if (selectedIds.size > 0) {
+        // Review explicitly selected words
+        const selectedWords = words.filter(w => selectedIds.has(w.id));
+        onStartBlitz(selectedWords);
+    } else {
+        // Review all visible words in current filter
+        onStartBlitz(displayWords);
+    }
+  };
+
   const getTypeColor = (type: string) => {
-    if (type === 'verb') return 'bg-[#ff7043] border-[#ff7043]';
-    if (type === 'noun') return 'bg-[#8bc34a] border-[#8bc34a]';
-    if (type === 'adj') return 'bg-[#29b6f6] border-[#29b6f6]';
-    return 'bg-[#ab47bc] border-[#ab47bc]';
+    if (type === 'verb') return 'bg-[#ff7043]';
+    if (type === 'noun') return 'bg-[#8bc34a]';
+    if (type === 'adj') return 'bg-[#29b6f6]';
+    return 'bg-[#ab47bc]';
   };
 
   return (
@@ -103,54 +123,94 @@ const DailyHarvestModal: React.FC<DailyHarvestModalProps> = ({ words, progress, 
                 <p className="font-black text-[#4b7d78]">No crops found.</p>
               </div>
            ) : (
-             <div className="flex flex-wrap content-start gap-2 pb-12">
+             <div className="flex flex-col gap-3 pb-12">
                {displayWords.map((word, index) => {
+                 const isSelected = selectedIds.has(word.id);
                  const colorClass = getTypeColor(word.type);
+                 
                  return (
-                   <button
+                   <div
                       key={word.id} 
-                      onClick={() => onWordClick(word)}
-                      className={`group relative flex items-center gap-2 pl-3 pr-2 py-2 bg-white border-2 border-[#f0f0f0] rounded-xl shadow-sm hover:border-[#8bc34a] hover:shadow-md active:scale-95 transition-all animate-fadeIn`}
+                      className={`group relative flex items-stretch bg-white border-2 rounded-2xl shadow-sm transition-all animate-fadeIn overflow-hidden ${isSelected ? 'border-[#8bc34a] bg-[#f1f8e9] ring-2 ring-[#8bc34a]/30' : 'border-[#f0f0f0] hover:border-[#b0bec5]'}`}
                       style={{ animationDelay: `${Math.min(index * 0.03, 0.5)}s` }}
                    >
-                      {/* Indicator Dot */}
-                      <div className={`w-2 h-2 rounded-full ${colorClass.split(' ')[0]}`} />
-                      
-                      <div className="text-left flex flex-col">
-                        <span className="font-black text-[#2e4d4a] text-sm leading-none">{word.s}</span>
-                        <span className="text-[9px] font-bold text-[#8d99ae] leading-none mt-0.5 truncate max-w-[80px]">
-                           {t(`vocab.${word.id}.t`, { defaultValue: word.t })}
-                        </span>
+                      {/* Left: Main Interaction Area (Open Details) */}
+                      <div 
+                          onClick={() => onWordClick(word)}
+                          className="flex-1 p-3 flex items-center gap-3 cursor-pointer hover:bg-black/5 transition-colors"
+                      >
+                          {/* Dot */}
+                          <div className={`w-3 h-3 shrink-0 rounded-full ${colorClass}`} />
+                          
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-black text-[#2e4d4a] text-lg leading-tight truncate">{word.s}</span>
+                            <span className="text-xs font-bold text-[#8d99ae] leading-none mt-0.5 truncate">
+                               {t(`vocab.${word.id}.t`, { defaultValue: word.t })}
+                            </span>
+                          </div>
+
+                          <button
+                             onClick={(e) => handlePlayAudio(e, word.s)}
+                             className="ml-auto p-2 rounded-xl bg-slate-50 text-slate-300 hover:bg-[#8bc34a] hover:text-white transition-colors shrink-0"
+                           >
+                             <Volume2 size={16} />
+                           </button>
                       </div>
 
-                      {/* Mini Play Button */}
-                      <div
-                         onClick={(e) => handlePlayAudio(e, word.s)}
-                         className="ml-1 p-1.5 rounded-lg bg-slate-50 text-slate-300 hover:bg-[#8bc34a] hover:text-white transition-colors"
-                       >
-                         <Volume2 size={12} />
-                       </div>
-                   </button>
+                      {/* Divider */}
+                      <div className="w-[1px] my-2 bg-slate-200 border-l border-dashed border-slate-300 relative">
+                         <div className="absolute -top-3 -left-1.5 w-3 h-3 bg-[#f7f9e4] rounded-full border border-slate-200" />
+                         <div className="absolute -bottom-3 -left-1.5 w-3 h-3 bg-[#f7f9e4] rounded-full border border-slate-200" />
+                      </div>
+
+                      {/* Right: Selection Toggle */}
+                      <button 
+                         onClick={(e) => toggleSelection(e, word.id)}
+                         className={`w-16 flex items-center justify-center cursor-pointer transition-colors ${isSelected ? 'bg-[#dcedc8]/50' : 'hover:bg-slate-50'}`}
+                      >
+                          {isSelected ? (
+                              <div className="bg-[#8bc34a] text-white p-1 rounded-full animate-bounce-slight shadow-sm">
+                                  <CheckCircle2 size={24} fill="currentColor" strokeWidth={3} className="text-white" />
+                              </div>
+                          ) : (
+                              <Circle size={24} className="text-slate-300 group-hover:text-slate-400" strokeWidth={2.5} />
+                          )}
+                      </button>
+                   </div>
                  );
                })}
              </div>
            )}
         </div>
 
-        {/* Footer: Blitz Action */}
+        {/* Footer: Dynamic Button */}
         {words.length > 0 && (
-          <div className="p-4 md:p-6 shrink-0 bg-white border-t-4 border-[#e0d9b4] relative z-20 pb-[env(safe-area-inset-bottom,20px)]">
+          <div className="p-4 md:p-6 shrink-0 bg-white border-t-4 border-[#e0d9b4] relative z-20 pb-[env(safe-area-inset-bottom,20px)] shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
              <div className="flex items-center gap-4">
                <div className="hidden md:block">
                  <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest">{t('ui.study.extra_credit')}</p>
                  <p className="text-[10px] font-bold text-[#8d99ae]">{t('ui.study.no_srs')}</p>
                </div>
+               
                <button 
-                 onClick={onStartBlitz}
-                 className="flex-1 bg-[#9c27b0] text-white py-3 md:py-4 rounded-[2rem] font-black text-base md:text-lg shadow-[0_6px_0_#7b1fa2] border-4 border-[#e1bee7] bubble-button flex items-center justify-center gap-2 hover:bg-[#ab47bc] transition-all group"
+                 onClick={handleMainAction}
+                 className={`flex-1 text-white py-3 md:py-4 rounded-[2rem] font-black text-base md:text-lg border-4 border-white bubble-button flex items-center justify-center gap-2 transition-all group ${
+                     selectedIds.size > 0 
+                     ? 'bg-[#8bc34a] shadow-[0_6px_0_#5a9a3b] hover:bg-[#96e072]' 
+                     : 'bg-[#9c27b0] shadow-[0_6px_0_#7b1fa2] hover:bg-[#ab47bc]'
+                 }`}
                >
-                 <Zap size={20} className="fill-current text-[#e1bee7] group-hover:scale-110 transition-transform" />
-                 <span>{t('ui.study.blitz_review')}</span>
+                 {selectedIds.size > 0 ? (
+                     <>
+                        <Play size={20} className="fill-current" />
+                        <span>{t('ui.study.review_selected', { count: selectedIds.size })}</span>
+                     </>
+                 ) : (
+                     <>
+                        <Zap size={20} className="fill-current group-hover:scale-110 transition-transform" />
+                        <span>{t('ui.study.blitz_review', { count: displayWords.length })}</span>
+                     </>
+                 )}
                </button>
              </div>
           </div>

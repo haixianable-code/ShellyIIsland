@@ -1,6 +1,6 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { Word, FeedbackQuality, WordLevel, WordTopic } from '../types';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { Word, FeedbackQuality } from '../types';
 import { playAudio } from '../utils/audio';
 import { getTypeTheme, getPosLabel } from '../utils/theme';
 import { useTranslation } from 'react-i18next';
@@ -17,12 +17,11 @@ import {
   Globe, Ghost, Wind, Smile,
   Volume2, BookOpen, PenTool, Map, FastForward, Zap,
   Star, RotateCcw, ArrowLeftRight, AudioLines,
-  AlertTriangle, TrendingUp, ArrowRight
+  AlertTriangle, TrendingUp, ArrowRight, Circle, CheckCircle2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-// ... [Keep GrammarPocket, NuancePocket, OppositePocket, VocabNotes, UsageExamples identical to previous version] ...
-// Re-inserting helpers to ensure file completeness
+// ... [Helper Components kept exactly as is for brevity] ...
 
 const GrammarPocket: React.FC<{ word: Word }> = ({ word }) => {
   const { t } = useTranslation();
@@ -204,22 +203,43 @@ const UsageExamples: React.FC<{ word: Word }> = ({ word }) => {
   );
 };
 
+// --- MAIN STUDY COMPONENT ---
+
 const StudyView: React.FC<any> = ({ words, dailyHarvest, onFinish, onFeedback, onLoginRequest, isBlitz = false, userStats, user }) => {
   const { t } = useTranslation();
+  
+  // Local Queue Management
+  // We initialize state with props.words, but then manage it locally to handle re-queuing for drills
+  const [queue, setQueue] = useState<Word[]>(words);
   const [currentIndex, setCurrentIndex] = useState(0);
+  
+  // Drill Status: Maps WordID -> Remaining Steps (3, 2, 1). 0 or undefined means done/no drill.
+  const [drillStatus, setDrillStatus] = useState<Record<string, number>>({});
+  
+  // Determine if we are currently looking at a "Retry Card" (Added later)
+  // We can track the original length to know if we are in overtime
+  const [originalLength] = useState(words.length);
+  
   const [isFlipped, setIsFlipped] = useState(false);
   const [ritualClass, setRitualClass] = useState('');
   const [isSummaryView, setIsSummaryView] = useState(false);
   const [isReverseMode, setIsReverseMode] = useState(false);
   const [currentRating, setCurrentRating] = useState<FeedbackQuality | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const word = queue[currentIndex];
   
-  const word = words[currentIndex];
+  // Check Drill Status
+  const stepsRemaining = word ? (drillStatus[word.id] || 0) : 0;
+  const isInDrill = stepsRemaining > 0;
+  const isRetryCard = currentIndex >= originalLength || isInDrill;
+
   const theme = word ? getTypeTheme(word) : { main: '#4b7d78', light: '#f7f9e4', text: '#2d4a47' };
   const displayTranslation = word ? t(`vocab.${word.id}.t`, { defaultValue: word.t }) : '';
-  const progressPercent = (currentIndex / words.length) * 100;
+  const progressPercent = (currentIndex / queue.length) * 100;
 
   const handleNext = useCallback(() => {
-    if (currentIndex < words.length - 1) {
+    if (currentIndex < queue.length - 1) {
       setIsFlipped(false);
       setRitualClass('');
       setCurrentRating(null);
@@ -229,22 +249,64 @@ const StudyView: React.FC<any> = ({ words, dailyHarvest, onFinish, onFeedback, o
     } else {
       setIsSummaryView(true);
     }
-  }, [currentIndex, words.length]);
+  }, [currentIndex, queue.length]);
 
   const handleRating = (quality: FeedbackQuality) => {
     setCurrentRating(quality);
-    if (quality === 'easy') {
+
+    // 1. Easy / Perfect (Instant Pass)
+    // Only allowed if NOT in a drill
+    if (quality === 'easy' && !isInDrill) {
       onFeedback(word.id, 'easy');
       playHighChime(); 
       confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 }, colors: [theme.main, '#ffa600'] });
       setRitualClass('ritual-easy');
       setTimeout(handleNext, 400);
-    } else {
-      onFeedback(word.id, quality);
-      if (quality === 'forgot') playThud();
-      else if (quality === 'hard') playLowWood();
-      else playHighWood();
-      setIsFlipped(true);
+      return;
+    }
+
+    // 2. Forgot / Hard (Penalty Trigger)
+    if (quality === 'forgot' || quality === 'hard') {
+       // Trigger external SRS update immediately (reset level)
+       onFeedback(word.id, quality);
+       
+       if (quality === 'forgot') playThud();
+       else playLowWood();
+
+       // Activate Drill Mode (3 Steps)
+       setDrillStatus(prev => ({ ...prev, [word.id]: 3 }));
+       
+       // Add to end of queue
+       if (!isBlitz) setRetryCount(prev => prev + 1);
+       setQueue(prev => [...prev, word]);
+       
+       setIsFlipped(true);
+       return;
+    }
+
+    // 3. Good (Progress)
+    if (quality === 'good') {
+       if (isInDrill) {
+          // Decrement Drill Steps
+          const newSteps = stepsRemaining - 1;
+          setDrillStatus(prev => ({ ...prev, [word.id]: newSteps }));
+
+          if (newSteps > 0) {
+             // Still need practice -> Re-queue
+             playHighWood();
+             setQueue(prev => [...prev, word]);
+          } else {
+             // Drill Complete!
+             playHighChime();
+             // Fix: Finally mark as good in SRS so it advances from Level 1
+             onFeedback(word.id, 'good');
+          }
+       } else {
+          // Standard Pass
+          onFeedback(word.id, 'good');
+          playHighWood();
+       }
+       setIsFlipped(true);
     }
   };
 
@@ -253,7 +315,7 @@ const StudyView: React.FC<any> = ({ words, dailyHarvest, onFinish, onFeedback, o
   }, [isFlipped, word]);
 
   if (isSummaryView) {
-    return <SummaryView words={words} dailyHarvest={dailyHarvest && dailyHarvest.length > 0 ? dailyHarvest : words} totalLearned={userStats?.total_words_learned || 0} streak={userStats?.current_streak || 1} user={user} onFinish={onFinish} onLoginRequest={onLoginRequest} />;
+    return <SummaryView words={queue} dailyHarvest={dailyHarvest && dailyHarvest.length > 0 ? dailyHarvest : queue} totalLearned={userStats?.total_words_learned || 0} streak={userStats?.current_streak || 1} user={user} onFinish={onFinish} onLoginRequest={onLoginRequest} />;
   }
   if (!word) return null;
 
@@ -261,13 +323,23 @@ const StudyView: React.FC<any> = ({ words, dailyHarvest, onFinish, onFeedback, o
     <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full h-[100dvh] overflow-hidden bg-[#f7f9e4] relative">
       <div className="absolute inset-0 opacity-30 transition-colors duration-700" style={{ backgroundColor: theme.light }} />
       <div className="px-6 pt-6 pb-2 shrink-0 z-20">
-        <div className="flex justify-between items-center mb-3">
+        <div className="flex justify-between items-center mb-3 gap-3">
           <button onClick={() => { playClick(); onFinish(); }} className="p-2.5 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm text-[#4b7d78] active:scale-90 transition-all border border-white">
             <ChevronLeft className="w-4 h-4" strokeWidth={3} />
           </button>
-          <div className="flex-1 mx-4 h-1.5 bg-white/50 rounded-full overflow-hidden relative border border-white">
+          
+          <div className="flex-1 h-3 bg-white/50 rounded-full overflow-hidden relative border border-white">
             <div className="h-full transition-all duration-500 rounded-full" style={{ width: `${progressPercent}%`, backgroundColor: theme.main }} />
           </div>
+
+          {/* Retry Indicator Badge */}
+          {retryCount > 0 && (
+             <div key={retryCount} className="bg-[#ffcc80] text-[#e65100] px-2.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 shadow-sm animate-wiggle border-2 border-white">
+                 <RotateCcw size={12} strokeWidth={4} />
+                 <span>+{retryCount}</span>
+             </div>
+          )}
+
           <button onClick={() => { playClick(); setIsReverseMode(!isReverseMode); }} className={`p-2.5 rounded-xl border transition-all ${isReverseMode ? 'text-white border-transparent' : 'bg-white/80 backdrop-blur-sm text-[#4b7d78] border-white'}`} style={isReverseMode ? { backgroundColor: theme.main } : {}}>
              <Globe className="w-4 h-4" />
           </button>
@@ -290,11 +362,14 @@ const StudyView: React.FC<any> = ({ words, dailyHarvest, onFinish, onFeedback, o
                  <span style={{ backgroundColor: theme.main }} className="px-3 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-widest shadow-sm border border-white/20">
                    {word.level}
                  </span>
-                 {/* Topic */}
-                 <span style={{ backgroundColor: theme.main }} className="px-3 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-widest shadow-sm border border-white/20">
-                   {word.topic}
-                 </span>
                  
+                 {/* Drill Indicator Pills */}
+                 {isInDrill && (
+                    <span className="bg-[#ff7043] text-white px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1 shadow-sm border border-white/20 animate-pulse">
+                       <RotateCcw size={10} /> Step {4 - stepsRemaining}/3
+                    </span>
+                 )}
+
                  {/* Hard Mode Badge */}
                  {word.reg === false && (
                    <span className="bg-white/60 text-rose-500 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1 border border-rose-100">
@@ -307,6 +382,7 @@ const StudyView: React.FC<any> = ({ words, dailyHarvest, onFinish, onFeedback, o
                  {isReverseMode ? displayTranslation : word.s}
               </h2>
             </div>
+            
             <div className="w-full space-y-4 pt-6 shrink-0">
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -320,10 +396,19 @@ const StudyView: React.FC<any> = ({ words, dailyHarvest, onFinish, onFeedback, o
                   </button>
                 ))}
               </div>
-              <button onClick={() => handleRating('easy')} style={{ backgroundColor: theme.main }} className="w-full py-5 rounded-[2.5rem] text-white font-black text-xl shadow-[0_8px_0_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none flex items-center justify-center gap-3 transition-all border-4 border-white">
-                <FastForward size={24} />
-                <span>{t('ui.study.perfect')}</span>
-              </button>
+              
+              {/* Perfect button hidden for Retry Cards */}
+              {!isRetryCard && (
+                <button onClick={() => handleRating('easy')} style={{ backgroundColor: theme.main }} className="w-full py-5 rounded-[2.5rem] text-white font-black text-xl shadow-[0_8px_0_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none flex items-center justify-center gap-3 transition-all border-4 border-white">
+                  <FastForward size={24} />
+                  <span>{t('ui.study.perfect')}</span>
+                </button>
+              )}
+              {isRetryCard && (
+                 <div className="w-full py-3 text-center opacity-40">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Perfect unavailable during drill</span>
+                 </div>
+              )}
             </div>
           </div>
 
@@ -336,10 +421,18 @@ const StudyView: React.FC<any> = ({ words, dailyHarvest, onFinish, onFeedback, o
             <div className="shrink-0 p-5 px-8 border-b border-slate-50 flex items-center justify-between bg-white z-10">
               <div className="flex-1 min-w-0 pr-4">
                 <span style={{ color: theme.main }} className="text-[9px] font-black uppercase tracking-widest block mb-1">{getPosLabel(word)}</span>
-                <div>
-                  <h3 className="text-3xl font-black text-[#2d4a47] tracking-tighter truncate leading-none">{word.s}</h3>
-                  <p style={{ color: theme.main }} className="text-xl font-black italic truncate opacity-80 mt-1">{displayTranslation}</p>
+                <div className="flex items-center gap-3">
+                   <h3 className="text-3xl font-black text-[#2d4a47] tracking-tighter truncate leading-none">{word.s}</h3>
+                   {/* Drill Step Dots on Back */}
+                   {isInDrill && (
+                     <div className="flex gap-1">
+                        {[1, 2, 3].map(step => (
+                            <div key={step} className={`w-2 h-2 rounded-full border border-[#ff7043] ${(4 - stepsRemaining) >= step ? 'bg-[#ff7043]' : 'bg-transparent'}`} />
+                        ))}
+                     </div>
+                   )}
                 </div>
+                <p style={{ color: theme.main }} className="text-xl font-black italic truncate opacity-80 mt-1">{displayTranslation}</p>
               </div>
               <button onClick={() => playAudio(word.s)} style={{ backgroundColor: theme.light, color: theme.main }} className="shrink-0 p-3 rounded-2xl shadow-sm border border-white active:scale-95 transition-all"><Volume2 className="w-6 h-6" /></button>
             </div>
@@ -368,7 +461,10 @@ const StudyView: React.FC<any> = ({ words, dailyHarvest, onFinish, onFeedback, o
                 <button onClick={() => setIsFlipped(false)} className="text-[8px] font-black text-slate-300 uppercase tracking-widest flex items-center gap-1 hover:text-slate-400"><RotateCcw size={10} /> RE-EVALUATE</button>
               </div>
               <button onClick={() => { playHighWood(); handleNext(); }} style={{ backgroundColor: theme.main }} className="w-full py-4 rounded-[2.5rem] text-white font-black text-lg shadow-[0_6px_0_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none flex flex-col items-center justify-center transition-all border-2 border-white/20">
-                <div className="flex items-center gap-2"><span>CONTINUE</span><ArrowRight size={18} /></div>
+                <div className="flex items-center gap-2">
+                    {isInDrill ? <span>NEXT STEP ({4 - stepsRemaining}/3)</span> : <span>CONTINUE</span>}
+                    <ArrowRight size={18} />
+                </div>
               </button>
             </div>
           </div>

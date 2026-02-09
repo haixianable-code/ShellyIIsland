@@ -2,6 +2,7 @@
 import React from 'react';
 import { PackagePlus, ArrowRight } from 'lucide-react';
 import { playShaker } from '../utils/sfx';
+import { useTranslation } from 'react-i18next';
 
 interface WordExpansionPackProps {
   availableCount: number;
@@ -9,6 +10,8 @@ interface WordExpansionPackProps {
 }
 
 const WordExpansionPack: React.FC<WordExpansionPackProps> = ({ availableCount, onExplore }) => {
+  const { t } = useTranslation();
+  
   return (
     <div 
       onMouseEnter={() => playShaker()} 
@@ -22,8 +25,8 @@ const WordExpansionPack: React.FC<WordExpansionPackProps> = ({ availableCount, o
           <PackagePlus size={40} />
         </div>
         <div>
-          <h3 className="text-3xl font-black tracking-tight drop-shadow-sm">Island Expansion Pack</h3>
-          <p className="font-bold opacity-80 mt-1">Add A1-B1 high-frequency words to your garden!</p>
+          <h3 className="text-3xl font-black tracking-tight drop-shadow-sm">{t('ui.pocket.expansion_pack_title')}</h3>
+          <p className="font-bold opacity-80 mt-1">{t('ui.pocket.expansion_pack_desc')}</p>
         </div>
       </div>
       <button 
@@ -31,7 +34,7 @@ const WordExpansionPack: React.FC<WordExpansionPackProps> = ({ availableCount, o
         disabled={availableCount === 0}
         className="relative z-10 w-full md:w-auto bg-white text-[#5a9a3b] px-8 py-5 rounded-[2rem] font-black text-lg shadow-[0_8px_0_#e0e0e0] flex items-center justify-center gap-3 bubble-button disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed disabled:shadow-none"
       >
-        {availableCount > 0 ? `Explore ${availableCount} Seeds` : 'All Seeds Planted'}
+        {availableCount > 0 ? t('ui.pocket.explore_seeds', { count: availableCount }) : t('ui.pocket.all_seeds_planted')}
         {availableCount > 0 && <ArrowRight size={24} />}
       </button>
     </div>

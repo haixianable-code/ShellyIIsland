@@ -18,14 +18,14 @@ interface ExpansionModalProps {
 }
 
 // SSI Tech / Magic Item Rebranding
-const CATEGORIES = [
-  { id: 'all', label: 'All Items', icon: PackagePlus, color: 'text-gray-500', bg: 'bg-gray-100' },
-  { id: 'island', label: 'Island Loot', icon: TreePalm, color: 'text-[#8bc34a]', bg: 'bg-[#f1f8e9]' },
-  { id: 'connector', label: 'Yarn Ball', icon: Scroll, color: 'text-[#ab47bc]', bg: 'bg-[#f3e5f5]' }, // Logic/Glue
-  { id: 'time', label: 'Magic Clock', icon: Clock, color: 'text-[#ffa726]', bg: 'bg-[#fff3e0]' }, // Time
-  { id: 'preposition', label: 'Sticky Notes', icon: MapPin, color: 'text-[#29b6f6]', bg: 'bg-[#e1f5fe]' }, // Navigators
-  { id: 'quantity', label: 'Flavor Pot', icon: Sparkles, color: 'text-[#ff7043]', bg: 'bg-[#fbe9e7]' }, // Quantifiers
-  { id: 'interrogative', label: 'Mystery Keys', icon: Key, color: 'text-[#ef5350]', bg: 'bg-[#ffebee]' }, // Questions
+const RAW_CATEGORIES = [
+  { id: 'all', icon: PackagePlus, color: 'text-gray-500', bg: 'bg-gray-100' },
+  { id: 'island', icon: TreePalm, color: 'text-[#8bc34a]', bg: 'bg-[#f1f8e9]' },
+  { id: 'connector', icon: Scroll, color: 'text-[#ab47bc]', bg: 'bg-[#f3e5f5]' }, // Logic/Glue
+  { id: 'time', icon: Clock, color: 'text-[#ffa726]', bg: 'bg-[#fff3e0]' }, // Time
+  { id: 'preposition', icon: MapPin, color: 'text-[#29b6f6]', bg: 'bg-[#e1f5fe]' }, // Navigators
+  { id: 'quantity', icon: Sparkles, color: 'text-[#ff7043]', bg: 'bg-[#fbe9e7]' }, // Quantifiers
+  { id: 'interrogative', icon: Key, color: 'text-[#ef5350]', bg: 'bg-[#ffebee]' }, // Questions
 ];
 
 const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose, onAddWords, onStudyNow }) => {
@@ -35,9 +35,14 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
   const [activeCategory, setActiveCategory] = useState('all');
   const MAX_SELECTION = 10;
 
+  const categories = useMemo(() => RAW_CATEGORIES.map(c => ({
+    ...c,
+    label: t(`ui.expansion.cats.${c.id}`)
+  })), [t]);
+
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    CATEGORIES.forEach(cat => counts[cat.id] = 0);
+    categories.forEach(cat => counts[cat.id] = 0);
     counts['all'] = availableWords.length;
     
     availableWords.forEach(w => {
@@ -45,7 +50,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
       counts[cat] = (counts[cat] || 0) + 1;
     });
     return counts;
-  }, [availableWords]);
+  }, [availableWords, categories]);
 
   const filteredWords = useMemo(() => {
     if (activeCategory === 'all') return availableWords;
@@ -92,6 +97,17 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
       origin: { y: 0.6 },
       colors: ['#8bc34a', '#ffa600', '#ffffff']
     });
+  };
+
+  const getCatLabel = (category?: string) => {
+    switch(category) {
+      case 'connector': return t('ui.expansion.tags.yarn');
+      case 'time': return t('ui.expansion.tags.clock');
+      case 'preposition': return t('ui.expansion.tags.sticky');
+      case 'quantity': return t('ui.expansion.tags.spice');
+      case 'interrogative': return t('ui.expansion.tags.key');
+      default: return t('ui.expansion.tags.loot');
+    }
   };
 
   if (plantedWords) {
@@ -145,8 +161,8 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
         <div className="shrink-0 border-b-4 border-[#e0d9b4] bg-white relative z-20 pt-[env(safe-area-inset-top,20px)] md:pt-0">
           <div className="flex items-center justify-between p-4 md:p-8">
             <div>
-              <h2 className="text-2xl md:text-3xl font-black text-[#4b7d78] tracking-tight">SSI Supply Crate</h2>
-              <p className="text-sm font-bold text-[#8d99ae]">Select up to <span className="text-[#ffa600]">{MAX_SELECTION - selected.size}</span> items</p>
+              <h2 className="text-2xl md:text-3xl font-black text-[#4b7d78] tracking-tight">{t('ui.expansion.title')}</h2>
+              <p className="text-sm font-bold text-[#8d99ae]">{t('ui.expansion.select_limit')} <span className="text-[#ffa600]">{MAX_SELECTION - selected.size}</span> {t('ui.expansion.items')}</p>
             </div>
             <button onClick={onClose} className="p-3 bg-[#f7f9e4] rounded-2xl shadow-sm hover:bg-[#e0e0e0] transition-all active:scale-90 text-[#4b7d78]">
               <X size={24} strokeWidth={3} />
@@ -155,7 +171,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
 
           {/* Category Tabs */}
           <div className="flex overflow-x-auto no-scrollbar gap-2 px-4 md:px-8 pb-4">
-            {CATEGORIES.map(cat => {
+            {categories.map(cat => {
               const isActive = activeCategory === cat.id;
               const count = categoryCounts[cat.id] || 0;
               const Icon = cat.icon;
@@ -194,9 +210,9 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
                 className="bg-[#ffa600] text-white px-4 py-2 rounded-xl shadow-md border-2 border-white font-black text-xs flex flex-col items-center hover:bg-[#ffb74d] active:scale-90 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
              >
                <div className="flex items-center gap-2">
-                 <Wand2 size={16} /> <span>Magic Fill</span>
+                 <Wand2 size={16} /> <span>{t('ui.expansion.magic_fill')}</span>
                </div>
-               <span className="text-[9px] opacity-80 uppercase tracking-wide mt-0.5">Lucky Draw</span>
+               <span className="text-[9px] opacity-80 uppercase tracking-wide mt-0.5">{t('ui.expansion.lucky_draw')}</span>
              </button>
           </div>
 
@@ -206,12 +222,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
               const isFull = selected.size >= MAX_SELECTION && !isSelected;
               const isMisc = word.type === 'misc';
               
-              const catLabel = word.category === 'connector' ? 'YARN' :
-                               word.category === 'time' ? 'CLOCK' :
-                               word.category === 'preposition' ? 'STICKY' :
-                               word.category === 'quantity' ? 'SPICE' :
-                               word.category === 'interrogative' ? 'KEY' :
-                               'LOOT';
+              const catLabel = getCatLabel(word.category);
 
               return (
                 <button
@@ -240,7 +251,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
                   <div className="flex flex-col h-full justify-between">
                     <div>
                        <h4 className={`font-black text-lg md:text-xl mb-0.5 ${isMisc ? 'text-[#6a1b9a]' : 'text-[#4b7d78]'}`}>{word.s}</h4>
-                       <p className="text-xs font-bold text-[#8d99ae] leading-tight">{word.t}</p>
+                       <p className="text-xs font-bold text-[#8d99ae] leading-tight">{t(`vocab.${word.id}.t`, { defaultValue: word.t })}</p>
                     </div>
                     
                     {/* Golden Rule Preview for Misc words */}
@@ -248,7 +259,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
                       <div className="mt-3 pt-2 border-t border-[#e1bee7] flex items-start gap-1">
                         <Sparkles size={10} className="text-[#ab47bc] shrink-0 mt-0.5" />
                         <p className="text-[9px] text-[#7b1fa2] font-bold line-clamp-2 leading-tight opacity-80">
-                          {word.grammarTip}
+                          {t(`vocab.${word.id}.tip`, { defaultValue: word.grammarTip })}
                         </p>
                       </div>
                     )}
@@ -265,7 +276,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
             
             {filteredWords.length === 0 && (
               <div className="col-span-full text-center py-20 opacity-50">
-                 <p className="font-black text-[#8d99ae] uppercase tracking-widest">No items found in this section.</p>
+                 <p className="font-black text-[#8d99ae] uppercase tracking-widest">{t('ui.expansion.no_items')}</p>
               </div>
             )}
           </div>
@@ -275,7 +286,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
         <div className="p-4 md:p-6 shrink-0 border-t-4 border-[#e0d9b4] bg-[#f9f5da] relative z-30 pb-[env(safe-area-inset-bottom,20px)]">
           <div className="flex items-center justify-between max-w-3xl mx-auto">
             <div className="flex flex-col">
-               <span className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest">Cart</span>
+               <span className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest">{t('ui.expansion.cart')}</span>
                <div className="text-2xl font-black text-[#4b7d78] leading-none">
                  <span className={selected.size > 0 ? 'text-[#8bc34a]' : ''}>{selected.size}</span>
                  <span className="text-lg opacity-40 mx-1">/</span>
@@ -289,7 +300,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
               className="px-6 py-4 rounded-[2rem] font-black text-lg text-white bg-[#88d068] shadow-[0_6px_0_#5a9a3b] flex items-center gap-2 bubble-button disabled:bg-slate-300 disabled:shadow-none disabled:cursor-not-allowed hover:bg-[#7cb342] active:translate-y-1"
             >
               <Leaf size={20} className="fill-current" /> 
-              <span>Get Supplies</span>
+              <span>{t('ui.expansion.get_supplies')}</span>
             </button>
           </div>
         </div>

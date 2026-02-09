@@ -36,7 +36,43 @@ export default {
       "open_crate": "Open Supply Crate (+10)",
       "slang_title": "Island Slang!",
       "mission": "Mission:",
-      "crate_unlocked": "Crate Unlocked!"
+      "crate_unlocked": "Crate Unlocked!",
+      "crate_found": "You found {{count}} new seeds!",
+      "rest_msg_1": "Mission Complete",
+      "rest_msg_2": "Let your brain rest for tomorrow."
+    },
+    "pocket": {
+      "expansion_pack_title": "Island Expansion Pack",
+      "expansion_pack_desc": "Add A1-B1 high-frequency words to your garden!",
+      "explore_seeds": "Explore {{count}} Seeds",
+      "all_seeds_planted": "All Seeds Planted"
+    },
+    "expansion": {
+      "title": "SSI Supply Crate",
+      "select_limit": "Select up to",
+      "items": "items",
+      "magic_fill": "Magic Fill",
+      "lucky_draw": "Lucky Draw",
+      "cart": "Cart",
+      "get_supplies": "Get Supplies",
+      "no_items": "No items found in this section.",
+      "cats": {
+        "all": "All Items",
+        "island": "Island Loot",
+        "connector": "Yarn Ball",
+        "time": "Magic Clock",
+        "preposition": "Sticky Notes",
+        "quantity": "Flavor Pot",
+        "interrogative": "Mystery Keys"
+      },
+      "tags": {
+        "yarn": "YARN",
+        "clock": "CLOCK",
+        "sticky": "STICKY",
+        "spice": "SPICE",
+        "key": "KEY",
+        "loot": "LOOT"
+      }
     },
     "passport": {
       "temp_pass": "Temporary Pass",
@@ -94,7 +130,8 @@ export default {
       "stash": "Stash for Later",
       "added_prefix": "You've added",
       "added_suffix": "to your inventory",
-      "magic_items": "magic items"
+      "magic_items": "magic items",
+      "add_inventory": "Add to Inventory"
     },
     "study": {
       "grammar_pocket": "Grammar Pocket",
@@ -118,7 +155,8 @@ export default {
       "crops_collected": "{{count}} crops collected today",
       "extra_credit": "Extra Credit",
       "no_srs": "No SRS Impact",
-      "blitz_review": "Speed Blitz Review",
+      "blitz_review": "Blitz All ({{count}})",
+      "review_selected": "Review Selected ({{count}})",
       "seeding": "Seeding..."
     }
   },
