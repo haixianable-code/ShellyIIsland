@@ -45,7 +45,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
 
   const handleReset = () => {
     playClick();
-    if (confirm("Reset all progress? This will delete your learning history on this device.")) {
+    if (confirm("Reset everything? This will log you out and clear local storage.")) {
       localStorage.clear();
       window.location.reload();
     }
@@ -70,13 +70,12 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
   const generateShareData = () => {
     const streak = stats?.current_streak || 0;
     const total = stats?.total_words_learned || 0;
-    const inviterName = user?.email?.split('@')[0] || 'Friend';
     
-    // We explicitly point to the new domain
+    // We explicitly point to the domain
     const shareUrl = "https://ssisland.space";
 
     const text = t('ui.study.share_template', {
-      level: stats?.total_words_learned || 0,
+      level: total,
       streak: streak,
       count: 0, 
       url: shareUrl
@@ -100,7 +99,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
     }
   };
 
-  // 护照视觉逻辑
+  // Passport UI logic
   const passportStyles = useMemo(() => {
     if (user) {
       return {
@@ -134,15 +133,13 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
         <h2 className="text-4xl font-black text-[#4b7d78] drop-shadow-sm">{t('ui.nav.menu')}</h2>
       </div>
 
-      {/* 拟物化护照卡片 */}
+      {/* Passport Card */}
       <div className="relative group perspective-1000">
-         {/* 顶部页签 */}
          <div className={`absolute -top-3 left-8 z-20 ${user ? 'bg-[#ffa600]' : 'bg-[#8d99ae]'} text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 border-white shadow-md flex items-center gap-1.5`}>
             <Ticket size={12} /> {passportStyles.label}
          </div>
 
          <div className={`${passportStyles.bg} rounded-[3rem] p-8 shadow-[0_20px_0_rgba(0,0,0,0.1)] border-4 ${passportStyles.border} ${passportStyles.text} relative overflow-hidden transition-all duration-500`}>
-            {/* 护照纹理背景 */}
             <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }} />
             
             <div className="flex items-start justify-between relative z-10 mb-8">
@@ -176,7 +173,6 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
                </div>
             </div>
 
-            {/* 警告/同步状态栏 */}
             <div className={`p-4 rounded-2xl flex items-center gap-4 transition-colors ${user ? 'bg-white/10' : 'bg-[#ff7b72] text-white shadow-lg shadow-rose-900/20'}`}>
                 {user ? <ShieldCheck size={20} className="text-[#78c850]" /> : <ShieldAlert size={20} className="animate-pulse" />}
                 <div className="flex-1">
@@ -191,14 +187,13 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
                 )}
             </div>
 
-            {/* 盖章装饰 */}
             <div className={`absolute bottom-4 right-4 text-[12px] font-black border-[3px] rounded-lg px-2 py-1 rotate-[25deg] opacity-20 ${user ? 'border-[#78c850] text-[#78c850]' : 'border-rose-500 text-rose-500'}`}>
                {passportStyles.stamp}
             </div>
          </div>
       </div>
 
-      {/* 邀请卡片 */}
+      {/* Share Card */}
       <button 
         onClick={handleShareStats}
         className="w-full bg-[#ff7b72] p-6 rounded-[2.5rem] border-4 border-[#ff8a80] shadow-[0_8px_0_#d32f2f] flex items-center justify-between group active:scale-95 transition-all relative overflow-hidden"
@@ -220,7 +215,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
         </div>
       </button>
 
-      {/* 设置列表 */}
+      {/* Settings List */}
       <div className="space-y-4">
         <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.2em] pl-4">{t('ui.actions.system_pref')}</p>
         
@@ -257,24 +252,9 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
           </div>
           <ChevronRight className="text-slate-300" size={20} />
         </button>
-        
-        <button 
-          onClick={handleClearProgress} 
-          className="w-full bg-white p-5 rounded-[2.5rem] border-4 border-[#ffebee] shadow-[0_6px_0_#ffcdd2] flex items-center justify-between group active:scale-95 transition-transform"
-        >
-          <div className="flex items-center gap-4">
-            <div className="bg-[#ffcdd2] text-[#c62828] p-3 rounded-2xl">
-               <Trash2 size={24} />
-            </div>
-            <div className="text-left">
-              <div className="text-lg font-black text-[#c62828]">{t('ui.actions.clear_progress')}</div>
-              <div className="text-xs font-bold text-[#ef9a9a]">{t('ui.actions.wipe_data')}</div>
-            </div>
-          </div>
-        </button>
       </div>
 
-      <div className="p-4 flex flex-col items-center">
+      <div className="p-4 flex flex-col items-center space-y-4">
         {user ? (
           <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-[#d32f2f] font-black hover:bg-red-50 transition-colors">
             <LogOut size={18} />
@@ -286,6 +266,26 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
             <span>{t('ui.actions.reset')}</span>
           </button>
         )}
+      </div>
+
+      {/* Wipe Data Section (Deep Tilling) - Moved to the very bottom */}
+      <div className="pt-8 border-t-2 border-dashed border-[#e0d9b4]/30">
+          <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.2em] pl-4 mb-3">Zone of Reset</p>
+          <button 
+          onClick={handleClearProgress} 
+          className="w-full bg-[#fff5f5] p-5 rounded-[2.5rem] border-4 border-[#ffebee] shadow-[0_6px_0_#ffcdd2] flex items-center justify-between group active:scale-95 transition-transform"
+          >
+          <div className="flex items-center gap-4">
+              <div className="bg-[#ffcdd2] text-[#c62828] p-3 rounded-2xl shadow-sm group-hover:animate-wiggle">
+              <Trash2 size={24} />
+              </div>
+              <div className="text-left">
+              <div className="text-lg font-black text-[#c62828]">{t('ui.actions.clear_progress')}</div>
+              <div className="text-xs font-bold text-[#ef9a9a]">{t('ui.actions.wipe_data')}</div>
+              </div>
+          </div>
+          <ChevronRight className="text-[#ef9a9a]" size={20} />
+          </button>
       </div>
 
       <div className="flex flex-col items-center opacity-30 gap-1 pb-4">

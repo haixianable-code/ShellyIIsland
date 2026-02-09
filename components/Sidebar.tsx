@@ -2,7 +2,7 @@
 import React, { useRef, useState } from 'react';
 import { AppView } from '../types';
 import { User } from '@supabase/supabase-js';
-import { Home, Briefcase, Leaf, Heart, RotateCcw, Download, Volume2, VolumeX, CloudUpload, LogOut, ShieldAlert, ShieldCheck, Fingerprint, ChevronRight, UserPlus } from 'lucide-react';
+import { Home, Briefcase, Leaf, Heart, RotateCcw, Download, Volume2, VolumeX, CloudUpload, LogOut, ShieldAlert, ShieldCheck, Fingerprint, ChevronRight, UserPlus, Menu } from 'lucide-react';
 import { toggleMute, getMuteState, playClick, playSparkle } from '../utils/sfx';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -73,6 +73,13 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabas
           <Briefcase size={22} className={currentView === AppView.VOCABULARY ? 'fill-current' : ''} />
           <span className="text-base font-black uppercase tracking-tight">{t('ui.nav.pocket')}</span>
         </button>
+        <button
+          onClick={() => { playClick(); setView(AppView.SETTINGS); }}
+          className={`w-full flex items-center gap-4 px-6 py-4 rounded-[2.2rem] transition-all duration-200 border-b-4 ${currentView === AppView.SETTINGS ? 'bg-[#ffa600] text-white font-black border-[#cc8400] shadow-md -translate-y-0.5' : 'text-[#8d99ae] hover:bg-white/50 border-transparent'}`}
+        >
+          <Menu size={22} className={currentView === AppView.SETTINGS ? 'fill-current' : ''} />
+          <span className="text-base font-black uppercase tracking-tight">{t('ui.nav.menu')}</span>
+        </button>
       </nav>
 
       {/* Identity Card (Passport Badge) */}
@@ -81,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabas
         {isGuest ? (
           <button 
             onClick={() => { playSparkle(); onLoginRequest(); }}
-            className="w-full text-left bg-[#2d4a47] p-5 rounded-[2.5rem] border-4 border-[#4b7d78] shadow-[0_8px_0_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all group overflow-hidden relative"
+            className="w-full text-left bg-[#2d4a47] p-5 rounded-[2.5rem] border-4 border-[#4b7d78] shadow-[0_8px_0_rgba(0,0,0,0.1)] hover:-translate-y-1 hover:shadow-lg transition-all group overflow-hidden relative"
           >
             <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '12px 12px' }} />
             <div className="flex items-center gap-4 relative z-10">
@@ -98,7 +105,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabas
             <div className="absolute -right-2 -bottom-2 text-[10px] font-black border-2 border-white/10 text-white/10 px-2 py-0.5 rounded rotate-12">UNOFFICIAL</div>
           </button>
         ) : user ? (
-          <div className="bg-white p-5 rounded-[2.5rem] border-4 border-[#e0d9b4] shadow-sm relative overflow-hidden">
+          <button 
+             onClick={() => { playClick(); setView(AppView.SETTINGS); }}
+             className={`w-full text-left bg-white p-5 rounded-[2.5rem] border-4 ${currentView === AppView.SETTINGS ? 'border-[#ffa600]' : 'border-[#e0d9b4]'} shadow-sm relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md group`}
+          >
              <div className="flex items-center gap-4">
                 <div className="bg-[#78c850] p-2.5 rounded-xl border-2 border-white shadow-inner">
                    <ShieldCheck className="text-white" size={20} />
@@ -107,9 +117,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabas
                    <h4 className="text-[#4b7d78] text-xs font-black uppercase leading-none mb-1 truncate">{user.email?.split('@')[0]}</h4>
                    <p className="text-[#8bc34a] text-[9px] font-black uppercase tracking-widest italic">SSI CITIZEN</p>
                 </div>
+                <ChevronRight size={16} className="text-[#e0d9b4] group-hover:text-[#ffa600] group-hover:translate-x-1 transition-all" />
              </div>
              <div className="absolute -right-2 -bottom-2 text-[10px] font-black border-2 border-[#8bc34a]/10 text-[#8bc34a]/10 px-2 py-0.5 rounded rotate-12">OFFICIAL</div>
-          </div>
+          </button>
         ) : null}
       </div>
 

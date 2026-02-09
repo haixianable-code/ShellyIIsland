@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Word } from '../types';
 import { useTranslation } from 'react-i18next';
