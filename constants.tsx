@@ -548,6 +548,7 @@ export const EXTRA_CANDIDATES: Word[] = [
   m('diecisiete', 'diecisiete', 'Seventeen', 'quantity', 'Number 17.', 'Diecisiete más.', 'Seventeen more.', 'Quantity', '10+7.', 'misc', 'The Teen.'),
   m('dieciocho', 'dieciocho', 'Eighteen', 'quantity', 'Number 18.', 'Dieciocho años.', 'Eighteen years.', 'Quantity', 'Adult age.', 'misc', 'The Adult.'),
   m('diecinueve', 'diecinueve', 'Nineteen', 'quantity', 'Number 19.', 'Diecinueve mil.', 'Nineteen thousand.', 'Quantity', '10+9.', 'misc', 'The Last Teen.'),
+  m('veinte', 'veinte', 'Twenty', 'quantity', 'Number 20.', 'Veinte minutos.', 'Twenty minutes.', 'Quantity', 'The Score.', 'misc', 'The Score.'),
 ];
 
 // --- ISLAND SLANG (Fun Bonus Content) ---
