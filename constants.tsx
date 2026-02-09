@@ -1,4 +1,3 @@
-
 import { Word, DayPack, WordNuance, WordLevel, WordTopic } from './types';
 import { pluralize, generateRegularForms } from './utils/grammar';
 
