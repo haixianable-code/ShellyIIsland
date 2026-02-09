@@ -147,7 +147,7 @@ export const EXTRA_CANDIDATES: Word[] = [
   n('numero', 'número', 'Number', 'A1', 'quantity', 'm', 'Generic term.', '¿Qué número?', 'What number?', 'Número de teléfono.', 'Phone number.', 'quantity'),
 
   // --- 5. THE COUNTER II (11-100 & MONEY) ---
-  m('once', 'once', 'Eleven', 'A1', 'quantity', '11', 'Once jugadores.', 'Eleven players.', 'Son las once.', 'It is eleven.', 'quantity'),
+  m('once', 'once', 'Eleven', 'A1', 'quantity', '11', 'Once jugadores.', 'Eleven players.', 'Once jugadores.', 'Eleven players.', 'quantity'),
   m('doce', 'doce', 'Twelve', 'A1', 'quantity', '12', 'Doce meses.', 'Twelve months.', 'A las doce.', 'At twelve.', 'quantity'),
   m('veinte', 'veinte', 'Twenty', 'A1', 'quantity', '20', 'Veinte años.', 'Twenty years.', 'Veinte euros.', 'Twenty euros.', 'quantity'),
   m('treinta', 'treinta', 'Thirty', 'A1', 'quantity', '30', 'Treinta días.', 'Thirty days.', 'Más de treinta.', 'More than thirty.', 'quantity'),
@@ -237,5 +237,5 @@ export const ISLAND_SLANG = [
   { s: "De puta madre", t: "Awesome / Great", note: "Spain. Vulgar but positive! Spicy!", spicy: true },
   { s: "Hijo de puta", t: "Son of a b*tch", note: "High offense. Spicy!", spicy: true },
   { s: "Cagarla", t: "To screw up", note: "Lit: To sh*t it. Spicy!", spicy: true },
-  { s: "No me jodas", t: "You gotta be kidding", note: "Lit: Don't f*ck me. Spicy!", spicy: true }
+  { s: "No me jodas", t: "You gotta be kidding", note: "Lit: Don't f*ck me. Disbelief.", spicy: true }
 ];
