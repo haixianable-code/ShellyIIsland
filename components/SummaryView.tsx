@@ -10,6 +10,7 @@ import {
 import confetti from 'canvas-confetti';
 import { playFanfare, playClick, playSparkle } from '../utils/sfx';
 import { playAudio } from '../utils/audio';
+// @ts-ignore
 import html2canvas from 'html2canvas';
 
 // Custom hook for number counting animation
