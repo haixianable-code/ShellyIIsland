@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { AppView } from '../types';
 import { User } from '@supabase/supabase-js';
-import { Home, Briefcase, Leaf, Heart, RotateCcw, Download, Volume2, VolumeX, CloudUpload, LogOut, ShieldAlert, ShieldCheck, Fingerprint, ChevronRight, UserPlus, Menu, Trophy } from 'lucide-react';
+import { Home, Briefcase, Leaf, Heart, RotateCcw, Download, Volume2, VolumeX, LogOut, ShieldCheck, ChevronRight, UserPlus, Trophy } from 'lucide-react';
 import { toggleMute, getMuteState, playClick, playSparkle } from '../utils/sfx';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -55,10 +55,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
         <div className="inline-flex items-center justify-center w-16 h-16 bg-[#78c850] rounded-[2rem] shadow-[0_6px_0_#5a9a3b] mb-3 border-4 border-white">
           <Leaf className="text-white w-8 h-8 fill-current" />
         </div>
-        <h1 className="text-xl font-black text-[#4b7d78] tracking-tight uppercase italic">SS Island</h1>
+        <h1 className="text-xl font-black text-[#4b7d78] tracking-tight uppercase">SS Island</h1>
       </div>
 
-      {/* Main Navigation */}
+      {/* Main Navigation - Removed Menu Button as it's redundant */}
       <nav className="px-4 py-4 space-y-3">
         <button
           onClick={() => { playClick(); setView(AppView.DASHBOARD); }}
@@ -74,16 +74,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
           <Briefcase size={22} className={currentView === AppView.VOCABULARY ? 'fill-current' : ''} />
           <span className="text-base font-black uppercase tracking-tight">{t('ui.nav.pocket')}</span>
         </button>
-        <button
-          onClick={() => { playClick(); setView(AppView.SETTINGS); }}
-          className={`w-full flex items-center gap-4 px-6 py-4 rounded-[2.2rem] transition-all duration-200 border-b-4 ${currentView === AppView.SETTINGS ? 'bg-[#ffa600] text-white font-black border-[#cc8400] shadow-md -translate-y-0.5' : 'text-[#8d99ae] hover:bg-white/50 border-transparent'}`}
-        >
-          <Menu size={22} className={currentView === AppView.SETTINGS ? 'fill-current' : ''} />
-          <span className="text-base font-black uppercase tracking-tight">{t('ui.nav.menu')}</span>
-        </button>
       </nav>
 
-      {/* Identity Card (Passport Badge) */}
+      {/* Identity Card (Passport Badge) - Click redirects to Menu/Settings */}
       <div className="px-4 py-6">
         <div className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.3em] mb-3 pl-4">Citizenship</div>
         {isGuest ? (
@@ -98,7 +91,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
                </div>
                <div className="flex-1">
                   <h4 className="text-white text-xs font-black uppercase leading-none mb-1">Apply Citizen</h4>
-                  <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest italic">Guest Mode</p>
+                  <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest">Guest Mode</p>
                </div>
                <ChevronRight className="text-white/20 group-hover:translate-x-1 transition-transform" size={16} />
             </div>
@@ -115,7 +108,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
                   </div>
                   <div className="flex-1 min-w-0">
                      <h4 className="text-[#4b7d78] text-xs font-black uppercase leading-none mb-1 truncate">{displayName}</h4>
-                     <p className="text-[#8bc34a] text-[9px] font-black uppercase tracking-widest italic">SSI CITIZEN</p>
+                     <p className="text-[#8bc34a] text-[9px] font-black uppercase tracking-widest">SSI CITIZEN</p>
                   </div>
                </div>
                <div className="absolute -right-2 -bottom-2 text-[10px] font-black border-2 border-[#8bc34a]/10 text-[#8bc34a]/10 px-2 py-0.5 rounded rotate-12">OFFICIAL</div>
@@ -151,8 +144,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
 
         <div className="px-2">
           {user ? (
-            <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-[#8d99ae] font-black text-xs uppercase tracking-widest hover:text-[#ff7b72] transition-colors">
-              <LogOut size={14} />
+            <button onClick={onLogout} className="w-full bg-[#ff7b72] text-white flex items-center justify-center gap-2 py-4 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-[0_4px_0_#d32f2f] active:translate-y-1 transition-all">
+              <LogOut size={16} />
               <span>{t('ui.actions.logout')}</span>
             </button>
           ) : (

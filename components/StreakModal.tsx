@@ -1,6 +1,7 @@
 
 import React, { useMemo, useEffect } from 'react';
-import { X, Flame, Sparkles, Star, Trophy, Heart, Languages } from 'lucide-react';
+// Added Compass to the imports from lucide-react
+import { X, Flame, Sparkles, Star, Trophy, Heart, Languages, Compass } from 'lucide-react';
 import { Word } from '../types';
 import { playFanfare, playClick } from '../utils/sfx';
 import { playAudio } from '../utils/audio';
@@ -53,16 +54,17 @@ const StreakModal: React.FC<StreakModalProps> = ({ onClose, streak, words }) => 
               <div className="bg-[#ffeb3b] p-5 rounded-[2.5rem] shadow-[0_8px_0_#fbc02d] border-4 border-white mb-3 animate-bounce">
                 <Flame size={48} className="text-[#f57c00] fill-current" />
               </div>
-              <h2 className="text-3xl font-black text-[#4b7d78] tracking-tight uppercase italic">Spanish Master!</h2>
+              <h2 className="text-3xl font-black text-[#4b7d78] tracking-tight uppercase">Spanish Master!</h2>
             </div>
 
             <div className="space-y-1">
               <p className="text-[11px] font-black text-[#8d99ae] uppercase tracking-[0.2em]">You've stayed consistent for</p>
-              <div className="relative inline-block">
-                <span className="text-7xl font-black text-[#ffa600] drop-shadow-[0_6px_0_#cc8400] italic">
+              {/* Fix: Unified base-line and non-italic for numbers */}
+              <div className="flex items-baseline justify-center gap-3">
+                <span className="text-8xl font-black text-[#ffa600] drop-shadow-[0_6px_0_#cc8400] leading-none">
                   {streak}
                 </span>
-                <span className="text-2xl font-black text-[#ffa600] ml-2 italic">Days</span>
+                <span className="text-3xl font-black text-[#ffa600] uppercase tracking-tighter leading-none">Days</span>
               </div>
             </div>
 
@@ -78,7 +80,7 @@ const StreakModal: React.FC<StreakModalProps> = ({ onClose, streak, words }) => 
                       <button 
                         key={w.id}
                         onClick={() => handleWordClick(w.s)}
-                        className={`px-4 py-2 rounded-2xl text-white font-black text-xs shadow-md border-2 border-white/40 ${rotations[i % rotations.length]} ${bgColors[i % bgColors.length]} animate-fadeIn hover:scale-110 active:scale-90 transition-transform cursor-pointer`}
+                        className={`px-4 py-2 rounded-2xl text-white font-black text-xs shadow-md border-2 border-white/40 ${rotations[i % rotations.length]} ${bgColors[i % bgColors.length]} animate-fadeIn hover:scale-110 active:scale-90 transition-transform cursor-pointer uppercase`}
                         style={{ animationDelay: `${i * 0.05}s` }}
                       >
                         {w.s}
@@ -86,25 +88,26 @@ const StreakModal: React.FC<StreakModalProps> = ({ onClose, streak, words }) => 
                     );
                   })
                 ) : (
-                  <div className="text-[#8d99ae] italic font-bold text-sm">Learning first words...</div>
+                  <div className="text-[#8d99ae] font-bold text-sm uppercase">Learning first words...</div>
                 )}
               </div>
-              <div className="mt-4 text-[10px] font-black text-[#4b7d78] uppercase bg-white/60 py-2 px-4 rounded-full border-2 border-dashed border-[#e0d9b4] inline-block">
+              <div className="mt-4 text-[10px] font-black text-[#4b7d78] uppercase bg-white/60 py-2 px-4 rounded-full border-2 border-dashed border-[#e0d9b4] inline-block tracking-widest">
                 Total Words: {words.length}
               </div>
             </div>
 
             <div className="bg-white/80 backdrop-blur p-5 rounded-[2.5rem] border-4 border-[#88d068] shadow-inner">
-              <p className="text-[#4b7d78] font-black leading-tight italic text-base">
+              <p className="text-[#4b7d78] font-black leading-tight text-base uppercase tracking-tighter">
                 "¡Increíble! Your Spanish garden is flourishing beautifully."
               </p>
             </div>
 
             <button 
               onClick={() => { playClick(); onClose(); }}
-              className="w-full bg-[#88d068] text-white py-5 rounded-[2.5rem] font-black text-xl shadow-[0_8px_0_#5a9a3b] border-4 border-white bubble-button"
+              className="w-full bg-[#88d068] text-white py-5 rounded-[2.5rem] font-black text-xl shadow-[0_8px_0_#5a9a3b] border-4 border-white bubble-button flex items-center justify-center gap-2"
             >
-              Back to Island
+              <Compass size={24} />
+              <span>Back to Island</span>
             </button>
           </div>
 

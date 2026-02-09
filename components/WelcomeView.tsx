@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Leaf, UserPlus, Compass, Ticket, Sparkles, CheckCircle2, Flame, Sprout, Heart, ShieldCheck, ChevronRight } from 'lucide-react';
 import { playFanfare, playClick } from '../utils/sfx';
@@ -63,7 +62,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({ onSelectGuest, onSelectAuth }
   if (showInviteCard && inviter) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#f7f9e4] z-50 fixed inset-0 animate-fadeIn">
-        <div className="w-full max-w-sm bg-white rounded-[3rem] border-[10px] border-white shadow-[0_40px_80px_rgba(0,0,0,0.15)] overflow-hidden animate-zoomIn relative">
+        <div className="w-full max-w-sm bg-white rounded-[3.5rem] border-[10px] border-white shadow-[0_40px_80px_rgba(0,0,0,0.15)] overflow-hidden animate-zoomIn relative">
           <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#8bc34a]/20 to-transparent pointer-events-none" />
           <div className="bg-[#8bc34a] p-8 text-center relative overflow-hidden">
             <div className="absolute -right-4 -top-4 text-white/20 rotate-12">
@@ -79,7 +78,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({ onSelectGuest, onSelectAuth }
           <div className="p-8 text-center space-y-8 relative">
             <div className="space-y-2">
               <p className="text-[#8d99ae] font-black uppercase text-[10px] tracking-[0.3em]">Special Guest of</p>
-              <h3 className="text-4xl font-black text-[#4b7d78] break-words leading-tight italic">{inviter.name}</h3>
+              <h3 className="text-4xl font-black text-[#4b7d78] break-words leading-tight">{inviter.name}</h3>
             </div>
             <div className="bg-[#f9fbe7] p-6 rounded-[2.5rem] border-4 border-[#e0d9b4] shadow-sm relative overflow-hidden group">
                <div className="absolute top-0 left-0 w-full h-1 bg-[#8bc34a] opacity-30" />
@@ -114,7 +113,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({ onSelectGuest, onSelectAuth }
           <div className="inline-flex items-center justify-center w-24 h-24 bg-[#78c850] rounded-[2.5rem] shadow-[0_10px_0_#5a9a3b] mb-8 border-4 border-white animate-bounce-slight">
             <Leaf className="text-white w-12 h-12 fill-current" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-[#4b7d78] tracking-tighter leading-tight mb-2">
+          <h1 className="text-4xl md:text-5xl font-black text-[#4b7d78] tracking-tighter leading-tight mb-2 uppercase">
             ¡Hola! <br/>
             <span className="text-[#ffa600]">Shelly Spanish Island</span>
           </h1>
@@ -152,7 +151,7 @@ const WelcomeView: React.FC<WelcomeViewProps> = ({ onSelectGuest, onSelectAuth }
               className="group flex items-center gap-2 text-[#8d99ae] font-black text-sm uppercase tracking-widest hover:text-[#4b7d78] transition-colors"
             >
               <Compass size={18} />
-              <span className="underline underline-offset-8 decoration-2 decoration-[#e0d9b4] group-hover:decoration-[#8bc34a] transition-all">
+              <span className="border-b-4 border-[#e0d9b4] group-hover:border-[#8bc34a] transition-all">
                 {t('ui.passport.temp_pass')}
               </span>
             </button>
