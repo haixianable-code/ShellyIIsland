@@ -18,7 +18,28 @@ export default {
       "tags": { "yarn": "连词", "clock": "时间", "sticky": "介词", "spice": "量词", "key": "疑问", "loot": "物品" }
     },
     "passport": { "temp_pass": "临时通行证", "official_passport": "正式岛屿护照", "unverified": "未验证访客", "citizen": "正式岛民", "verify_warning": "进度仅存于本地，随时可能遗失", "citizen_desc": "您的进度已加密备份至云端", "apply_now": "正式登岛", "protect_harvest": "保卫我的果实", "protect_desc": "检测到您有 {{count}} 个单词进度尚未备份。登录后可永久保存。", "issue_date": "入岛日期", "id_number": "岛民编号" },
-    "auth": { "login_title": "永久保存旅程", "login_subtitle": "绑定邮箱以在不同设备间同步进度。", "traveler_name": "旅客姓名", "anonymous": "匿名访客", "covenant": "待签署：岛屿公约", "google_login": "使用 Google 账号", "sign_off": "签署公约", "email_placeholder": "island_fan@email.com", "send_code": "发送验证链接", "enter_code_title": "输入通行码", "enter_code_desc": "我们已发送 6 位验证码至", "verify_btn": "验证并登岛", "change_email": "更换邮箱", "resend_code": "重新发送" },
+    "auth": { 
+      "login_title": "永久保存旅程", 
+      "login_subtitle": "绑定邮箱以在不同设备间同步进度。", 
+      "traveler_name": "旅客姓名", 
+      "anonymous": "匿名访客", 
+      "covenant": "待签署：岛屿公约", 
+      "google_login": "使用 Google 账号", 
+      "sign_off": "签署公约", 
+      "email_placeholder": "island_fan@email.com", 
+      "send_code": "发送验证链接", 
+      "enter_code_title": "输入通行码", 
+      "enter_code_desc": "我们已发送 6 位验证码至", 
+      "verify_btn": "验证并登岛", 
+      "change_email": "更换邮箱", 
+      "resend_code": "重新发送",
+      "entry_modal": {
+        "title": "¡Hola, Viajero!",
+        "subtitle": "请在岛屿名录上签下你的名字，以签发正式护照。",
+        "placeholder": "你的旅客名称...",
+        "button": "正式登岛"
+      }
+    },
     "actions": { "save_forever": "正式登岛", "backup": "导出备份", "restore": "恢复数据", "search": "搜索...", "reset": "重置岛屿", "clear_progress": "重塑岛屿", "clear_warning": "确定要‘重塑小岛’吗？这会把记忆还给大海，花园会变回最初空旷的样子，那些努力种出的单词果实都会消失哦~", "wipe_data": "把记忆还给大海，让一切重新开始吧~", "system_pref": "系统偏好", "test_audio": "测试音频引擎", "check_voice": "检查西语语音是否正常", "logout": "退出登录", "sound_on": "声音已开启", "sound_off": "已静音", "next_word": "下一个", "finish": "结束课程", "share_island": "分享我的成就", "copy_link": "复制链接", "copied": "文案已复制！", "continue_learning": "继续学习", "share_harvest": "分享今日收获", "generating": "正在绘制...", "use_items": "立即使用", "stash": "稍后放入", "added_prefix": "您已添加", "added_suffix": "到您的库存", "magic_items": "个魔法道具", "add_inventory": "收入囊中" },
     "study": { "grammar_pocket": "语法规则", "usage_examples": "场景例句", "vocab_note": "单词拆解", "how_well": "这个词你掌握得如何？", "forgot": "忘记了", "hard": "太难了", "good": "还不错", "perfect": "太简单了", "skip_hint": "跳过详情并继续", "skip_details": "跳过详情", "hard_mode": "不规则变位", "normal_mode": "规则变位", "summary_title": "岛屿丰收时刻！", "harvest_report": "今日收获报告", "today_harvest": "今日收获", "total_growth": "岛屿总成长", "day_streak": "坚持天数", "share_template": "🏝️ 我在 **SS Island** 发现了一片西语新大陆！\n这里的 **SSI 系统** 帮我自动种出了 {{level}} 个单词。\n👇 快来占领你的岛屿：\n{{url}}", "crops_collected": "今日收获 {{count}} 个作物", "extra_credit": "额外加分", "no_srs": "不影响记忆算法", "blitz_review": "闪电速览全部 ({{count}})", "review_selected": "复习选中项 ({{count}})", "seeding": "正在播种..." }
   },

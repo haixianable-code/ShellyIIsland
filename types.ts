@@ -49,6 +49,13 @@ export interface UserStats {
   total_words_learned: number;
 }
 
+export interface UserProfile {
+  id: string;
+  traveler_name: string | null;
+  avatar_id: string;
+  updated_at: string;
+}
+
 export enum AppView {
   DASHBOARD = 'DASHBOARD',
   STUDY = 'STUDY',

@@ -101,7 +101,13 @@ export default {
       "enter_code_desc": "We've sent a 6-digit code to",
       "verify_btn": "Verify & Enter",
       "change_email": "Change Email",
-      "resend_code": "Resend Code"
+      "resend_code": "Resend Code",
+      "entry_modal": {
+        "title": "¡Hola, Viajero!",
+        "subtitle": "Please sign your name on the island registry to receive your official passport.",
+        "placeholder": "Your traveler name...",
+        "button": "Enter the Island"
+      }
     },
     "actions": {
       "save_forever": "Enter Island Officially",

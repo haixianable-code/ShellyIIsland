@@ -11,12 +11,13 @@ interface SidebarProps {
   currentView: AppView;
   setView: (view: AppView) => void;
   user: User | null;
+  displayName: string;
   isSupabaseConfigured: boolean;
   onLoginRequest: () => void;
   onLogout: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabaseConfigured, onLoginRequest, onLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayName, isSupabaseConfigured, onLoginRequest, onLogout }) => {
   const { t } = useTranslation();
   const [isMuted, setIsMuted] = useState(getMuteState());
   const isGuest = isSupabaseConfigured && !user;
@@ -114,7 +115,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, isSupabas
                    <ShieldCheck className="text-white" size={20} />
                 </div>
                 <div className="flex-1 min-w-0">
-                   <h4 className="text-[#4b7d78] text-xs font-black uppercase leading-none mb-1 truncate">{user.email?.split('@')[0]}</h4>
+                   <h4 className="text-[#4b7d78] text-xs font-black uppercase leading-none mb-1 truncate">{displayName}</h4>
                    <p className="text-[#8bc34a] text-[9px] font-black uppercase tracking-widest italic">SSI CITIZEN</p>
                 </div>
                 <ChevronRight size={16} className="text-[#e0d9b4] group-hover:text-[#ffa600] group-hover:translate-x-1 transition-all" />

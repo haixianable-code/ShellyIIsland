@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { AppView, Word, FeedbackQuality } from './types';
 import Sidebar from './components/Sidebar';
@@ -9,10 +10,12 @@ import WordDetailModal from './components/WordDetailModal';
 import StreakModal from './components/StreakModal';
 import DailyHarvestModal from './components/DailyHarvestModal';
 import SyncCompleteModal from './components/SyncCompleteModal';
+import ProfileEntryModal from './components/ProfileEntryModal';
 import { AuthView } from './components/AuthView';
 import WelcomeView from './components/WelcomeView';
 import { useSRS } from './hooks/useSRS';
 import { useUserStats } from './hooks/useUserStats';
+import { useProfile } from './hooks/useProfile';
 import { Heart, Home, ShoppingBag, Leaf, Loader2, Cloud, CloudOff, Menu } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { isSupabaseConfigured, supabase } from './services/supabaseClient';
@@ -34,6 +37,9 @@ const App: React.FC = () => {
   const [showAuthView, setShowAuthView] = useState(false);
   const [showSyncCelebration, setShowSyncCelebration] = useState(false);
   
+  // Profile Hook
+  const { profile, updateProfile, loading: profileLoading } = useProfile(user);
+
   // 1. Initialize Audio System on App Mount
   useEffect(() => {
     initAudioSystem();
@@ -146,7 +152,18 @@ const App: React.FC = () => {
     setSelectedWord(word);
   }, []);
 
+  const handleSaveProfileName = async (name: string) => {
+    await updateProfile({ traveler_name: name });
+  };
+
   const studySessionKey = useMemo(() => `session-${sessionVersion}`, [sessionVersion]);
+
+  // Determine traveler display name
+  const travelerName = useMemo(() => {
+    if (profile?.traveler_name) return profile.traveler_name;
+    if (user?.email) return user.email.split('@')[0];
+    return t('ui.auth.anonymous');
+  }, [profile, user, t]);
 
   // --- 1. Loading State for Authentication Check ---
   if (authChecking) {
@@ -203,6 +220,7 @@ const App: React.FC = () => {
         currentView={view} 
         setView={setView}
         user={user}
+        displayName={travelerName}
         isSupabaseConfigured={isSupabaseConfigured}
         onLoginRequest={handleLoginRequest}
         onLogout={handleLogout}
@@ -265,6 +283,7 @@ const App: React.FC = () => {
             <MobileSettings
               user={user}
               stats={stats}
+              displayName={travelerName}
               isSupabaseConfigured={isSupabaseConfigured}
               onLoginRequest={handleLoginRequest}
               onLogout={handleLogout}
@@ -297,6 +316,11 @@ const App: React.FC = () => {
             userStats={stats} 
           />
         </div>
+      )}
+
+      {/* Profile Name Entry Modal - If logged in but no name found yet */}
+      {user && !profile?.traveler_name && !profileLoading && (
+        <ProfileEntryModal onSave={handleSaveProfileName} />
       )}
 
       {showSyncCelebration && (
@@ -340,6 +364,7 @@ const App: React.FC = () => {
         .animate-slideUp { animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .animate-zoomIn { animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .animate-wiggle { animation: wiggle 0.3s ease-in-out; }
+        .handwritten { font-family: 'Kalam', cursive; }
       `}</style>
     </div>
   );

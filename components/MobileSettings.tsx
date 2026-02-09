@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 interface MobileSettingsProps {
   user: User | null;
   stats: UserStats | null;
+  displayName: string;
   isSupabaseConfigured: boolean;
   onLoginRequest: () => void;
   onLogout: () => void;
@@ -24,6 +25,7 @@ interface MobileSettingsProps {
 const MobileSettings: React.FC<MobileSettingsProps> = ({ 
   user, 
   stats,
+  displayName,
   isSupabaseConfigured, 
   onLoginRequest, 
   onLogout 
@@ -144,8 +146,8 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
             
             <div className="flex items-start justify-between relative z-10 mb-8">
                <div className="space-y-1">
-                  <h3 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-2">
-                     SS ISLAND
+                  <h3 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-2 truncate pr-16">
+                     {displayName}
                   </h3>
                   <div className="flex items-center gap-2">
                     <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${user ? 'bg-[#78c850] text-[#2d4a47]' : 'bg-white/40 text-[#4b7d78]'}`}>
