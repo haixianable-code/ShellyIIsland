@@ -1,8 +1,7 @@
-
 import React, { useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, Trophy, Map, TreePalm, ShieldCheck, Flame, Sprout, Share2, Loader2, Heart, Star, Compass } from 'lucide-react';
-import { playClick, playSparkle } from '../utils/sfx';
+import { X, Map, TreePalm, ShieldCheck, Flame, Sprout, Share2, Loader2, Star, Compass } from 'lucide-react';
+import { playClick } from '../utils/sfx';
 // @ts-ignore
 import html2canvas from 'html2canvas';
 
@@ -70,7 +69,6 @@ const AchievementShareModal: React.FC<AchievementShareModalProps> = ({ name, tot
         <div className="flex-1 overflow-y-auto no-scrollbar p-6">
            {/* CAPTURE CONTENT */}
            <div ref={captureRef} className="bg-[#fffdf5] p-10 rounded-[3rem] border-[12px] border-white shadow-inner relative flex flex-col items-center text-center overflow-hidden">
-              {/* Retro Scroll Effects */}
               <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(transparent, transparent 19px, #000 20px)' }} />
               <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
                  <Map className="absolute -left-20 -top-20 rotate-12" size={300} />
@@ -82,7 +80,7 @@ const AchievementShareModal: React.FC<AchievementShareModalProps> = ({ name, tot
                     <div className="inline-flex bg-[#78c850] p-4 rounded-3xl border-4 border-white shadow-lg mb-2">
                        <ShieldCheck size={48} className="text-white" />
                     </div>
-                    <h2 className="text-4xl font-black text-[#4b7d78] tracking-tighter italic uppercase">{t('ui.achievement.title')}</h2>
+                    <h2 className="text-4xl font-black text-[#4b7d78] tracking-tighter uppercase">{t('ui.achievement.title')}</h2>
                     <div className="bg-[#ff7b72] text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest inline-block border-2 border-white shadow-sm">
                        {t('ui.achievement.certified')}
                     </div>
@@ -90,7 +88,7 @@ const AchievementShareModal: React.FC<AchievementShareModalProps> = ({ name, tot
 
                  <div className="space-y-1">
                     <p className="text-xs font-black text-[#8d99ae] uppercase tracking-widest">Citizen of SS Island</p>
-                    <h3 className="text-5xl font-black text-[#4b7d78] handwritten tracking-tight">{name}</h3>
+                    <h3 className="text-5xl font-black text-[#4b7d78] tracking-tighter">{name}</h3>
                  </div>
 
                  <div className="grid grid-cols-2 gap-4 w-full">
@@ -106,11 +104,11 @@ const AchievementShareModal: React.FC<AchievementShareModalProps> = ({ name, tot
                     </div>
                  </div>
 
-                 <div className="bg-[#fff9c4] p-6 rounded-[2.5rem] border-4 border-[#fdd835] shadow-sm relative group">
+                 <div className="bg-[#fff9c4] p-6 rounded-[2.5rem] border-4 border-[#fdd835] shadow-sm relative">
                     <Star className="absolute top-3 left-6 text-[#ffa600]/20" size={40} fill="currentColor" />
                     <Star className="absolute bottom-3 right-6 text-[#ffa600]/20" size={40} fill="currentColor" />
                     <p className="text-[10px] font-black text-[#8e6b23] uppercase tracking-[0.3em] mb-1">{t('ui.achievement.rank')}</p>
-                    <h4 className="text-3xl font-black text-[#8e6b23] italic tracking-tight">{rank}</h4>
+                    <h4 className="text-3xl font-black text-[#8e6b23] tracking-tight">{rank}</h4>
                  </div>
 
                  <div className="pt-10 border-t-2 border-[#e0d9b4]/50 flex flex-col items-center gap-6">
@@ -118,7 +116,7 @@ const AchievementShareModal: React.FC<AchievementShareModalProps> = ({ name, tot
                        <div className="w-20 h-20 bg-white p-2 rounded-2xl border-4 border-[#4b7d78] shadow-sm flex items-center justify-center">
                           <Compass size={48} className="text-[#4b7d78]" />
                        </div>
-                       <p className="text-[9px] font-black text-[#4b7d78] uppercase tracking-widest italic">{t('ui.achievement.scan_msg')}</p>
+                       <p className="text-[9px] font-black text-[#4b7d78] uppercase tracking-widest">{t('ui.achievement.scan_msg')}</p>
                     </div>
                     <div className="text-[#4b7d78] text-2xl font-black uppercase tracking-widest border-b-4 border-[#ffa600] pb-1">
                        SSISLAND.SPACE

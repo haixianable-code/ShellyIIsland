@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../services/supabaseClient';
@@ -6,11 +5,10 @@ import { UserStats } from '../types';
 import { 
   LogOut, Volume2, VolumeX, RotateCcw, 
   Leaf, Settings, Heart,
-  Flame, Sprout, ShieldCheck, ChevronRight, Ticket, Mail, Send,
-  ShieldAlert, Fingerprint, Speaker, Trash2, Trophy
+  Flame, Sprout, ShieldCheck, ChevronRight, Ticket, Speaker, Trash2, Trophy, ShieldAlert, Fingerprint
 } from 'lucide-react';
 import { toggleMute, getMuteState, playClick, playSparkle } from '../utils/sfx';
-import { playAudio } from '../utils/audio'; // Import for test button
+import { playAudio } from '../utils/audio';
 import { useTranslation } from 'react-i18next';
 
 interface MobileSettingsProps {
@@ -34,7 +32,6 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
 }) => {
   const { t } = useTranslation();
   const [isMuted, setIsMuted] = useState(getMuteState());
-  const [shareState, setShareState] = useState<'idle' | 'copied'>('idle');
   
   const handleToggleMute = () => {
     playClick();
@@ -71,39 +68,6 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
     }
   };
 
-  const generateShareData = () => {
-    const streak = stats?.current_streak || 0;
-    const total = stats?.total_words_learned || 0;
-    
-    // We explicitly point to the domain
-    const shareUrl = "https://ssisland.space";
-
-    const text = t('ui.study.share_template', {
-      level: total,
-      streak: streak,
-      count: 0, 
-      url: shareUrl
-    });
-
-    return { title: 'Join SS Island', text, url: shareUrl };
-  };
-
-  const handleShareStats = async () => {
-    playClick();
-    const data = generateShareData();
-    
-    if (navigator.share) {
-      try {
-        await navigator.share(data);
-      } catch (err) { /* ignore */ }
-    } else {
-      await navigator.clipboard.writeText(`${data.text}`);
-      setShareState('copied');
-      setTimeout(() => setShareState('idle'), 2000);
-    }
-  };
-
-  // Passport UI logic
   const passportStyles = useMemo(() => {
     if (user) {
       return {
@@ -131,7 +95,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
     <div className="space-y-8 animate-fadeIn pb-12">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="bg-[#b39ddb] p-4 rounded-3xl shadow-[0_6px_0_#7e57c2] border-4 border-white animate-bounce-slight">
+        <div className="bg-[#b39ddb] p-4 rounded-3xl shadow-[0_6px_0_#7e57c2] border-4 border-white">
           <Settings className="text-white fill-current" size={32} />
         </div>
         <h2 className="text-4xl font-black text-[#4b7d78] drop-shadow-sm">{t('ui.nav.menu')}</h2>
@@ -197,40 +161,21 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
          </div>
       </div>
 
-      {/* Share achievement trigger for logged in users */}
-      {user && (
-         <button 
-           onClick={() => { playSparkle(); onShareAchievement(); }}
-           className="w-full bg-white p-6 rounded-[2.5rem] border-4 border-[#e0d9b4] shadow-sm flex items-center justify-between group active:scale-95 transition-all"
-         >
-           <div className="flex items-center gap-5">
-              <div className="bg-[#ffa600]/10 p-4 rounded-2xl border-2 border-[#ffa600]/20">
-                 <Trophy className="text-[#ffa600]" size={28} />
-              </div>
-              <div className="text-left">
-                 <h3 className="text-xl font-black text-[#4b7d78] leading-none">{t('ui.passport.share_history')}</h3>
-                 <p className="text-[10px] font-bold text-[#8d99ae] uppercase tracking-widest mt-1.5">Show your island progress</p>
-              </div>
-           </div>
-           <ChevronRight className="text-[#e0d9b4]" size={20} />
-         </button>
-      )}
-
-      {/* Share Card (Invite) */}
+      {/* Main Achievement Sharing Action */}
       <button 
-        onClick={handleShareStats}
+        onClick={() => { playSparkle(); onShareAchievement(); }}
         className="w-full bg-[#ff7b72] p-6 rounded-[2.5rem] border-4 border-[#ff8a80] shadow-[0_8px_0_#d32f2f] flex items-center justify-between group active:scale-95 transition-all relative overflow-hidden"
       >
         <div className="absolute -left-4 -bottom-4 text-white opacity-10 rotate-12">
-            <Mail size={100} />
+            <Trophy size={100} />
         </div>
         <div className="relative z-10 flex items-center gap-5">
            <div className="bg-white/20 p-4 rounded-2xl border-2 border-white/30">
-              <Send className="text-white fill-current" size={28} />
+              <Trophy className="text-white fill-current" size={28} />
            </div>
            <div className="text-left text-white">
-              <h3 className="text-xl font-black leading-none">{t('ui.actions.share_island')}</h3>
-              <p className="text-[10px] font-bold opacity-90 uppercase tracking-widest mt-1.5">{shareState === 'copied' ? t('ui.actions.copied') : 'Invite friends to SS Island'}</p>
+              <h3 className="text-xl font-black">{t('ui.actions.share_island')}</h3>
+              <p className="text-[10px] font-bold opacity-90 uppercase tracking-widest mt-1.5">Show your merit scroll to friends</p>
            </div>
         </div>
         <div className="bg-white p-2 rounded-full shadow-sm">
@@ -238,7 +183,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
         </div>
       </button>
 
-      {/* Settings List */}
+      {/* System Preferences */}
       <div className="space-y-4">
         <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.2em] pl-4">{t('ui.actions.system_pref')}</p>
         
@@ -291,7 +236,6 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
         )}
       </div>
 
-      {/* Wipe Data Section (Deep Tilling) - Moved to the very bottom */}
       <div className="pt-8 border-t-2 border-dashed border-[#e0d9b4]/30">
           <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.2em] pl-4 mb-3">Zone of Reset</p>
           <button 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PenTool, Scroll, Ship, Map, Loader2, Compass } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -64,7 +63,7 @@ const ProfileEntryModal: React.FC<ProfileEntryModalProps> = ({ onSave }) => {
                     placeholder={t('ui.auth.entry_modal.placeholder')}
                     maxLength={20}
                     required
-                    className="w-full bg-transparent px-6 py-5 text-2xl font-black text-[#4b7d78] focus:outline-none placeholder:text-slate-200 placeholder:italic handwritten"
+                    className="w-full bg-transparent px-6 py-5 text-2xl font-black text-[#4b7d78] focus:outline-none placeholder:text-slate-200 placeholder:italic"
                  />
                  {/* Parchment background effect */}
                  <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(transparent, transparent 19px, #000 20px)' }} />

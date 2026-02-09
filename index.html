@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,17 +8,23 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Kalam:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700;800;900&display=swap">
     
     <style>
         :root {
           --font-main: 'Quicksand', -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-          --font-hand: 'Kalam', cursive;
           --verb-color: #ff7043;
           --noun-color: #8bc34a;
           --adj-color: #29b6f6;
           --misc-color: #ab47bc;
-          --deep-text: #2d4a47; /* 更柔和的深绿色代替黑色 */
+          --deep-text: #2d4a47;
+        }
+
+        /* 强制全局取消斜体和下划线 */
+        * { 
+          font-style: normal !important; 
+          text-decoration: none !important;
+          -webkit-tap-highlight-color: transparent;
         }
 
         body { 
@@ -70,24 +75,6 @@
           transform: rotateY(180deg);
           background-color: #fffdf5;
         }
-
-        @keyframes item-bloom {
-          from { opacity: 0; transform: translateY(15px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .bloom-1 { animation: item-bloom 0.4s 0.1s both; }
-        .bloom-2 { animation: item-bloom 0.4s 0.2s both; }
-        .bloom-3 { animation: item-bloom 0.4s 0.3s both; }
-
-        .ritual-easy {
-          animation: easy-exit 0.5s forwards cubic-bezier(0.55, 0, 0.1, 1);
-        }
-        @keyframes easy-exit {
-          to { opacity: 0; transform: translate(50px, -50px) scale(0.9) rotate(10deg); filter: blur(10px); }
-        }
-
-        .handwritten { font-family: var(--font-hand); }
 
         .bubble-button {
           transition: all 0.2s ease;
