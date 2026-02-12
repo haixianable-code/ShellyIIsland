@@ -45,7 +45,7 @@ interface IslandState {
   syncLocalToCloud: () => Promise<void>;
   updateProgress: (wordId: string, quality: FeedbackQuality) => Promise<boolean>;
   addExtraWords: (words: Word[]) => Promise<void>;
-  warmupAI: (words: Word[]) => Promise<void>;
+  warmupAI: (words: Word[], isBackground?: boolean) => Promise<void>;
   resetIsland: () => void;
 }
 
@@ -75,7 +75,7 @@ export const useIslandStore = create<IslandState>((set, get) => {
     progress: {},
     stats: { current_streak: 0, last_activity_date: TODAY_SIMULATED, total_words_learned: 0 },
     aiCache: {},
-    isAIAvailable: !!process.env.API_KEY,
+    isAIAvailable: false, 
     user: null,
     syncStatus: 'idle',
     loading: true,
@@ -109,31 +109,28 @@ export const useIslandStore = create<IslandState>((set, get) => {
           stats: localStats, 
           aiCache: savedAI,
           loading: false,
+          // Re-evaluate key presence after initialize
           isAIAvailable: !!process.env.API_KEY
         });
 
-        // 🏝️ DEFERRED AUTO-SCAN: Wait longer to ensure UI is ready
         setTimeout(() => {
           const needsAIIds = new Set<string>();
-          // Focus on today's packs first (Prioritize what user sees)
-          VOCABULARY_DATA.forEach(pack => {
-            pack.words.forEach(w => {
-              if (!savedAI[w.id]) needsAIIds.add(w.id);
-            });
-          });
-          // Then words in pocket
-          Object.keys(localProgress).forEach(id => {
-            if (!savedAI[id]) needsAIIds.add(id);
-          });
+          for (const pack of VOCABULARY_DATA) {
+            const missing = pack.words.filter(w => !get().aiCache[w.id]);
+            if (missing.length > 0) {
+              missing.forEach(w => needsAIIds.add(w.id));
+              break; 
+            }
+          }
 
           const needsAIWords = Array.from(needsAIIds)
             .map(id => wordMap.get(id))
             .filter((w): w is Word => !!w);
 
           if (needsAIWords.length > 0) {
-            get().warmupAI(needsAIWords);
+            get().warmupAI(needsAIWords, true);
           }
-        }, 2000);
+        }, 5000);
 
       } catch (err) {
         set({ loading: false });
@@ -142,35 +139,27 @@ export const useIslandStore = create<IslandState>((set, get) => {
 
     syncLocalToCloud: async () => {},
 
-    warmupAI: async (words: Word[]) => {
+    warmupAI: async (words: Word[], isBackground = false) => {
       const apiKey = process.env.API_KEY;
       if (!apiKey || words.length === 0) return;
 
-      // 🏝️ Rate Limiting Strategy:
-      // Reduce chunk size to 2 and add a 3 second delay between chunks.
-      // This helps stay under the ~15 RPM typical free tier limit.
-      const CHUNK_SIZE = 2;
-      for (let i = 0; i < words.length; i += CHUNK_SIZE) {
-        const chunk = words.slice(i, i + CHUNK_SIZE);
-        
-        // Skip if already processed in this session
-        const actualChunk = chunk.filter(w => !get().aiCache[w.id]);
-        if (actualChunk.length === 0) continue;
+      const targets = words.filter(w => !get().aiCache[w.id]);
+      if (targets.length === 0) return;
 
-        await Promise.all(actualChunk.map(async (word) => {
-          const info = await getAISmartHint(word.s, word.t);
-          if (info) {
-            set((state) => {
-              const updated = { ...state.aiCache, [word.id]: info };
-              storageService.setItem(AI_CACHE_KEY, updated);
-              return { aiCache: updated };
-            });
-          }
-        }));
+      const batch = isBackground ? targets.slice(0, 5) : targets;
 
-        // Delay between chunks to respect rate limits
-        if (i + CHUNK_SIZE < words.length) {
-          await sleep(3500); 
+      for (const word of batch) {
+        if (get().aiCache[word.id]) continue;
+        const info = await getAISmartHint(word.s, word.t);
+        if (info) {
+          set((state) => {
+            const updated = { ...state.aiCache, [word.id]: info };
+            storageService.setItem(AI_CACHE_KEY, updated);
+            return { aiCache: updated };
+          });
+          await sleep(8000);
+        } else {
+          await sleep(30000);
         }
       }
     },
@@ -191,7 +180,7 @@ export const useIslandStore = create<IslandState>((set, get) => {
       words.forEach(w => { if (!newProgress[w.id]) newProgress[w.id] = { level: 1, nextReviewDate: TODAY_SIMULATED }; });
       set({ progress: newProgress, stats: { ...stats, total_words_learned: Object.keys(newProgress).length } });
       storageService.setItem(PROGRESS_KEY, newProgress);
-      get().warmupAI(words);
+      get().warmupAI(words, false);
     },
 
     resetIsland: () => {
