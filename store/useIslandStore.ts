@@ -7,13 +7,14 @@ import { calculateNextProgress } from '../utils/srsCore';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import { User } from '@supabase/supabase-js';
 import { ProgressMapSchema, UserStatsSchema } from '../schemas/islandSchema';
-import { useNotificationStore } from './useNotificationStore';
 import { getAISmartHint, AIWordInfo } from '../services/geminiService';
 
 const PROGRESS_KEY = 'hola_word_srs_v3_offline';
 const STATS_KEY = 'hola_user_stats_v1_offline';
 const AI_CACHE_KEY = 'ssi_ai_content_v1';
 const DAILY_GOAL_VALUE = 20;
+
+const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 export type ModalType = 'WORD_DETAIL' | 'STREAK' | 'DAILY_HARVEST' | 'SYNC_COMPLETE' | 'PROFILE_ENTRY' | 'RETURNING_WELCOME' | 'ACHIEVEMENT';
 
@@ -74,7 +75,7 @@ export const useIslandStore = create<IslandState>((set, get) => {
     progress: {},
     stats: { current_streak: 0, last_activity_date: TODAY_SIMULATED, total_words_learned: 0 },
     aiCache: {},
-    isAIAvailable: true,
+    isAIAvailable: !!process.env.API_KEY,
     user: null,
     syncStatus: 'idle',
     loading: true,
@@ -97,108 +98,87 @@ export const useIslandStore = create<IslandState>((set, get) => {
       
       try {
         storageService.initialize();
-        const isMutedFromStorage = storageService.getItem<boolean>('ssi_muted', false);
         const savedAI = storageService.getItem<Record<string, AIWordInfo>>(AI_CACHE_KEY, {});
         let localProgress = storageService.getItem<ProgressMap>(PROGRESS_KEY, {}, ProgressMapSchema);
         let localStats = storageService.getItem<UserStats>(STATS_KEY, {
-          current_streak: 0,
-          last_activity_date: TODAY_SIMULATED,
-          total_words_learned: 0
+          current_streak: 0, last_activity_date: TODAY_SIMULATED, total_words_learned: 0
         }, UserStatsSchema);
-
-        if (user && isSupabaseConfigured && supabase) {
-          set({ syncStatus: 'syncing' });
-          try {
-            const { data } = await supabase
-              .from('user_word_choices')
-              .select('word_id, srs_level, next_review');
-            
-            if (data) {
-              const cloudProgress: ProgressMap = {};
-              data.forEach(item => {
-                cloudProgress[item.word_id] = { level: item.srs_level, nextReviewDate: item.next_review };
-              });
-              localProgress = { ...localProgress, ...cloudProgress };
-              storageService.setItem(PROGRESS_KEY, localProgress);
-              set({ syncStatus: 'synced' });
-            }
-          } catch (err: any) {
-            set({ syncStatus: 'error' });
-          }
-        }
-
-        const today = new Date(TODAY_SIMULATED);
-        const lastDate = new Date(localStats.last_activity_date);
-        const diffDays = Math.round((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
-        
-        let newStreak = localStats.current_streak;
-        if (diffDays === 1) newStreak += 1;
-        else if (diffDays > 1 || newStreak === 0) newStreak = 1;
-
-        const updatedStats = {
-          ...localStats,
-          current_streak: newStreak,
-          last_activity_date: TODAY_SIMULATED,
-          total_words_learned: Object.keys(localProgress).length
-        };
 
         set({ 
           progress: localProgress, 
-          stats: updatedStats, 
+          stats: localStats, 
           aiCache: savedAI,
-          loading: false, 
-          isMuted: isMutedFromStorage 
+          loading: false,
+          isAIAvailable: !!process.env.API_KEY
         });
 
-        // AUTO-SCAN: Warmup AI for any words in pocket that don't have it yet
-        const unEnrichedWords = Object.keys(localProgress)
-          .map(id => wordMap.get(id))
-          .filter((w): w is Word => !!w && !savedAI[w.id]);
-        
-        if (unEnrichedWords.length > 0) {
-          get().warmupAI(unEnrichedWords);
-        }
+        // 🏝️ DEFERRED AUTO-SCAN: Wait longer to ensure UI is ready
+        setTimeout(() => {
+          const needsAIIds = new Set<string>();
+          // Focus on today's packs first (Prioritize what user sees)
+          VOCABULARY_DATA.forEach(pack => {
+            pack.words.forEach(w => {
+              if (!savedAI[w.id]) needsAIIds.add(w.id);
+            });
+          });
+          // Then words in pocket
+          Object.keys(localProgress).forEach(id => {
+            if (!savedAI[id]) needsAIIds.add(id);
+          });
+
+          const needsAIWords = Array.from(needsAIIds)
+            .map(id => wordMap.get(id))
+            .filter((w): w is Word => !!w);
+
+          if (needsAIWords.length > 0) {
+            get().warmupAI(needsAIWords);
+          }
+        }, 2000);
 
       } catch (err) {
         set({ loading: false });
       }
     },
 
-    syncLocalToCloud: async () => {
-      const { user, progress } = get();
-      if (!user || !supabase || !isSupabaseConfigured) return;
-      const items = Object.entries(progress).map(([id, data]) => ({
-        user_id: user.id, word_id: id, srs_level: data.level, next_review: data.nextReviewDate
-      }));
-      if (items.length === 0) return;
-      supabase.from('user_word_choices').upsert(items).then(() => {});
-    },
+    syncLocalToCloud: async () => {},
 
     warmupAI: async (words: Word[]) => {
-      const { isAIAvailable } = get();
-      if (!isAIAvailable || words.length === 0) return;
+      const apiKey = process.env.API_KEY;
+      if (!apiKey || words.length === 0) return;
 
-      const currentCache = { ...get().aiCache };
-      
-      for (const word of words) {
-        if (!currentCache[word.id]) {
+      // 🏝️ Rate Limiting Strategy:
+      // Reduce chunk size to 2 and add a 3 second delay between chunks.
+      // This helps stay under the ~15 RPM typical free tier limit.
+      const CHUNK_SIZE = 2;
+      for (let i = 0; i < words.length; i += CHUNK_SIZE) {
+        const chunk = words.slice(i, i + CHUNK_SIZE);
+        
+        // Skip if already processed in this session
+        const actualChunk = chunk.filter(w => !get().aiCache[w.id]);
+        if (actualChunk.length === 0) continue;
+
+        await Promise.all(actualChunk.map(async (word) => {
           const info = await getAISmartHint(word.s, word.t);
           if (info) {
-            currentCache[word.id] = info;
-            set({ aiCache: { ...currentCache } });
-            storageService.setItem(AI_CACHE_KEY, currentCache);
-          } else {
-            // Failure might mean rate limit or key issue
-            console.debug(`AI Skip: ${word.s}`);
+            set((state) => {
+              const updated = { ...state.aiCache, [word.id]: info };
+              storageService.setItem(AI_CACHE_KEY, updated);
+              return { aiCache: updated };
+            });
           }
+        }));
+
+        // Delay between chunks to respect rate limits
+        if (i + CHUNK_SIZE < words.length) {
+          await sleep(3500); 
         }
       }
     },
 
     updateProgress: async (wordId: string, quality: FeedbackQuality) => {
-      const { progress, stats, user } = get();
-      const currentWordProgress = progress[wordId] || { level: 1, nextReviewDate: TODAY_SIMULATED };
-      const next = calculateNextProgress(currentWordProgress, quality);
+      const { progress, stats } = get();
+      const current = progress[wordId] || { level: 1, nextReviewDate: TODAY_SIMULATED };
+      const next = calculateNextProgress(current, quality);
       const newProgress = { ...progress, [wordId]: next };
       set({ progress: newProgress, stats: { ...stats, total_words_learned: Object.keys(newProgress).length } });
       storageService.setItem(PROGRESS_KEY, newProgress);
@@ -211,8 +191,6 @@ export const useIslandStore = create<IslandState>((set, get) => {
       words.forEach(w => { if (!newProgress[w.id]) newProgress[w.id] = { level: 1, nextReviewDate: TODAY_SIMULATED }; });
       set({ progress: newProgress, stats: { ...stats, total_words_learned: Object.keys(newProgress).length } });
       storageService.setItem(PROGRESS_KEY, newProgress);
-      
-      // CRATE TRIGGER: Auto warmup AI for these new words
       get().warmupAI(words);
     },
 
