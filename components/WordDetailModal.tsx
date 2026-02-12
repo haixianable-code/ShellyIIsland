@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Word } from '../types';
 import { playAudio } from '../utils/audio';
 import { getTypeTheme, getPosLabel } from '../utils/theme';
-import { X, Volume2, Sparkles, AudioLines, BookOpen, PenTool, ArrowLeftRight, Map, Star } from 'lucide-react';
+import { X, Volume2, Sparkles, AudioLines, BookOpen, PenTool, ArrowLeftRight, Map, Star, BrainCircuit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { playClick } from '../utils/sfx';
+import { useIslandStore } from '../store/useIslandStore';
 
 interface WordDetailModalProps {
   word: Word;
@@ -13,15 +15,25 @@ interface WordDetailModalProps {
 
 const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
   const { t } = useTranslation();
+  const { aiCache } = useIslandStore();
   const [activeText, setActiveText] = useState<string | null>(null);
   const theme = getTypeTheme(word);
   const conjugationList = word.forms ? word.forms.split(', ') : [];
   
+  const aiInfo = aiCache[word.id];
+
   const pronouns = word.type === 'verb' 
     ? [t('ui.grammar.yo'), t('ui.grammar.tu'), t('ui.grammar.el'), t('ui.grammar.nos'), t('ui.grammar.vos'), t('ui.grammar.ellos')] 
     : word.type === 'noun' 
       ? [t('ui.grammar.sing'), t('ui.grammar.plur')] 
       : [t('ui.grammar.masc'), t('ui.grammar.fem'), t('ui.grammar.masc_pl'), t('ui.grammar.fem_pl')];
+
+  useEffect(() => {
+    document.body.classList.add('modal-open');
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, []);
 
   const handleSpeak = (e: React.MouseEvent, text: string) => {
     e.stopPropagation();
@@ -52,18 +64,14 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
       
-      {/* Card Container */}
       <div className="relative w-full max-w-md bg-[#fffdf5] rounded-[3rem] shadow-[0_30px_60px_-10px_rgba(0,0,0,0.3)] overflow-hidden animate-zoomIn flex flex-col max-h-[90vh]">
         
-        {/* Scrollable Content Area */}
         <div className="overflow-y-auto no-scrollbar h-full relative">
             
-            {/* 1. Colored Header Section */}
             <div 
                 style={{ backgroundColor: theme.main }} 
                 className="relative pt-10 pb-20 px-6 text-center shrink-0 transition-colors duration-300"
             >
-                {/* Close Button (White/Transparent) */}
                 <button 
                     onClick={onClose}
                     className="absolute top-6 right-6 z-50 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all active:scale-90 backdrop-blur-sm"
@@ -71,12 +79,10 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                     <X size={20} strokeWidth={3} />
                 </button>
 
-                {/* Decorative Pattern Overlay */}
                 <div className="absolute inset-0 opacity-10 pointer-events-none" 
                      style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} 
                 />
 
-                {/* Big Word */}
                 <div 
                     className="relative z-10 cursor-pointer active:scale-95 transition-transform"
                     onClick={(e) => handleSpeak(e, word.s)}
@@ -89,14 +95,12 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                     </p>
                 </div>
 
-                {/* Organic Wave Separator (SVG) - Updated to a smoother full-width wave */}
                 <div className="absolute bottom-[-1px] left-0 w-full leading-[0]">
                     <svg viewBox="0 0 1440 320" preserveAspectRatio="none" className="w-full h-[80px] fill-[#fffdf5]">
                         <path d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
                     </svg>
                 </div>
 
-                {/* Floating Action Button (Audio) - Positioned on the curve */}
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-20">
                     <button 
                         onClick={(e) => handleSpeak(e, word.s)}
@@ -110,10 +114,8 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                 </div>
             </div>
 
-            {/* 2. Content Body */}
             <div className="px-6 md:px-8 pt-16 pb-12 bg-[#fffdf5] relative z-10">
                 
-                {/* Meta Pills */}
                 <div className="flex justify-center gap-2 mb-8 opacity-60">
                     <span className="px-3 py-1 rounded-full border border-slate-300 text-[9px] font-black uppercase tracking-widest text-slate-500">
                         {getPosLabel(word)}
@@ -123,7 +125,38 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                     </span>
                 </div>
 
-                {/* Grammar "Stamp" */}
+                {/* AI Island Wisdom (Conditional UI) */}
+                {aiInfo && (
+                  <div className="mb-10 animate-fadeIn">
+                     <div className="bg-gradient-to-br from-[#f3e5f5] to-[#e1f5fe] p-6 rounded-[2rem] border-4 border-white shadow-md relative overflow-hidden group">
+                        <div className="absolute -right-6 -top-6 text-[#4b7d78]/5 rotate-12 group-hover:scale-110 transition-transform">
+                           <BrainCircuit size={120} />
+                        </div>
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Sparkles size={16} className="text-[#ab47bc] animate-pulse" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#6a1b9a]">Island Wisdom</span>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <div>
+                                    <p className="text-[8px] font-black text-[#ab47bc] uppercase tracking-widest mb-1">Memory Trick</p>
+                                    <p className="text-[#2d4a47] font-bold text-sm leading-tight">
+                                        "{aiInfo.mnemonics}"
+                                    </p>
+                                </div>
+                                <div className="pt-3 border-t border-white/40">
+                                    <p className="text-[8px] font-black text-[#0288d1] uppercase tracking-widest mb-1">AI Smart Hint</p>
+                                    <p className="text-[#2d4a47] text-xs font-medium leading-relaxed">
+                                        {aiInfo.hint}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                     </div>
+                  </div>
+                )}
+
                 <div className="mb-10 relative group">
                     <div 
                         className="bg-white/50 p-6 rounded-[2rem] border-2 border-dashed relative transform -rotate-1 hover:rotate-0 transition-transform duration-300"
@@ -153,7 +186,6 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                     </div>
                 </div>
 
-                {/* Antonym Section (if exists) */}
                 {word.type === 'adj' && word.ant && (
                     <div className="mb-8">
                          <div 
@@ -177,7 +209,6 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                     </div>
                 )}
 
-                {/* Examples */}
                 <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-2 opacity-40 px-2">
                         <BookOpen size={14} />
@@ -201,7 +232,6 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                     ))}
                 </div>
 
-                {/* Vocab Note */}
                 {(word.nounNotes && word.nounNotes !== 'Function Word') && (
                   <div className="mt-8 pt-6 border-t-2 border-dashed border-slate-100 text-center">
                        <div className="inline-flex items-center gap-2 bg-slate-50 px-3 py-1 rounded-full mb-3">

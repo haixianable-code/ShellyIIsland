@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Word } from '../types';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +16,9 @@ const CrateRevealModal: React.FC<CrateRevealModalProps> = ({ words, onClose, onC
   const { t } = useTranslation();
 
   useEffect(() => {
+    // Lock scroll on mount
+    document.body.classList.add('modal-open');
+    
     playFanfare();
     const duration = 1000;
     const end = Date.now() + duration;
@@ -40,6 +44,11 @@ const CrateRevealModal: React.FC<CrateRevealModalProps> = ({ words, onClose, onC
       }
     };
     frame();
+
+    // Unlock scroll on unmount
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
   }, []);
 
   return (

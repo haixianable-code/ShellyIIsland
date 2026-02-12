@@ -44,7 +44,7 @@ export default {
     "pocket": {
       "expansion_pack_title": "Island Expansion Pack",
       "expansion_pack_desc": "Add A1-B1 high-frequency words to your garden!",
-      "explore_seeds": "Explore {{count}} Seeds",
+      "explore_seeds": "Explore 100 Random Seeds",
       "all_seeds_planted": "All Seeds Planted",
       "empty_title": "Your pocket is waiting for its first seed.",
       "empty_subtitle": "Go to the Supply Crate or Start Planting to fill it up!"
@@ -59,7 +59,7 @@ export default {
       "get_supplies": "Get Supplies",
       "no_items": "No items found in this section.",
       "cats": {
-        "all": "All Items",
+        "all": "All Supplies",
         "island": "Island Loot",
         "connector": "Yarn Ball",
         "time": "Magic Clock",
@@ -87,7 +87,7 @@ export default {
       "protect_harvest": "Protect Your Harvest",
       "protect_desc": "We found {{count}} words not yet backed up. Log in to save them forever.",
       "issue_date": "Date of Arrival",
-      "id_number": "Citizen ID",
+      "id_number": "ID Number",
       "share_history": "Share Achievement Scroll"
     },
     "auth": {

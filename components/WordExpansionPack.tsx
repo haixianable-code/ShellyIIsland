@@ -15,13 +15,13 @@ const WordExpansionPack: React.FC<WordExpansionPackProps> = ({ availableCount, o
   return (
     <div 
       onMouseEnter={() => playShaker()} 
-      className="bg-gradient-to-br from-[#88d068] to-[#78c850] p-8 rounded-[4rem] border-[8px] border-white shadow-[0_15px_0_#5a9a3b] flex flex-col md:flex-row items-center justify-between gap-6 text-white relative overflow-hidden group"
+      className="bg-gradient-to-br from-[#88d068] to-[#78c850] p-8 rounded-[4rem] border-[8px] border-white shadow-[0_15px_0_#5a9a3b] flex flex-col md:flex-row items-center justify-between gap-6 text-white relative overflow-hidden group animate-float-small"
     >
       <div className="absolute -bottom-10 -left-10 opacity-10 rotate-12 transition-transform group-hover:scale-110 duration-1000 pointer-events-none">
         <PackagePlus size={180} />
       </div>
       <div className="relative z-10 flex items-center gap-6">
-        <div className="bg-white/20 p-5 rounded-[2.5rem] border-4 border-white/40 shadow-inner">
+        <div className="bg-white/20 p-5 rounded-[2.5rem] border-4 border-white/40 shadow-inner animate-float">
           <PackagePlus size={40} />
         </div>
         <div>

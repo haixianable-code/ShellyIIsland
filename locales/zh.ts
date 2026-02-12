@@ -7,7 +7,7 @@ export default {
     "pocket": { 
       "expansion_pack_title": "岛屿扩充包", 
       "expansion_pack_desc": "为你的花园添加 A1-B1 高频词汇！", 
-      "explore_seeds": "探索 {{count}} 颗种子", 
+      "explore_seeds": "随机探索 100 颗种子", 
       "all_seeds_planted": "所有种子已播种",
       "empty_title": "口袋正在等待它的第一颗种子。",
       "empty_subtitle": "前往补给箱或开始播种，让你的花园热闹起来！"
@@ -16,13 +16,12 @@ export default {
       "title": "SSI 补给箱", 
       "select_limit": "最多选择", 
       "items": "个物品", 
-      "magic_fill": "魔法填充", 
-      "lucky_draw": "手气不错", 
-      "cart": "购物车", 
+      "magic_fill": "全速装载", 
+      "lucky_draw": "随机感", 
+      "cart": "已选", 
       "get_supplies": "获取补给", 
-      "no_items": "该区域没有找到物品。",
-      "cats": { "all": "全部", "island": "岛屿战利品", "connector": "毛线球", "time": "魔法时钟", "preposition": "便利贴", "quantity": "调味罐", "interrogative": "神秘钥匙" },
-      "tags": { "yarn": "连词", "clock": "时间", "sticky": "介词", "spice": "量词", "key": "疑问", "loot": "物品" }
+      "no_items": "该区域目前空空如也。",
+      "cats": { "all": "全部物资", "loot": "岛屿战利品", "connector": "连词球", "preposition": "定位图钉", "interrogative": "神秘钥匙", "adverb": "时空沙漏" }
     },
     "passport": { 
       "temp_pass": "临时通行证", 
@@ -45,45 +44,7 @@ export default {
       "max_streak": "最高连续天数",
       "rank": "岛屿头衔",
       "scan_msg": "扫描航标，开启你的岛屿之旅",
-      "ranks": {
-        "novice": "初级探险家",
-        "guide": "岛屿向导",
-        "lord": "西语领主"
-      }
-    },
-    "auth": { 
-      "login_title": "永久保存旅程", 
-      "login_subtitle": "绑定邮箱以在不同设备间同步进度。", 
-      "traveler_name": "旅客姓名", 
-      "anonymous": "匿名访客", 
-      "covenant": "待签署：岛屿公约", 
-      "google_login": "使用 Google 账号", 
-      "sign_off": "签署公约", 
-      "email_placeholder": "island_fan@email.com", 
-      "send_code": "发送验证链接", 
-      "enter_code_title": "输入通行码", 
-      "enter_code_desc": "我们已发送 6 位验证码至", 
-      "verify_btn": "验证并登岛", 
-      "change_email": "更换邮箱", 
-      "resend_code": "重新发送",
-      "entry_modal": {
-        "title": "¡Hola, Viajero!",
-        "subtitle": "请在岛屿名录上签下你的名字，以签发正式护照。",
-        "placeholder": "你的旅客名称...",
-        "button": "正式登岛"
-      },
-      "returning": {
-        "good_morning": "¡Buenos días!",
-        "good_afternoon": "¡Buenas tardes!",
-        "good_evening": "¡Buenas noches!",
-        "welcome_back": "欢迎回来，{{name}}!",
-        "log_title": "每日航海日志",
-        "arrived_stamp": "已抵达",
-        "status_reviews": "岛上有 {{count}} 颗作物渴了（待复习）。",
-        "status_seeds": "海浪冲上了 {{count}} 颗新种子（新单词）。",
-        "status_streak": "你已经守护这座岛屿 {{count}} 天了。",
-        "enter_btn": "进入我的岛屿"
-      }
+      "ranks": { "novice": "初级探险家", "guide": "岛屿向导", "lord": "西语领主" }
     },
     "actions": { "save_forever": "正式登岛", "backup": "导出备份", "restore": "恢复数据", "search": "搜索...", "reset": "重置岛屿", "clear_progress": "重塑岛屿", "clear_warning": "确定要‘重塑小岛’吗？这会把记忆还给大海，花园会变回最初空旷的样子，那些努力种出的单词果实都会消失哦~", "wipe_data": "把记忆还给大海，让一切重新开始吧~", "system_pref": "系统偏好", "test_audio": "测试音频引擎", "check_voice": "检查西语语音是否正常", "logout": "退出登录", "sound_on": "声音已开启", "sound_off": "已静音", "next_word": "下一个", "finish": "结束课程", "share_island": "分享我的成就", "copy_link": "复制链接", "copied": "文案已复制！", "continue_learning": "继续学习", "share_harvest": "分享今日收获", "generating": "正在绘制...", "use_items": "立即使用", "stash": "稍后放入", "added_prefix": "您已添加", "added_suffix": "到您的库存", "magic_items": "个魔法道具", "add_inventory": "收入囊中" },
     "study": { "grammar_pocket": "语法规则", "usage_examples": "场景例句", "vocab_note": "单词拆解", "how_well": "这个词你掌握得如何？", "forgot": "忘记了", "hard": "太难了", "good": "还不错", "perfect": "太简单了", "skip_hint": "跳过详情并继续", "skip_details": "跳过详情", "hard_mode": "不规则变位", "normal_mode": "规则变位", "summary_title": "岛屿丰收时刻！", "harvest_report": "今日收获报告", "today_harvest": "今日收获", "total_growth": "岛屿总成长", "day_streak": "坚持天数", "share_template": "🏝️ 我在 **SS Island** 发现了一片西语新大陆！\n这里的 **SSI 系统** 帮我自动种出了 {{level}} 个单词。\n👇 快来占领你的岛屿：\n{{url}}", "crops_collected": "今日收获 {{count}} 个作物", "extra_credit": "额外加分", "no_srs": "不影响记忆算法", "blitz_review": "闪电速览全部 ({{count}})", "review_selected": "复习选中项 ({{count}})", "seeding": "正在播种..." }
@@ -109,7 +70,6 @@ export default {
     "mejor": { "t": "更好的", "tip": "Bueno 的比较级。不规则。", "notes": "Amigo (朋友)。" },
     "abierto": { "t": "开着的", "tip": "状态形容词。", "notes": "Puerta (门)。" },
     "posible": { "t": "可能的", "tip": "表示可行性。", "notes": "Misión (任务)。" },
-    
     "decir": { "t": "说", "tip": "不规则动词 (Yo digo)。", "notes": "Hola (你好)。" },
     "venir": { "t": "来", "tip": "不规则动词 (Yo vengo)。", "notes": "Tarde (晚)。" },
     "oír": { "t": "听见", "tip": "不规则动词 (Yo oigo)。表示被动听见。", "notes": "Ruido (噪音)。" },
@@ -131,4 +91,4 @@ export default {
     "claro": { "t": "清晰的 / 浅色的", "tip": "形容光线或颜色。", "notes": "Agua (水)。" },
     "oscuro": { "t": "黑暗的 / 深色的", "tip": "形容光线不足。", "notes": "Cuarto (房间)。" }
   }
-};
+}

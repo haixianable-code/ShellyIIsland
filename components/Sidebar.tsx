@@ -1,10 +1,12 @@
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import { AppView } from '../types';
 import { User } from '@supabase/supabase-js';
-import { Home, Briefcase, Leaf, Heart, RotateCcw, Download, Volume2, VolumeX, LogOut, ShieldCheck, ChevronRight, UserPlus, Trophy } from 'lucide-react';
-import { toggleMute, getMuteState, playClick, playSparkle } from '../utils/sfx';
+// Added Heart to imports
+import { Home, Briefcase, Leaf, RotateCcw, Download, Volume2, VolumeX, LogOut, ShieldCheck, ChevronRight, UserPlus, Trophy, Heart } from 'lucide-react';
+import { playClick, playSparkle } from '../utils/sfx';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
+import { useIslandStore } from '../store/useIslandStore';
 
 interface SidebarProps {
   currentView: AppView;
@@ -19,13 +21,12 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayName, isSupabaseConfigured, onLoginRequest, onLogout, onShareAchievement }) => {
   const { t } = useTranslation();
-  const [isMuted, setIsMuted] = useState(getMuteState());
+  const { isMuted, setMuted } = useIslandStore();
   const isGuest = isSupabaseConfigured && !user;
 
   const handleToggleMute = () => {
     playClick();
-    const newState = toggleMute();
-    setIsMuted(newState);
+    setMuted(!isMuted);
   };
 
   const handleExport = () => {
@@ -43,8 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
   const handleReset = () => {
     playClick();
     if (confirm("Reset all progress?")) {
-      localStorage.clear();
-      window.location.reload();
+      useIslandStore.getState().resetIsland();
     }
   };
 
@@ -58,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
         <h1 className="text-xl font-black text-[#4b7d78] tracking-tight uppercase">SS Island</h1>
       </div>
 
-      {/* Main Navigation - Removed Menu Button as it's redundant */}
+      {/* Main Navigation */}
       <nav className="px-4 py-4 space-y-3">
         <button
           onClick={() => { playClick(); setView(AppView.DASHBOARD); }}
@@ -76,7 +76,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
         </button>
       </nav>
 
-      {/* Identity Card (Passport Badge) - Click redirects to Menu/Settings */}
+      {/* Identity Card */}
       <div className="px-4 py-6">
         <div className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.3em] mb-3 pl-4">Citizenship</div>
         {isGuest ? (

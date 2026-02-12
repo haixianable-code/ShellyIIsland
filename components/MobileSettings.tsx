@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../services/supabaseClient';
@@ -5,11 +6,12 @@ import { UserStats } from '../types';
 import { 
   LogOut, Volume2, VolumeX, RotateCcw, 
   Leaf, Settings, Heart,
-  Flame, Sprout, ShieldCheck, ChevronRight, Ticket, Speaker, Trash2, Trophy, ShieldAlert, Fingerprint
+  Flame, Sprout, ShieldCheck, ChevronRight, Ticket, Speaker, Trash2, Trophy, ShieldAlert, Fingerprint, Cloud, TreePalm
 } from 'lucide-react';
 import { toggleMute, getMuteState, playClick, playSparkle } from '../utils/sfx';
 import { playAudio } from '../utils/audio';
 import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface MobileSettingsProps {
   user: User | null;
@@ -92,9 +94,15 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
   }, [user, t]);
 
   return (
-    <div className="space-y-8 animate-fadeIn pb-12">
+    <div className="space-y-8 animate-fadeIn pb-12 relative">
+      {/* --- Ambient Decorations --- */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-[0.06]">
+         <Cloud className="absolute top-[20%] -right-10 text-[#4b7d78] animate-float-slow" size={100} />
+         <TreePalm className="absolute top-[60%] -left-12 text-[#78c850] animate-sway" size={200} />
+      </div>
+
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 relative z-10">
         <div className="bg-[#b39ddb] p-4 rounded-3xl shadow-[0_6px_0_#7e57c2] border-4 border-white">
           <Settings className="text-white fill-current" size={32} />
         </div>
@@ -102,12 +110,12 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
       </div>
 
       {/* Passport Card */}
-      <div className="relative group perspective-1000">
+      <div className="relative group perspective-1000 z-10">
          <div className={`absolute -top-3 left-8 z-20 ${user ? 'bg-[#ffa600]' : 'bg-[#8d99ae]'} text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 border-white shadow-md flex items-center gap-1.5`}>
             <Ticket size={12} /> {passportStyles.label}
          </div>
 
-         <div className={`${passportStyles.bg} rounded-[3rem] p-8 shadow-[0_20px_0_rgba(0,0,0,0.1)] border-4 ${passportStyles.border} ${passportStyles.text} relative overflow-hidden transition-all duration-500`}>
+         <div className={`${passportStyles.bg} rounded-[3rem] p-8 shadow-[0_20px_0_rgba(0,0,0,0.1)] border-4 ${passportStyles.border} ${passportStyles.text} relative overflow-hidden transition-all duration-500 animate-float-small`}>
             <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }} />
             
             <div className="flex items-start justify-between relative z-10 mb-8">
@@ -124,7 +132,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
                </div>
                
                <div className={`w-16 h-16 rounded-2xl border-4 ${user ? 'border-white/20' : 'border-[#4b7d78]/10'} flex items-center justify-center overflow-hidden bg-white/10`}>
-                  {user ? <Leaf className="text-white fill-current" size={32} /> : <Fingerprint className="text-[#4b7d78]/20" size={32} />}
+                  {user ? <Leaf className="text-white fill-current animate-float" size={32} /> : <Fingerprint className="text-[#4b7d78]/20" size={32} />}
                </div>
             </div>
 
@@ -149,7 +157,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
                   </p>
                 </div>
                 {!user && (
-                   <button onClick={onLoginRequest} className="bg-white text-[#ff7b72] px-3 py-1 rounded-lg text-[9px] font-black uppercase shadow-sm">
+                   <button onClick={onLoginRequest} className="bg-white text-[#ff7b72] px-3 py-1 rounded-lg text-[9px] font-black uppercase shadow-sm active:scale-90">
                       {t('ui.passport.apply_now')}
                    </button>
                 )}
@@ -164,9 +172,9 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
       {/* Main Achievement Sharing Action */}
       <button 
         onClick={() => { playSparkle(); onShareAchievement(); }}
-        className="w-full bg-[#ff7b72] p-6 rounded-[2.5rem] border-4 border-[#ff8a80] shadow-[0_8px_0_#d32f2f] flex items-center justify-between group active:scale-95 transition-all relative overflow-hidden"
+        className="w-full bg-[#ff7b72] p-6 rounded-[2.5rem] border-4 border-[#ff8a80] shadow-[0_8px_0_#d32f2f] flex items-center justify-between group active:scale-95 transition-all relative overflow-hidden bubble-button z-10"
       >
-        <div className="absolute -left-4 -bottom-4 text-white opacity-10 rotate-12">
+        <div className="absolute -left-4 -bottom-4 text-white opacity-10 rotate-12 animate-sway">
             <Trophy size={100} />
         </div>
         <div className="relative z-10 flex items-center gap-5">
@@ -178,22 +186,36 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
               <p className="text-[10px] font-bold opacity-90 uppercase tracking-widest mt-1.5">Show your merit scroll to friends</p>
            </div>
         </div>
-        <div className="bg-white p-2 rounded-full shadow-sm">
+        <div className="bg-white p-2 rounded-full shadow-sm group-hover:translate-x-1 transition-transform">
            <ChevronRight className="text-[#ff7b72]" size={20} />
         </div>
       </button>
 
       {/* System Preferences */}
-      <div className="space-y-4">
+      <div className="space-y-4 z-10 relative">
         <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.2em] pl-4">{t('ui.actions.system_pref')}</p>
         
+        {/* Language Switcher Button Group */}
+        <div className="bg-white p-5 rounded-[2.5rem] border-4 border-[#f0f0f0] shadow-[0_6px_0_#e0e0e0] flex items-center justify-between group bubble-button transition-transform">
+           <div className="flex items-center gap-4">
+             <div className="bg-[#e8f5e9] text-[#2e7d32] p-3 rounded-2xl">
+                <Leaf size={24} className="animate-float-small" />
+             </div>
+             <div className="text-left">
+                <div className="text-lg font-black text-[#4b7d78]">Language / 语言</div>
+                <div className="text-xs font-bold text-[#8d99ae]">Toggle EN/CN</div>
+             </div>
+           </div>
+           <LanguageSwitcher />
+        </div>
+
         <button 
           onClick={handleToggleMute} 
-          className="w-full bg-white p-5 rounded-[2.5rem] border-4 border-[#f0f0f0] shadow-[0_6px_0_#e0e0e0] flex items-center justify-between group active:scale-95 transition-transform"
+          className="w-full bg-white p-5 rounded-[2.5rem] border-4 border-[#f0f0f0] shadow-[0_6px_0_#e0e0e0] flex items-center justify-between group active:scale-95 transition-transform bubble-button"
         >
           <div className="flex items-center gap-4">
             <div className={`p-3 rounded-2xl transition-colors ${isMuted ? 'bg-gray-100 text-gray-400' : 'bg-[#fff9c4] text-[#fbc02d]'}`}>
-               {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+               {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} className="animate-pulse" />}
             </div>
             <div className="text-left">
               <div className="text-lg font-black text-[#4b7d78]">{t('ui.actions.sound_on')}</div>
@@ -207,7 +229,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
 
         <button 
           onClick={handleTestAudio} 
-          className="w-full bg-white p-5 rounded-[2.5rem] border-4 border-[#f0f0f0] shadow-[0_6px_0_#e0e0e0] flex items-center justify-between group active:scale-95 transition-transform"
+          className="w-full bg-white p-5 rounded-[2.5rem] border-4 border-[#f0f0f0] shadow-[0_6px_0_#e0e0e0] flex items-center justify-between group active:scale-95 transition-transform bubble-button"
         >
           <div className="flex items-center gap-4">
             <div className="bg-[#e1f5fe] text-[#0288d1] p-3 rounded-2xl">
@@ -218,11 +240,11 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
               <div className="text-xs font-bold text-[#8d99ae]">{t('ui.actions.check_voice')}</div>
             </div>
           </div>
-          <ChevronRight className="text-slate-300" size={20} />
+          <ChevronRight className="text-slate-300 group-hover:translate-x-1 transition-transform" size={20} />
         </button>
       </div>
 
-      <div className="p-4 flex flex-col items-center space-y-4">
+      <div className="p-4 flex flex-col items-center space-y-4 z-10 relative">
         {user ? (
           <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-[#d32f2f] font-black hover:bg-red-50 transition-colors">
             <LogOut size={18} />
@@ -236,11 +258,11 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
         )}
       </div>
 
-      <div className="pt-8 border-t-2 border-dashed border-[#e0d9b4]/30">
+      <div className="pt-8 border-t-2 border-dashed border-[#e0d9b4]/30 z-10 relative">
           <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.2em] pl-4 mb-3">Zone of Reset</p>
           <button 
           onClick={handleClearProgress} 
-          className="w-full bg-[#fff5f5] p-5 rounded-[2.5rem] border-4 border-[#ffebee] shadow-[0_6px_0_#ffcdd2] flex items-center justify-between group active:scale-95 transition-transform"
+          className="w-full bg-[#fff5f5] p-5 rounded-[2.5rem] border-4 border-[#ffebee] shadow-[0_6px_0_#ffcdd2] flex items-center justify-between group active:scale-95 transition-transform bubble-button"
           >
           <div className="flex items-center gap-4">
               <div className="bg-[#ffcdd2] text-[#c62828] p-3 rounded-2xl shadow-sm group-hover:animate-wiggle">
@@ -255,11 +277,11 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
           </button>
       </div>
 
-      <div className="flex flex-col items-center opacity-30 gap-1 pb-4">
+      <div className="flex flex-col items-center opacity-30 gap-1 pb-4 z-10 relative">
           <div className="flex items-center gap-1.5 text-[8px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">
             Made By SHELLY
           </div>
-          <Heart size={8} className="text-[#ff7b72] fill-current" />
+          <Heart size={8} className="text-[#ff7b72] fill-current animate-pulse" />
       </div>
     </div>
   );
