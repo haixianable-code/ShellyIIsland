@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Word } from '../types';
 import { playAudio } from '../utils/audio';
 import { getTypeTheme, getPosLabel } from '../utils/theme';
-import { X, Volume2, Sparkles, AudioLines, BookOpen, PenTool, ArrowLeftRight, Map, Star, BrainCircuit } from 'lucide-react';
+import { X, Volume2, Sparkles, AudioLines, BookOpen, PenTool, ArrowLeftRight, Map, Star, BrainCircuit, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { playClick } from '../utils/sfx';
 import { useIslandStore } from '../store/useIslandStore';
@@ -15,7 +15,7 @@ interface WordDetailModalProps {
 
 const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
   const { t } = useTranslation();
-  const { aiCache } = useIslandStore();
+  const { aiCache, isAIAvailable } = useIslandStore();
   const [activeText, setActiveText] = useState<string | null>(null);
   const theme = getTypeTheme(word);
   const conjugationList = word.forms ? word.forms.split(', ') : [];
@@ -126,7 +126,7 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                 </div>
 
                 {/* AI Island Wisdom (Conditional UI) */}
-                {aiInfo && (
+                {aiInfo ? (
                   <div className="mb-10 animate-fadeIn">
                      <div className="bg-gradient-to-br from-[#f3e5f5] to-[#e1f5fe] p-6 rounded-[2rem] border-4 border-white shadow-md relative overflow-hidden group">
                         <div className="absolute -right-6 -top-6 text-[#4b7d78]/5 rotate-12 group-hover:scale-110 transition-transform">
@@ -155,7 +155,12 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                         </div>
                      </div>
                   </div>
-                )}
+                ) : isAIAvailable ? (
+                  <div className="mb-10 py-6 border-2 border-dashed border-[#e1f5fe] rounded-[2rem] flex flex-col items-center justify-center gap-3 opacity-40">
+                     <Loader2 className="animate-spin text-[#0288d1]" size={20} />
+                     <span className="text-[8px] font-black uppercase tracking-widest">Waking up AI spirits...</span>
+                  </div>
+                ) : null}
 
                 <div className="mb-10 relative group">
                     <div 

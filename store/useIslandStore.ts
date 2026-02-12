@@ -25,7 +25,7 @@ interface IslandState {
   progress: ProgressMap;
   stats: UserStats;
   aiCache: Record<string, AIWordInfo>;
-  isAIAvailable: boolean; // Circuit breaker state
+  isAIAvailable: boolean; 
   user: User | null;
   syncStatus: 'idle' | 'syncing' | 'synced' | 'error';
   loading: boolean;
@@ -127,7 +127,6 @@ export const useIslandStore = create<IslandState>((set, get) => {
             }
           } catch (err: any) {
             set({ syncStatus: 'error' });
-            notify('Cloud disconnected. Island is in local mode.', 'info');
           }
         }
 
@@ -157,6 +156,16 @@ export const useIslandStore = create<IslandState>((set, get) => {
         });
 
         storageService.setItem(STATS_KEY, updatedStats);
+
+        // TRIGGER AI WARMUP FOR EXISTING WORDS
+        const wordsToWarmup = Object.keys(localProgress)
+          .map(id => wordMap.get(id))
+          .filter((w): w is Word => w !== undefined && !savedAI[w.id]);
+        
+        if (wordsToWarmup.length > 0) {
+          get().warmupAI(wordsToWarmup);
+        }
+
       } catch (err) {
         set({ loading: false });
       }
@@ -183,29 +192,28 @@ export const useIslandStore = create<IslandState>((set, get) => {
 
     warmupAI: async (words: Word[]) => {
       const { aiCache, isAIAvailable } = get();
-      if (!isAIAvailable) return; // Circuit breaker active
+      if (!isAIAvailable || words.length === 0) return;
 
-      const newCache = { ...aiCache };
-      let updated = false;
+      const newCache = { ...get().aiCache };
+      let updatedCount = 0;
 
+      // Use a sequential queue to respect API quotas
       for (const word of words) {
         if (!newCache[word.id]) {
+          console.debug(`AI Warmup: Generating for ${word.s}`);
           const hint = await getAISmartHint(word.s, word.t);
           if (hint) {
             newCache[word.id] = hint;
-            updated = true;
+            updatedCount++;
+            // Update state incrementally so UI feels alive
+            set({ aiCache: { ...newCache } });
+            storageService.setItem(AI_CACHE_KEY, newCache);
           } else {
-            // If a request fails (null), we stop further attempts for this session
-            // to avoid spamming a failed API/quota-reached endpoint.
+            console.debug(`AI Warmup: Failed for ${word.s}, stopping session warmup.`);
             set({ isAIAvailable: false });
             break;
           }
         }
-      }
-
-      if (updated) {
-        set({ aiCache: newCache });
-        storageService.setItem(AI_CACHE_KEY, newCache);
       }
     },
 
@@ -226,7 +234,7 @@ export const useIslandStore = create<IslandState>((set, get) => {
       
       const success = storageService.setItem(PROGRESS_KEY, newProgress);
       if (!success) {
-        notify("Island Storage Full! Please login to sync to cloud.", "error");
+        notify("Island Storage Full!", "error");
       }
       storageService.setItem(STATS_KEY, newStats);
 
@@ -265,7 +273,8 @@ export const useIslandStore = create<IslandState>((set, get) => {
       storageService.setItem(STATS_KEY, newStats);
       notify(`Collected ${words.length} seeds!`, 'success');
 
-      warmupAI(words);
+      // Start warming up AI for these specific new words
+      get().warmupAI(words);
 
       if (user && isSupabaseConfigured && supabase) {
         const updates = words.map(w => ({

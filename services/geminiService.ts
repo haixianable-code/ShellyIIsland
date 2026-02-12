@@ -13,15 +13,16 @@ export interface AIWordInfo {
  */
 export const getAISmartHint = async (word: string, translation: string): Promise<AIWordInfo | null> => {
   try {
-    // Check if API key is present
+    // The API key must be obtained exclusively from the environment variable process.env.API_KEY
     if (!process.env.API_KEY) {
+      console.debug("AI Service: Missing API_KEY in process.env");
       return null;
     }
 
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Provide a smart grammar hint and a funny mnemonic for the Spanish word "${word}" (English: "${translation}").`,
+      contents: `Provide a short smart grammar hint and a funny mnemonic for the Spanish word "${word}" (English meaning: "${translation}"). Be creative and concise.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -29,11 +30,11 @@ export const getAISmartHint = async (word: string, translation: string): Promise
           properties: {
             hint: {
               type: Type.STRING,
-              description: 'A short, insightful grammar tip for this word.',
+              description: 'A short, insightful grammar tip for this word (max 15 words).',
             },
             mnemonics: {
               type: Type.STRING,
-              description: 'A funny or memorable trick to remember this word.',
+              description: 'A funny or memorable trick to remember this word (max 20 words).',
             },
           },
           required: ["hint", "mnemonics"],
@@ -41,17 +42,15 @@ export const getAISmartHint = async (word: string, translation: string): Promise
       },
     });
 
-    if (response && response.text) {
-      return JSON.parse(response.text.trim());
+    // Directly access .text property as per guidelines (not .text())
+    const text = response.text;
+    if (text) {
+      return JSON.parse(text.trim());
     }
     return null;
   } catch (error) {
-    // Silent failure for production. Log only for developer debugging.
-    console.debug("AI generation skipped or failed silently:", error);
+    // Silent failure for production.
+    console.debug("AI generation failed silently:", error);
     return null;
   }
 };
-
-// Legacy placeholders for backward compatibility
-export const generateExampleSentence = async () => null;
-export const getGrammarExplanation = async () => null;
