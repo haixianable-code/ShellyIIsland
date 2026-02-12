@@ -94,7 +94,6 @@ export const useIslandStore = create<IslandState>((set, get) => {
 
     initialize: async (user) => {
       set({ user, loading: true });
-      const { notify } = useNotificationStore.getState();
       
       try {
         storageService.initialize();
@@ -110,11 +109,10 @@ export const useIslandStore = create<IslandState>((set, get) => {
         if (user && isSupabaseConfigured && supabase) {
           set({ syncStatus: 'syncing' });
           try {
-            const { data, error } = await supabase
+            const { data } = await supabase
               .from('user_word_choices')
               .select('word_id, srs_level, next_review');
             
-            if (error) throw error;
             if (data) {
               const cloudProgress: ProgressMap = {};
               data.forEach(item => {
@@ -123,7 +121,6 @@ export const useIslandStore = create<IslandState>((set, get) => {
               localProgress = { ...localProgress, ...cloudProgress };
               storageService.setItem(PROGRESS_KEY, localProgress);
               set({ syncStatus: 'synced' });
-              get().syncLocalToCloud();
             }
           } catch (err: any) {
             set({ syncStatus: 'error' });
@@ -131,9 +128,7 @@ export const useIslandStore = create<IslandState>((set, get) => {
         }
 
         const today = new Date(TODAY_SIMULATED);
-        today.setHours(0, 0, 0, 0);
         const lastDate = new Date(localStats.last_activity_date);
-        lastDate.setHours(0, 0, 0, 0);
         const diffDays = Math.round((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
         
         let newStreak = localStats.current_streak;
@@ -155,15 +150,13 @@ export const useIslandStore = create<IslandState>((set, get) => {
           isMuted: isMutedFromStorage 
         });
 
-        storageService.setItem(STATS_KEY, updatedStats);
-
-        // TRIGGER AI WARMUP FOR EXISTING WORDS
-        const wordsToWarmup = Object.keys(localProgress)
+        // AUTO-SCAN: Warmup AI for any words in pocket that don't have it yet
+        const unEnrichedWords = Object.keys(localProgress)
           .map(id => wordMap.get(id))
-          .filter((w): w is Word => w !== undefined && !savedAI[w.id]);
+          .filter((w): w is Word => !!w && !savedAI[w.id]);
         
-        if (wordsToWarmup.length > 0) {
-          get().warmupAI(wordsToWarmup);
+        if (unEnrichedWords.length > 0) {
+          get().warmupAI(unEnrichedWords);
         }
 
       } catch (err) {
@@ -174,44 +167,29 @@ export const useIslandStore = create<IslandState>((set, get) => {
     syncLocalToCloud: async () => {
       const { user, progress } = get();
       if (!user || !supabase || !isSupabaseConfigured) return;
-
       const items = Object.entries(progress).map(([id, data]) => ({
-        user_id: user.id,
-        word_id: id,
-        srs_level: data.level,
-        next_review: data.nextReviewDate
+        user_id: user.id, word_id: id, srs_level: data.level, next_review: data.nextReviewDate
       }));
-
       if (items.length === 0) return;
-
-      supabase.from('user_word_choices').upsert(items)
-        .then(({ error }) => {
-          if (!error) console.log("🏝️ Cloud background sync successful.");
-        });
+      supabase.from('user_word_choices').upsert(items).then(() => {});
     },
 
     warmupAI: async (words: Word[]) => {
-      const { aiCache, isAIAvailable } = get();
+      const { isAIAvailable } = get();
       if (!isAIAvailable || words.length === 0) return;
 
-      const newCache = { ...get().aiCache };
-      let updatedCount = 0;
-
-      // Use a sequential queue to respect API quotas
+      const currentCache = { ...get().aiCache };
+      
       for (const word of words) {
-        if (!newCache[word.id]) {
-          console.debug(`AI Warmup: Generating for ${word.s}`);
-          const hint = await getAISmartHint(word.s, word.t);
-          if (hint) {
-            newCache[word.id] = hint;
-            updatedCount++;
-            // Update state incrementally so UI feels alive
-            set({ aiCache: { ...newCache } });
-            storageService.setItem(AI_CACHE_KEY, newCache);
+        if (!currentCache[word.id]) {
+          const info = await getAISmartHint(word.s, word.t);
+          if (info) {
+            currentCache[word.id] = info;
+            set({ aiCache: { ...currentCache } });
+            storageService.setItem(AI_CACHE_KEY, currentCache);
           } else {
-            console.debug(`AI Warmup: Failed for ${word.s}, stopping session warmup.`);
-            set({ isAIAvailable: false });
-            break;
+            // Failure might mean rate limit or key issue
+            console.debug(`AI Skip: ${word.s}`);
           }
         }
       }
@@ -219,72 +197,23 @@ export const useIslandStore = create<IslandState>((set, get) => {
 
     updateProgress: async (wordId: string, quality: FeedbackQuality) => {
       const { progress, stats, user } = get();
-      const { notify } = useNotificationStore.getState();
-      
       const currentWordProgress = progress[wordId] || { level: 1, nextReviewDate: TODAY_SIMULATED };
       const next = calculateNextProgress(currentWordProgress, quality);
-      
       const newProgress = { ...progress, [wordId]: next };
-      const newStats = {
-        ...stats,
-        total_words_learned: Object.keys(newProgress).length
-      };
-
-      set({ progress: newProgress, stats: newStats });
-      
-      const success = storageService.setItem(PROGRESS_KEY, newProgress);
-      if (!success) {
-        notify("Island Storage Full!", "error");
-      }
-      storageService.setItem(STATS_KEY, newStats);
-
-      if (user && isSupabaseConfigured && supabase) {
-        supabase.from('user_word_choices').upsert({
-          user_id: user.id,
-          word_id: wordId,
-          srs_level: next.level,
-          next_review: next.nextReviewDate
-        }).then(({ error }) => {
-          if (error) set({ syncStatus: 'error' });
-        });
-      }
-
+      set({ progress: newProgress, stats: { ...stats, total_words_learned: Object.keys(newProgress).length } });
+      storageService.setItem(PROGRESS_KEY, newProgress);
       return quality === 'forgot' || quality === 'hard';
     },
 
     addExtraWords: async (words: Word[]) => {
-      const { progress, stats, user, warmupAI } = get();
-      const { notify } = useNotificationStore.getState();
+      const { progress, stats } = get();
       const newProgress = { ...progress };
-      
-      words.forEach(w => {
-        if (!newProgress[w.id]) {
-          newProgress[w.id] = { level: 1, nextReviewDate: TODAY_SIMULATED };
-        }
-      });
-
-      const newStats = {
-        ...stats,
-        total_words_learned: Object.keys(newProgress).length
-      };
-
-      set({ progress: newProgress, stats: newStats });
+      words.forEach(w => { if (!newProgress[w.id]) newProgress[w.id] = { level: 1, nextReviewDate: TODAY_SIMULATED }; });
+      set({ progress: newProgress, stats: { ...stats, total_words_learned: Object.keys(newProgress).length } });
       storageService.setItem(PROGRESS_KEY, newProgress);
-      storageService.setItem(STATS_KEY, newStats);
-      notify(`Collected ${words.length} seeds!`, 'success');
-
-      // Start warming up AI for these specific new words
+      
+      // CRATE TRIGGER: Auto warmup AI for these new words
       get().warmupAI(words);
-
-      if (user && isSupabaseConfigured && supabase) {
-        const updates = words.map(w => ({
-          user_id: user.id,
-          word_id: w.id,
-          srs_level: 1,
-          next_review: TODAY_SIMULATED
-        }));
-        await supabase.from('user_word_choices').upsert(updates);
-      }
     },
 
     resetIsland: () => {
