@@ -1,5 +1,8 @@
+
 import React from 'react';
-import { Microscope, BarChart3, Radio, Sparkles, Target, GraduationCap, History, Zap, Brain, Activity, Layers, Database, Timer, BookOpenCheck, Route, Construction, Compass, Map, Info, Lightbulb, MessageSquareText, Flame, Anchor, Repeat, ShieldCheck, UserPlus, Heart, Volume2, FastForward } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Bi } from '../components/Bilingual';
+import { Microscope, BarChart3, Radio, Sparkles, Target, GraduationCap, History, Zap, Brain, Activity, Layers, Database, Timer, BookOpenCheck, Route, Construction, Compass, Map, Info, Lightbulb, MessageSquareText, Flame, Anchor, Repeat, ShieldCheck, UserPlus, Heart, Volume2, FastForward, Sprout, Sword } from 'lucide-react';
 
 export type BlogTab = 'all' | 'strategy' | 'grammar' | 'ai';
 
@@ -7,10 +10,10 @@ export interface Post {
   id: string;
   slug: string;
   category: BlogTab;
-  title: string;
-  excerpt: string;
-  description: string; // For SEO meta
-  keywords: string[]; // For SEO meta
+  title: string | { en: string; zh: string }; // Now supports bilingual objects
+  excerpt: string | { en: string; zh: string }; // Now supports bilingual objects
+  description: string; // Keep simple for SEO meta (usually English is preferred for global SEO, or can be generic)
+  keywords: string[]; 
   date: string;
   readTime: string;
   level: 'Beginner' | 'Intermediate' | 'Expert';
@@ -19,6 +22,213 @@ export interface Post {
 }
 
 export const BLOG_POSTS: Post[] = [
+  {
+    id: 'island-survival-guide-bilingual',
+    slug: 'island-survival-guide-bilingual',
+    category: 'strategy',
+    title: {
+      en: "The Island Survival Guide: How to prevent your empire from withering",
+      zh: "岛屿领主进阶指南：如何防止你的帝国荒芜？"
+    },
+    excerpt: {
+      en: "Welcome to the Island. You are not just memorizing words; you are fighting against the jungle. Here are the 3 Iron Rules of survival.",
+      zh: "欢迎来到岛屿。你不是在背单词，你是在对抗遗忘。如果不复习，你的岛屿会被丛林吞没。"
+    },
+    description: 'A comprehensive guide to the Shelly Spanish Island methodology. Learn how to use Spaced Repetition and Active Recall to master Spanish.',
+    keywords: ['Spanish learning guide', 'Island survival guide', 'spaced repetition', 'active recall', 'forgetting curve'],
+    date: 'FEB 20, 2026',
+    readTime: '5 min',
+    level: 'Beginner',
+    tags: ['Manifesto', 'Methodology'],
+    content: (
+      <div className="space-y-12 pb-20 leading-relaxed text-slate-700">
+        {/* Intro */}
+        <section className="space-y-6">
+          <div className="flex items-center gap-2 text-[#4b7d78]">
+            <Compass size={24} />
+            <span className="text-xs font-black uppercase tracking-[0.3em] opacity-80">
+              <Bi en="Onboarding" zh="入门指南" />
+            </span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-black text-[#4b7d78] uppercase tracking-tight leading-none">
+            <Bi 
+              en={<>Don't Memorize. <span className="text-[#8bc34a]">Survive.</span></>}
+              zh={<>别背诵，要<span className="text-[#8bc34a]">生存。</span></>}
+            />
+          </h2>
+          
+          <div className="space-y-4 text-lg">
+            <p className="font-medium text-slate-800">
+              <Bi 
+                en="Welcome to Shelly Spanish Island. Do not treat this app like a classroom. Treat it like a Survival Game. Your goal is simple: let your vocabulary grow wild like a tropical garden."
+                zh="欢迎来到 Shelly Spanish Island。别把它当成死板的教室，把它当成一场生存游戏。在这里，你的目标只有一个：让你的词汇量像热带雨林一样疯长。"
+              />
+            </p>
+          </div>
+
+          <div className="bg-[#f0fdf4] p-6 rounded-3xl border-l-4 border-[#8bc34a]">
+             <p className="text-sm text-[#166534] font-bold">
+               <Bi 
+                 en="Did you know? The human brain is like a jungle. If you don't maintain a path, weeds (forgetfulness) will cover it in just 3 days."
+                 zh="你知道吗？人类的大脑像一片热带雨林，如果不去维护，刚开辟的道路只需 3 天就会被杂草（遗忘）彻底覆盖。"
+               />
+             </p>
+          </div>
+        </section>
+
+        {/* Rule 1 */}
+        <section className="space-y-6">
+          <h3 className="text-2xl font-black text-[#4b7d78] uppercase tracking-tight flex items-center gap-3">
+            <Sword className="text-[#ff7b72]" /> 
+            <Bi 
+              en="Rule 1: Fight the Jungle"
+              zh="铁律一：抵抗“丛林吞噬”"
+            />
+          </h3>
+          
+          <div className="space-y-4">
+            <p>
+              <Bi 
+                en={<>See that green <strong>"Water Garden"</strong> button on the home screen? That is your most important defense. Our underground system (SRS Algorithm) calculates exactly when a word is about to wither.</>}
+                zh={<>看到主页上那个绿色的 <strong>"Water Garden" (浇水)</strong> 按钮了吗？它是你最重要的防御工事。岛屿的地下系统（SRS算法）精准计算着每一个单词的“枯萎时间”。</>}
+              />
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div className="bg-white p-5 rounded-2xl border-2 border-[#e0d9b4] shadow-sm">
+                <p className="text-xs font-black text-[#ffa600] uppercase mb-2">
+                  <Bi en="The Consequence" zh="后果" />
+                </p>
+                <p className="text-sm font-bold text-slate-700">
+                  <Bi 
+                    en="If you ignore it, the plant dies. You have to re-learn it from scratch (double the effort)."
+                    zh="如果你忽略它，单词就会“枯死”。下次再见到它，你不仅要重新学，还得花双倍的精力。"
+                  />
+                </p>
+             </div>
+             <div className="bg-[#fff3e0] p-5 rounded-2xl border-2 border-[#ffcc80] shadow-sm">
+                <p className="text-xs font-black text-[#f57c00] uppercase mb-2">
+                  <Bi en="The Action" zh="行动指令" />
+                </p>
+                <p className="text-sm font-bold text-[#e65100]">
+                  <Bi 
+                    en="Always 'Water' before you 'Plant'. Protect your territory first."
+                    zh="每天登录第一件事，先消灭所有待浇水的植物，再去开垦新地。保住江山，比打江山更重要。"
+                  />
+                </p>
+             </div>
+          </div>
+        </section>
+
+        {/* Rule 2 */}
+        <section className="space-y-6">
+          <h3 className="text-2xl font-black text-[#4b7d78] uppercase tracking-tight flex items-center gap-3">
+            <Sprout className="text-[#8bc34a]" /> 
+            <Bi 
+              en="Rule 2: Daily Expansion"
+              zh="铁律二：每日拓荒"
+            />
+          </h3>
+          
+          <div className="space-y-4">
+            <p>
+              <Bi 
+                en={<>Once your garden is safe, click <strong>"Start Planting"</strong>. The system prepares 20 high-value seeds for you daily. Do not be greedy. 20 words a day for 30 days is 600 words—enough to survive on the island.</>}
+                zh={<>当你的花园安全后，点击 <strong>"Start Planting"</strong>。系统每天为你准备了 20 颗高价值种子。不要贪多。每天 20 个，坚持一个月就是 600 个——这足够你在岛上进行基本的生存对话了。</>}
+              />
+            </p>
+          </div>
+
+          <div className="bg-slate-50 p-6 rounded-3xl border-dashed border-2 border-slate-300">
+             <div className="flex gap-4 items-start">
+                <div className="bg-[#ffa600] text-white p-2 rounded-lg shrink-0">
+                   <FastForward size={20} />
+                </div>
+                <div>
+                   <h4 className="font-black text-slate-700 uppercase">
+                     <Bi en="The Supply Crate" zh="关于补给箱 (Supply Crate)" />
+                   </h4>
+                   <p className="text-sm mt-1 text-slate-600">
+                     <Bi 
+                       en="If you are a hardcore explorer, look for the Supply Crate. Items inside have VIP access and bypass your daily limit."
+                       zh="如果你是精力旺盛的探险家，去寻找 Supply Crate。里面的物资拥有 VIP 通行证，无视每日限额，只要你敢点，我们就敢给。"
+                     />
+                   </p>
+                </div>
+             </div>
+          </div>
+        </section>
+
+        {/* Rule 3 */}
+        <section className="space-y-6">
+          <h3 className="text-2xl font-black text-[#4b7d78] uppercase tracking-tight flex items-center gap-3">
+            <Target className="text-[#0288d1]" /> 
+            <Bi 
+              en="Rule 3: Think Like a Hunter"
+              zh="铁律三：像猎人一样思考"
+            />
+          </h3>
+          
+          <div className="space-y-4">
+            <p>
+              <Bi 
+                en={<>You will notice the word cards are folded by default. This is not for aesthetics; it is a trap. It forces you to <strong>Active Recall</strong>.</>}
+                zh={<>你会发现单词卡片默认是折叠的。这不是为了美观，这是一个陷阱。它逼迫你进行<strong>“主动回忆” (Active Recall)</strong>。不要急着看答案，逼自己去回想。</>}
+              />
+            </p>
+          </div>
+
+          <div className="bg-[#e1f5fe] p-8 rounded-[3rem] space-y-4">
+             <h4 className="font-black text-[#01579b] uppercase text-center mb-4">
+               <Bi en="The Tactical Protocol" zh="战术动作 (The Tactical Protocol)" />
+             </h4>
+             
+             <div className="flex flex-col gap-4">
+                <div className="flex gap-4 items-center">
+                   <div className="w-8 h-8 rounded-full bg-white text-[#0288d1] flex items-center justify-center font-black shadow-sm">1</div>
+                   <div className="flex-1">
+                      <p className="font-bold text-[#01579b] text-sm">
+                        <Bi en="Can't remember? → Tap 'Memory Seed'" zh="🤯 想不起来？ -> 召唤 Memory Seed" />
+                      </p>
+                      <p className="text-xs text-[#0288d1]/70">
+                        <Bi 
+                          en="Let AI give you a crazy story to hook the word in your brain." 
+                          zh="让 AI 给你一个“记忆挂钩”（比如一个离谱的故事）。把单词像钉子一样钉进脑子里。" 
+                        />
+                      </p>
+                   </div>
+                </div>
+                <div className="flex gap-4 items-center">
+                   <div className="w-8 h-8 rounded-full bg-white text-[#0288d1] flex items-center justify-center font-black shadow-sm">2</div>
+                   <div className="flex-1">
+                      <p className="font-bold text-[#01579b] text-sm">
+                        <Bi en="Too easy? → Tap 'Challenge'" zh="😏 觉得稳了？ -> 发起 Challenge" />
+                      </p>
+                      <p className="text-xs text-[#0288d1]/70">
+                        <Bi 
+                          en="Write a sentence. Move from 'Passive Reading' to 'Active Survival'." 
+                          zh="别光看，试着造句。从“看得懂”到“能生存”，中间只差这一次主动出击。" 
+                        />
+                      </p>
+                   </div>
+                </div>
+             </div>
+          </div>
+        </section>
+
+        {/* Outro */}
+        <section className="border-t-4 border-dashed border-[#e0d9b4] pt-8 text-center">
+           <p className="font-black text-[#4b7d78] text-xl uppercase mb-2">
+             <Bi en="Are you ready to guard your territory?" zh="准备好守护你的领土了吗？" />
+           </p>
+           <Link to="/" className="inline-block bg-[#ffa600] text-white px-8 py-3 rounded-full font-black uppercase tracking-widest shadow-lg animate-pulse hover:bg-[#ffb74d] transition-colors">
+              <Bi en="Go Water Now!" zh="去浇水吧！" />
+           </Link>
+        </section>
+      </div>
+    )
+  },
   {
     id: 'neuroscience-fluency',
     slug: 'stop-translating-spanish-neuroscience',

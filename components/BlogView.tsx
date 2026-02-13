@@ -1,20 +1,19 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  Newspaper, Calendar, ArrowRight, Clock, 
+  Newspaper, Clock, 
   Compass, BrainCircuit, Target, 
-  ArrowLeft, Share2, Search, Sparkles, 
-  Flame, Copy, Check,
-  Microscope, BarChart3, Radio, Zap, Users, GraduationCap, History
+  ArrowLeft, Share2, Search, Check, ArrowRight
 } from 'lucide-react';
 import { playClick, playSwish, playSparkle } from '../utils/sfx';
 import { useTranslation } from 'react-i18next';
-import { BLOG_POSTS, BlogTab, Post } from '../data/blogPosts';
+import { BLOG_POSTS, BlogTab } from '../data/blogPosts';
+import { getBilingualText } from './Bilingual'; // Import helper
 import SEO, { BreadcrumbItem } from './SEO';
-import { useIslandStore } from '../store/useIslandStore';
 
 const BlogView: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { slug } = useParams();
   const navigate = useNavigate();
   
@@ -23,14 +22,23 @@ const BlogView: React.FC = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
 
+  // Helper to resolve text based on current language
+  const resolveText = (content: string | { en: string; zh: string }) => {
+    return getBilingualText(content, i18n.language);
+  };
+
   const filteredPosts = useMemo(() => {
     return BLOG_POSTS.filter(post => {
       const matchesTab = activeTab === 'all' || post.category === activeTab;
-      const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                           post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const title = resolveText(post.title).toLowerCase();
+      const excerpt = resolveText(post.excerpt).toLowerCase();
+      const query = searchQuery.toLowerCase();
+
+      const matchesSearch = title.includes(query) || excerpt.includes(query);
       return matchesTab && matchesSearch;
     });
-  }, [activeTab, searchQuery]);
+  }, [activeTab, searchQuery, i18n.language]);
 
   const selectedPost = useMemo(() => 
     BLOG_POSTS.find(p => p.slug === slug), 
@@ -64,12 +72,14 @@ const BlogView: React.FC = () => {
 
   // --- Article View ---
   if (selectedPost) {
+    const displayTitle = resolveText(selectedPost.title);
+    const displayExcerpt = resolveText(selectedPost.excerpt);
     const articleUrl = `https://ssisland.space/stories/${selectedPost.slug}`;
     
     const blogPostingJsonLd = {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
-      "headline": selectedPost.title,
+      "headline": displayTitle,
       "description": selectedPost.description,
       "datePublished": selectedPost.date,
       "author": { "@type": "Person", "name": "SSI Editorial" },
@@ -80,7 +90,7 @@ const BlogView: React.FC = () => {
     const breadcrumbs: BreadcrumbItem[] = [
       { name: 'Home', item: '/' },
       { name: 'Stories', item: '/stories' },
-      { name: selectedPost.title, item: `/stories/${selectedPost.slug}` }
+      { name: displayTitle, item: `/stories/${selectedPost.slug}` }
     ];
 
     // Conditional Extra Schema
@@ -103,7 +113,7 @@ const BlogView: React.FC = () => {
     return (
       <article className="max-w-2xl mx-auto animate-fadeIn pb-32 px-2" role="main">
         <SEO 
-          title={selectedPost.title}
+          title={displayTitle}
           description={selectedPost.description}
           keywords={selectedPost.keywords}
           url={articleUrl}
@@ -135,7 +145,7 @@ const BlogView: React.FC = () => {
             </time>
           </div>
           <h1 className="text-2xl md:text-5xl font-black text-[#4b7d78] tracking-tight leading-tight uppercase">
-            {selectedPost.title}
+            {displayTitle}
           </h1>
           <div className="flex items-center gap-4 text-[#8d99ae] text-[8px] font-black uppercase tracking-widest border-t border-dashed border-slate-100 pt-4">
              <div className="flex items-center gap-1.5">
@@ -246,10 +256,10 @@ const BlogView: React.FC = () => {
 
                <div className="space-y-1.5">
                   <h2 className="text-lg md:text-2xl font-black text-[#4b7d78] group-hover:text-[#ffa600] transition-colors leading-tight tracking-tight uppercase line-clamp-2">
-                     {post.title}
+                     {resolveText(post.title)}
                   </h2>
                   <p className="text-slate-400 font-bold text-[10px] md:text-sm leading-snug line-clamp-2">
-                     {post.excerpt}
+                     {resolveText(post.excerpt)}
                   </p>
                </div>
 

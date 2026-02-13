@@ -40,38 +40,43 @@ export const useSRS = () => {
   }, [store.progress, todayTimestamp, store.wordMap]);
 
   const newWordsForToday = useMemo<Word[]>(() => {
-    // 1. Calculate how many words are left to reach the daily goal
-    const wordsNeeded = DAILY_GOAL - learnedToday.length;
-    if (wordsNeeded <= 0) return [];
-
-    // 2. First, retrieve any Level 1 words (In Progress / "Leftovers")
+    // 1. Priority: Active Level 1 words (Manual adds, Crate items, Leftovers)
+    // These should bypass the Daily Goal limit because the user explicitly acquired them 
+    // or left them unfinished.
     const activeManualWords = (Object.entries(store.progress) as [string, SRSData][])
       .filter(([_, data]) => data.level === 1)
       .map(([id]) => store.wordMap.get(id))
       .filter((w): w is Word => w !== undefined);
 
-    let sessionQueue = [...activeManualWords];
-
-    // 3. If "Leftovers" aren't enough to fill the session, fetch new words from packs
-    if (sessionQueue.length < wordsNeeded) {
-        for (const dayPack of VOCABULARY_DATA) {
-            // Find words in this pack that have NO progress record yet
-            const unlearnedInPack = dayPack.words.filter(w => !store.progress[w.id]);
-            
-            // Calculate space left in the current session queue
-            const spaceLeft = wordsNeeded - sessionQueue.length;
-            
-            if (unlearnedInPack.length > 0) {
-                // Add as many as needed/available
-                sessionQueue.push(...unlearnedInPack.slice(0, spaceLeft));
-            }
-
-            if (sessionQueue.length >= wordsNeeded) break;
-        }
+    // If we have active words, serve them immediately (up to a reasonable session limit like 20)
+    if (activeManualWords.length > 0) {
+        return activeManualWords.slice(0, 20);
     }
 
-    // 4. Return exactly enough to hit the goal (or whatever we found)
-    return sessionQueue.slice(0, wordsNeeded);
+    // 2. Only if no active words, check Daily Goal for auto-filling new words from packs
+    const wordsNeeded = DAILY_GOAL - learnedToday.length;
+    if (wordsNeeded <= 0) return [];
+
+    let sessionQueue: Word[] = [];
+
+    // 3. Fetch new words from packs to fill the quota
+    for (const dayPack of VOCABULARY_DATA) {
+        // Find words in this pack that have NO progress record yet
+        const unlearnedInPack = dayPack.words.filter(w => !store.progress[w.id]);
+        
+        // Calculate space left in the current session queue
+        const spaceLeft = wordsNeeded - sessionQueue.length;
+        
+        if (unlearnedInPack.length > 0) {
+            // Add as many as needed/available
+            sessionQueue.push(...unlearnedInPack.slice(0, spaceLeft));
+        }
+
+        if (sessionQueue.length >= wordsNeeded) break;
+    }
+
+    // 4. Return exactly enough to hit the goal
+    return sessionQueue;
   }, [store.progress, store.wordMap, learnedToday]);
 
   const unlearnedExtraWords = useMemo<Word[]>(() => {
