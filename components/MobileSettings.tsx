@@ -6,12 +6,13 @@ import { UserStats } from '../types';
 import { 
   LogOut, Volume2, VolumeX, RotateCcw, 
   Leaf, Settings, Heart,
-  Flame, Sprout, ShieldCheck, ChevronRight, Ticket, Speaker, Trash2, Trophy, ShieldAlert, Fingerprint, Cloud, TreePalm
+  Flame, Sprout, ShieldCheck, ChevronRight, Ticket, Speaker, Trash2, Trophy, ShieldAlert, Fingerprint, Cloud, TreePalm, Crown, Star, Sparkles
 } from 'lucide-react';
 import { toggleMute, getMuteState, playClick, playSparkle } from '../utils/sfx';
 import { playAudio } from '../utils/audio';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
+import { useIslandStore } from '../store/useIslandStore';
 
 interface MobileSettingsProps {
   user: User | null;
@@ -33,6 +34,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
   onShareAchievement
 }) => {
   const { t } = useTranslation();
+  const { profile } = useIslandStore();
   const [isMuted, setIsMuted] = useState(getMuteState());
   
   const handleToggleMute = () => {
@@ -70,28 +72,52 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
     }
   };
 
+  const isPremium = profile?.is_premium;
+
   const passportStyles = useMemo(() => {
+    if (user && isPremium) {
+      return {
+        bg: 'bg-gradient-to-br from-slate-800 via-slate-900 to-black',
+        accent: 'bg-[#ffd740]', // Gold
+        border: 'border-[#ffd740]',
+        text: 'text-white',
+        status: 'SSI SUPPORTER',
+        stamp: 'SUPPORTER',
+        label: 'Premium Passport',
+        icon: Crown,
+        iconColor: 'text-[#ffd740]',
+        shimmer: true
+      };
+    }
     if (user) {
       return {
-        bg: 'bg-[#2d4a47]',
-        accent: 'bg-[#78c850]',
+        bg: 'bg-[#2d4a47]', // Deep Teal
+        accent: 'bg-[#78c850]', // Green
         border: 'border-[#4b7d78]',
         text: 'text-white',
         status: t('ui.passport.citizen'),
-        stamp: 'SSI CITIZEN',
-        label: t('ui.passport.official_passport')
+        stamp: 'CITIZEN',
+        label: t('ui.passport.official_passport'),
+        icon: Leaf,
+        iconColor: 'text-[#78c850]',
+        shimmer: false
       };
     }
     return {
-      bg: 'bg-[#e0d9b4]',
-      accent: 'bg-[#ff7b72]',
+      bg: 'bg-[#e0d9b4]', // Beige
+      accent: 'bg-[#ff7b72]', // Red
       border: 'border-[#cbbfa1]',
       text: 'text-[#4b7d78]',
       status: t('ui.passport.unverified'),
       stamp: 'GUEST',
-      label: t('ui.passport.temp_pass')
+      label: t('ui.passport.temp_pass'),
+      icon: Fingerprint,
+      iconColor: 'text-[#ff7b72]',
+      shimmer: false
     };
-  }, [user, t]);
+  }, [user, isPremium, t]);
+
+  const PassportIcon = passportStyles.icon;
 
   return (
     <div className="space-y-8 animate-fadeIn pb-12 relative">
@@ -111,28 +137,37 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
 
       {/* Passport Card */}
       <div className="relative group perspective-1000 z-10">
-         <div className={`absolute -top-3 left-8 z-20 ${user ? 'bg-[#ffa600]' : 'bg-[#8d99ae]'} text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 border-white shadow-md flex items-center gap-1.5`}>
-            <Ticket size={12} /> {passportStyles.label}
+         <div className={`absolute -top-3 left-8 z-20 ${isPremium ? 'bg-[#ffd740] text-slate-900 border-[#ff6f00]' : (user ? 'bg-[#78c850] text-white border-white' : 'bg-[#8d99ae] text-white border-white')} px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 shadow-md flex items-center gap-1.5`}>
+            {isPremium ? <Crown size={12} /> : <Ticket size={12} />} 
+            {passportStyles.label}
          </div>
 
-         <div className={`${passportStyles.bg} rounded-[3rem] p-8 shadow-[0_20px_0_rgba(0,0,0,0.1)] border-4 ${passportStyles.border} ${passportStyles.text} relative overflow-hidden transition-all duration-500 animate-float-small`}>
-            <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }} />
+         <div className={`${passportStyles.bg} rounded-[3rem] p-8 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.4)] border-4 ${passportStyles.border} ${passportStyles.text} relative overflow-hidden transition-all duration-500 animate-float-small`}>
+            
+            {/* Holographic Shimmer for Premium */}
+            {passportStyles.shimmer && (
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-30 animate-pulse pointer-events-none" style={{ backgroundSize: '200% 200%' }} />
+            )}
+            
+            {/* Texture */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }} />
             
             <div className="flex items-start justify-between relative z-10 mb-8">
                <div className="space-y-1">
-                  <h3 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-2 truncate pr-16">
+                  <h3 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-2 truncate pr-4">
                      {displayName}
+                     {isPremium && <Star size={20} className="text-[#ffd740] fill-current animate-spin-slow" />}
                   </h3>
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${user ? 'bg-[#78c850] text-[#2d4a47]' : 'bg-white/40 text-[#4b7d78]'}`}>
+                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${isPremium ? 'bg-[#ffd740] text-slate-900' : (user ? 'bg-[#78c850] text-[#2d4a47]' : 'bg-white/40 text-[#4b7d78]')}`}>
                       {passportStyles.status}
                     </span>
                     <span className="text-[10px] font-bold opacity-60">ID: {user?.id.slice(0, 8) || 'T-800-GUEST'}</span>
                   </div>
                </div>
                
-               <div className={`w-16 h-16 rounded-2xl border-4 ${user ? 'border-white/20' : 'border-[#4b7d78]/10'} flex items-center justify-center overflow-hidden bg-white/10`}>
-                  {user ? <Leaf className="text-white fill-current animate-float" size={32} /> : <Fingerprint className="text-[#4b7d78]/20" size={32} />}
+               <div className={`w-16 h-16 rounded-2xl border-4 ${isPremium ? 'border-[#ffd740]/30 bg-white/5' : 'border-white/20 bg-white/10'} flex items-center justify-center overflow-hidden shrink-0`}>
+                  <PassportIcon className={`${passportStyles.iconColor} ${isPremium ? 'animate-pulse' : 'animate-float'} fill-current`} size={32} />
                </div>
             </div>
 
@@ -150,10 +185,10 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
             </div>
 
             <div className={`p-4 rounded-2xl flex items-center gap-4 transition-colors ${user ? 'bg-white/10' : 'bg-[#ff7b72] text-white shadow-lg shadow-rose-900/20'}`}>
-                {user ? <ShieldCheck size={20} className="text-[#78c850]" /> : <ShieldAlert size={20} className="animate-pulse" />}
+                {user ? <ShieldCheck size={20} className={isPremium ? "text-[#ffd740]" : "text-[#78c850]"} /> : <ShieldAlert size={20} className="animate-pulse" />}
                 <div className="flex-1">
                   <p className="text-[10px] font-black leading-tight uppercase">
-                    {user ? t('ui.passport.citizen_desc') : t('ui.passport.verify_warning')}
+                    {user ? (isPremium ? "Cloud Sync & AI Active" : t('ui.passport.citizen_desc')) : t('ui.passport.verify_warning')}
                   </p>
                 </div>
                 {!user && (
@@ -163,8 +198,11 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
                 )}
             </div>
 
-            <div className={`absolute bottom-4 right-4 text-[12px] font-black border-[3px] rounded-lg px-2 py-1 rotate-[25deg] opacity-20 ${user ? 'border-[#78c850] text-[#78c850]' : 'border-rose-500 text-rose-500'}`}>
-               {passportStyles.stamp}
+            {/* STAMP */}
+            <div className={`absolute bottom-6 right-6 pointer-events-none transform rotate-[-15deg]`}>
+               <div className={`border-[4px] border-dashed ${isPremium ? 'border-[#ffd740] text-[#ffd740]' : (user ? 'border-[#78c850] text-[#78c850]' : 'border-rose-500 text-rose-500')} rounded-xl px-3 py-2 opacity-30`}>
+                  <span className="text-xl font-black uppercase tracking-widest">{passportStyles.stamp}</span>
+               </div>
             </div>
          </div>
       </div>

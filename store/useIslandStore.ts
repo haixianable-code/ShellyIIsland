@@ -12,10 +12,13 @@ import { getAISmartHint, AIWordInfo } from '../services/geminiService';
 const PROGRESS_KEY = 'hola_word_srs_v4_offline'; 
 const STATS_KEY = 'hola_user_stats_v1_offline';
 const AI_CACHE_KEY = 'ssi_ai_content_v1';
+const AI_USAGE_KEY = 'ssi_ai_usage_v1';
+const MNEMONIC_USAGE_KEY = 'ssi_mnemonic_usage_v1';
 const DAILY_GOAL_VALUE = 20;
+const DAILY_AI_LIMIT = 3;
+const DAILY_MNEMONIC_LIMIT = 5;
 
 // Replace this with your actual Variant ID from Lemon Squeezy Dashboard
-// Example: 123456
 const LEMON_VARIANT_ID = 'YOUR_VARIANT_ID_HERE'; 
 
 const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
@@ -31,6 +34,8 @@ interface IslandState {
   stats: UserStats;
   profile: UserProfile | null;
   aiCache: Record<string, AIWordInfo>;
+  aiUsage: { date: string; count: number }; // Track challenge usage
+  mnemonicUsage: { date: string; count: number }; // Track mnemonic reveals
   isAIAvailable: boolean; 
   user: User | null;
   syncStatus: 'idle' | 'syncing' | 'synced' | 'error';
@@ -52,6 +57,8 @@ interface IslandState {
   updateProgress: (wordId: string, quality: FeedbackQuality) => Promise<boolean>;
   addExtraWords: (words: Word[]) => Promise<void>;
   warmupAI: (words: Word[], isBackground?: boolean) => Promise<void>;
+  consumeAIToken: () => boolean; // Returns true if allowed
+  consumeMnemonicToken: () => boolean; // Returns true if allowed
   resetIsland: () => void;
   startSubscriptionCheckout: () => Promise<void>;
 }
@@ -85,6 +92,8 @@ export const useIslandStore = create<IslandState>((set, get) => {
     stats: { current_streak: 0, last_activity_date: TODAY_SIMULATED, total_words_learned: 0 },
     profile: null,
     aiCache: {},
+    aiUsage: { date: TODAY_SIMULATED, count: 0 },
+    mnemonicUsage: { date: TODAY_SIMULATED, count: 0 },
     isAIAvailable: false, 
     user: null,
     syncStatus: 'idle',
@@ -108,6 +117,20 @@ export const useIslandStore = create<IslandState>((set, get) => {
       try {
         storageService.initialize();
         const savedAI = storageService.getItem<Record<string, AIWordInfo>>(AI_CACHE_KEY, {});
+        
+        // Initialize Usage tracking
+        let localAiUsage = storageService.getItem(AI_USAGE_KEY, { date: TODAY_SIMULATED, count: 0 });
+        if (localAiUsage.date !== TODAY_SIMULATED) {
+            localAiUsage = { date: TODAY_SIMULATED, count: 0 };
+            storageService.setItem(AI_USAGE_KEY, localAiUsage);
+        }
+
+        let localMnemonicUsage = storageService.getItem(MNEMONIC_USAGE_KEY, { date: TODAY_SIMULATED, count: 0 });
+        if (localMnemonicUsage.date !== TODAY_SIMULATED) {
+            localMnemonicUsage = { date: TODAY_SIMULATED, count: 0 };
+            storageService.setItem(MNEMONIC_USAGE_KEY, localMnemonicUsage);
+        }
+
         let localProgress = storageService.getItem<ProgressMap>(PROGRESS_KEY, {}, ProgressMapSchema);
         let localStats = storageService.getItem<UserStats>(STATS_KEY, {
           current_streak: 0, last_activity_date: TODAY_SIMULATED, total_words_learned: 0
@@ -154,6 +177,8 @@ export const useIslandStore = create<IslandState>((set, get) => {
           progress: localProgress, 
           stats: localStats, 
           aiCache: savedAI,
+          aiUsage: localAiUsage,
+          mnemonicUsage: localMnemonicUsage,
           loading: false,
           isAIAvailable: !!process.env.API_KEY,
           syncStatus: user ? 'synced' : 'idle'
@@ -220,8 +245,52 @@ export const useIslandStore = create<IslandState>((set, get) => {
       return quality === 'forgot' || quality === 'hard';
     },
 
+    consumeAIToken: () => {
+        const { aiUsage, profile } = get();
+        if (profile?.is_premium) return true;
+
+        if (aiUsage.date !== TODAY_SIMULATED) {
+            const newUsage = { date: TODAY_SIMULATED, count: 1 };
+            set({ aiUsage: newUsage });
+            storageService.setItem(AI_USAGE_KEY, newUsage);
+            return true;
+        }
+
+        if (aiUsage.count >= DAILY_AI_LIMIT) return false;
+
+        const newUsage = { ...aiUsage, count: aiUsage.count + 1 };
+        set({ aiUsage: newUsage });
+        storageService.setItem(AI_USAGE_KEY, newUsage);
+        return true;
+    },
+
+    consumeMnemonicToken: () => {
+        const { mnemonicUsage, profile } = get();
+        if (profile?.is_premium) return true;
+
+        if (mnemonicUsage.date !== TODAY_SIMULATED) {
+            const newUsage = { date: TODAY_SIMULATED, count: 1 };
+            set({ mnemonicUsage: newUsage });
+            storageService.setItem(MNEMONIC_USAGE_KEY, newUsage);
+            return true;
+        }
+
+        if (mnemonicUsage.count >= DAILY_MNEMONIC_LIMIT) return false;
+
+        const newUsage = { ...mnemonicUsage, count: mnemonicUsage.count + 1 };
+        set({ mnemonicUsage: newUsage });
+        storageService.setItem(MNEMONIC_USAGE_KEY, newUsage);
+        return true;
+    },
+
     warmupAI: async (words, isBackground = false) => {
         const apiKey = process.env.API_KEY;
+        const { profile } = get();
+        
+        // 1. If background warmup, ONLY do it for Premium users to save costs.
+        // Free users must manually trigger "Reveal" to fetch.
+        if (isBackground && !profile?.is_premium) return;
+
         if (!apiKey || words.length === 0) return;
         const targets = words.filter(w => !get().aiCache[w.id]);
         if (targets.length === 0) return;
@@ -275,7 +344,7 @@ export const useIslandStore = create<IslandState>((set, get) => {
 
     startSubscriptionCheckout: async () => {
       const { user } = get();
-      if (!user) return; // Should allow guest to signup first, but let's assume UI handles it
+      if (!user) return; 
       
       try {
         const res = await fetch('/api/checkout', {
@@ -290,7 +359,7 @@ export const useIslandStore = create<IslandState>((set, get) => {
         
         const data = await res.json();
         if (data.url) {
-          window.location.href = data.url; // Redirect to payment
+          window.location.href = data.url; 
         } else {
           console.error("Checkout failed", data);
           alert("Could not start checkout. Please try again.");

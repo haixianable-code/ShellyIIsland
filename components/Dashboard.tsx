@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Word, UserStats } from '../types';
 import { ISLAND_SLANG, VOCABULARY_DATA } from '../constants';
@@ -22,9 +23,11 @@ import {
   Moon,
   List,
   Flame,
-  Cloud
+  Cloud,
+  Infinity
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useIslandStore } from '../store/useIslandStore';
 
 interface DashboardProps {
   progress: any;
@@ -57,6 +60,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   onViewAllHarvest
 }) => {
   const { t } = useTranslation();
+  const { profile } = useIslandStore();
   
   const [slangIndex, setSlangIndex] = useState(() => Math.floor(Math.random() * ISLAND_SLANG.length));
   const [isRotating, setIsRotating] = useState(false);
@@ -91,9 +95,12 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   const currentSlang = ISLAND_SLANG[slangIndex];
   const isSpicy = (currentSlang as any).spicy;
+  const isPremium = profile?.is_premium;
   const DAILY_CRATE_LIMIT = 3;
-  const canGetPack = newWordsAvailable === 0 && unlearnedExtraWords.length > 0 && crateTracker.count < DAILY_CRATE_LIMIT;
-  const isDailyGoalMet = newWordsAvailable === 0 && (unlearnedExtraWords.length === 0 || crateTracker.count >= DAILY_CRATE_LIMIT);
+  
+  // Premium users ignore the crate limit
+  const canGetPack = (newWordsAvailable === 0 && unlearnedExtraWords.length > 0) && (isPremium || crateTracker.count < DAILY_CRATE_LIMIT);
+  const isDailyGoalMet = newWordsAvailable === 0 && (unlearnedExtraWords.length === 0 || (!isPremium && crateTracker.count >= DAILY_CRATE_LIMIT));
 
   // --- Structured Data ---
   const webAppJsonLd = {
@@ -165,14 +172,18 @@ const Dashboard: React.FC<DashboardProps> = ({
         {canGetPack ? (
            <button 
              onClick={() => setShowCrateModal(true)} 
-             aria-label={`Supply crate available. Used ${crateTracker.count} of ${DAILY_CRATE_LIMIT} today.`}
-             className="bg-[#ffa600] p-4 md:px-6 md:py-8 rounded-3xl shadow-[0_6px_0_#e65100] border-4 border-white flex flex-col items-center justify-center relative overflow-hidden group hover:bg-[#ffb74d] transition-all bubble-button h-full min-h-[140px]"
+             aria-label={`Supply crate available.`}
+             className={`bg-[#ffa600] p-4 md:px-6 md:py-8 rounded-3xl shadow-[0_6px_0_#e65100] border-4 ${isPremium ? 'border-[#ffd740]' : 'border-white'} flex flex-col items-center justify-center relative overflow-hidden group hover:bg-[#ffb74d] transition-all bubble-button h-full min-h-[140px]`}
            >
              <div className="bg-white/30 p-2.5 md:p-3.5 rounded-xl shadow-sm mb-2 border-2 border-white/50 z-10" aria-hidden="true">
                <PackagePlus className="text-white fill-current" size={20} />
              </div>
              <span className="text-base md:text-xl font-black text-white z-10 uppercase tracking-tight leading-none text-center">{t('ui.dashboard.open_crate')}</span>
-             <div className="absolute top-2 right-2 bg-white/20 px-2 py-0.5 rounded-lg text-[8px] font-black text-white border border-white/20">{crateTracker.count}/{DAILY_CRATE_LIMIT}</div>
+             
+             {/* Limit / Premium Badge */}
+             <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-lg text-[8px] font-black border flex items-center gap-1 ${isPremium ? 'bg-[#ffd740] text-[#ff6f00] border-[#ff6f00]/20' : 'bg-white/20 text-white border-white/20'}`}>
+               {isPremium ? <Infinity size={10} /> : `${crateTracker.count}/${DAILY_CRATE_LIMIT}`}
+             </div>
            </button>
         ) : (
           <div className={`p-4 md:px-6 md:py-8 rounded-3xl shadow-[0_6px_0_rgba(0,0,0,0.05)] border-4 flex flex-col items-center justify-center relative overflow-hidden h-full min-h-[140px] ${isDailyGoalMet ? 'bg-[#3949ab] border-[#5c6bc0]' : 'bg-white border-[#f0f0f0]'}`}>

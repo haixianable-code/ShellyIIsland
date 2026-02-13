@@ -1,12 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
 import { Word } from '../types';
 import { playAudio } from '../utils/audio';
 import { getTypeTheme, getPosLabel } from '../utils/theme';
-import { X, Volume2, Sparkles, AudioLines, BookOpen, PenTool, ArrowLeftRight, Map, Star, BrainCircuit, Loader2, Send, MessageSquareText, ThumbsUp, Heart } from 'lucide-react';
+import { X, Volume2, Sparkles, AudioLines, BookOpen, PenTool, ArrowLeftRight, Map, Star, BrainCircuit, Loader2, Send, MessageSquareText, ThumbsUp, Heart, Lock, Crown, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { playClick, playSparkle, playSwish } from '../utils/sfx';
 import { useIslandStore } from '../store/useIslandStore';
-import { getAIChallengeFeedback } from '../services/geminiService';
+import { getAIChallengeFeedback, getAISmartHint } from '../services/geminiService';
+import { storageService } from '../services/storageService';
+
+const AI_CACHE_KEY = 'ssi_ai_content_v1';
 
 interface WordDetailModalProps {
   word: Word;
@@ -15,7 +19,7 @@ interface WordDetailModalProps {
 
 const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
   const { t } = useTranslation();
-  const { aiCache, isAIAvailable } = useIslandStore();
+  const { aiCache, consumeAIToken, consumeMnemonicToken, aiUsage, mnemonicUsage, profile, openModal } = useIslandStore();
   const [activeText, setActiveText] = useState<string | null>(null);
   
   // AI Challenge State
@@ -23,9 +27,20 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
   const [aiFeedback, setAiFeedback] = useState<{recast?: string, note?: string} | null>(null);
   const [isAiProcessing, setIsAiProcessing] = useState(false);
 
+  // Mnemonic State (Soft Lock)
+  const isPremium = profile?.is_premium;
+  const [isMnemonicRevealed, setIsMnemonicRevealed] = useState(!!isPremium); // Premium users see it instantly
+  const [isMnemonicLoading, setIsMnemonicLoading] = useState(false);
+
   const theme = getTypeTheme(word);
   const conjugationList = word.forms ? word.forms.split(', ') : [];
   const aiInfo = aiCache[word.id];
+  
+  // Usage tracking
+  const challengeUsesLeft = isPremium ? 999 : Math.max(0, 3 - aiUsage.count);
+  const isChallengeLocked = !isPremium && challengeUsesLeft === 0;
+  
+  const mnemonicUsesLeft = isPremium ? 999 : Math.max(0, 5 - mnemonicUsage.count);
 
   const pronouns = word.type === 'verb' 
     ? [t('ui.grammar.yo'), t('ui.grammar.tu'), t('ui.grammar.el'), t('ui.grammar.nos'), t('ui.grammar.vos'), t('ui.grammar.ellos')] 
@@ -40,6 +55,23 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
     };
   }, []);
 
+  // Auto-fetch for Premium if missing (since warmup might not have run yet)
+  useEffect(() => {
+    if (isPremium && !aiInfo && !isMnemonicLoading) {
+       setIsMnemonicLoading(true);
+       getAISmartHint(word.s, word.t).then(info => {
+          if (info) {
+             useIslandStore.setState(state => {
+                const updated = { ...state.aiCache, [word.id]: info };
+                storageService.setItem(AI_CACHE_KEY, updated);
+                return { aiCache: updated };
+             });
+          }
+          setIsMnemonicLoading(false);
+       });
+    }
+  }, [isPremium, aiInfo, word.id]);
+
   const handleSpeak = (e: React.MouseEvent, text: string) => {
     e.stopPropagation();
     setActiveText(text);
@@ -47,10 +79,44 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
     try { playClick(); } catch (err) {}
   };
 
+  const handleRevealMnemonic = async () => {
+    if (isMnemonicRevealed && aiInfo) return; // Already revealed and loaded
+    playClick();
+
+    if (!consumeMnemonicToken()) {
+        openModal('SUBSCRIPTION');
+        return;
+    }
+
+    setIsMnemonicRevealed(true);
+    
+    // If not cached, fetch it
+    if (!aiInfo) {
+        setIsMnemonicLoading(true);
+        const info = await getAISmartHint(word.s, word.t);
+        if (info) {
+            useIslandStore.setState(state => {
+                const updated = { ...state.aiCache, [word.id]: info };
+                storageService.setItem(AI_CACHE_KEY, updated);
+                return { aiCache: updated };
+            });
+            playSparkle();
+        }
+        setIsMnemonicLoading(false);
+    } else {
+        playSparkle();
+    }
+  };
+
   const handleAiChallenge = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Allow challenge if we have backend connectivity (isAIAvailable check logic might need update in store, but assuming true for now if deployed)
     if (!userInput.trim() || isAiProcessing) return;
+
+    // 1. Check Limits before API Call
+    if (!consumeAIToken()) {
+        openModal('SUBSCRIPTION'); // Trigger upgrade flow
+        return;
+    }
 
     setIsAiProcessing(true);
     setAiFeedback(null);
@@ -108,32 +174,57 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
 
                 {/* AI Challenge Area */}
                 <div className="space-y-4">
-                   <div className="flex items-center gap-2 px-2">
-                      <Sparkles size={16} className="text-[#ffa600]" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#4b7d78]">Island Challenge</span>
+                   <div className="flex items-center justify-between px-2">
+                      <div className="flex items-center gap-2">
+                        <Sparkles size={16} className="text-[#ffa600]" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#4b7d78]">Island Challenge</span>
+                      </div>
+                      {!isPremium && (
+                        <div className="text-[9px] font-black text-[#8d99ae] bg-white border border-slate-200 px-2 py-0.5 rounded-full shadow-sm">
+                           {challengeUsesLeft} Uses Left Today
+                        </div>
+                      )}
                    </div>
                    
-                   <div className="bg-white p-6 rounded-[2.5rem] border-4 border-[#e1f5fe] shadow-sm relative overflow-hidden">
+                   <div className={`bg-white p-6 rounded-[2.5rem] border-4 ${isChallengeLocked ? 'border-slate-200 bg-slate-50' : 'border-[#e1f5fe]'} shadow-sm relative overflow-hidden transition-all`}>
                       <div className="absolute right-[-20px] top-[-20px] opacity-5 rotate-12"><MessageSquareText size={120} /></div>
                       <p className="text-xs font-black text-[#0288d1] uppercase tracking-widest mb-3">Goal: Use "{word.s}" in a sentence</p>
                       
-                      <form onSubmit={handleAiChallenge} className="relative z-10 space-y-3">
-                         <div className="bg-slate-50 rounded-2xl p-4 border-2 border-dashed border-slate-200 focus-within:border-[#0288d1] transition-colors">
-                            <textarea 
-                              value={userInput}
-                              onChange={(e) => setUserInput(e.target.value)}
-                              placeholder="Yo..."
-                              className="w-full bg-transparent text-sm font-bold text-[#4b7d78] focus:outline-none placeholder:text-slate-300 min-h-[60px]"
-                            />
-                         </div>
-                         <button 
-                            type="submit"
-                            disabled={!userInput.trim() || isAiProcessing}
-                            className="w-full bg-[#0288d1] text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-[0_4px_0_#01579b] hover:bg-[#03a9f4] active:translate-y-1 disabled:opacity-30 transition-all flex items-center justify-center gap-2"
-                         >
-                            {isAiProcessing ? <Loader2 className="animate-spin" /> : <><Send size={14} /> Send to Island spirits</>}
-                         </button>
-                      </form>
+                      {isChallengeLocked ? (
+                        <div className="relative z-20 flex flex-col items-center justify-center py-6 space-y-4">
+                           <div className="bg-slate-200 p-4 rounded-full">
+                              <Lock size={32} className="text-slate-400" />
+                           </div>
+                           <div className="text-center">
+                              <p className="text-[#4b7d78] font-black text-sm uppercase">Daily Energy Depleted</p>
+                              <p className="text-[10px] text-[#8d99ae] font-bold max-w-[200px] mx-auto leading-tight mt-1">Get unlimited feedback and faster learning with SSI Supporter.</p>
+                           </div>
+                           <button 
+                             onClick={() => openModal('SUBSCRIPTION')}
+                             className="bg-gradient-to-r from-[#ffa600] to-[#ff7b72] text-white px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-md hover:scale-105 transition-transform flex items-center gap-2"
+                           >
+                             <Crown size={14} /> Unlock Now
+                           </button>
+                        </div>
+                      ) : (
+                        <form onSubmit={handleAiChallenge} className="relative z-10 space-y-3">
+                           <div className="bg-slate-50 rounded-2xl p-4 border-2 border-dashed border-slate-200 focus-within:border-[#0288d1] transition-colors">
+                              <textarea 
+                                value={userInput}
+                                onChange={(e) => setUserInput(e.target.value)}
+                                placeholder="Yo..."
+                                className="w-full bg-transparent text-sm font-bold text-[#4b7d78] focus:outline-none placeholder:text-slate-300 min-h-[60px]"
+                              />
+                           </div>
+                           <button 
+                              type="submit"
+                              disabled={!userInput.trim() || isAiProcessing}
+                              className="w-full bg-[#0288d1] text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-[0_4px_0_#01579b] hover:bg-[#03a9f4] active:translate-y-1 disabled:opacity-30 transition-all flex items-center justify-center gap-2"
+                           >
+                              {isAiProcessing ? <Loader2 className="animate-spin" /> : <><Send size={14} /> Send to Island spirits</>}
+                           </button>
+                        </form>
+                      )}
 
                       {aiFeedback && (
                         <div className="mt-6 p-5 bg-[#e8f5e9] rounded-2xl border-2 border-[#8bc34a] animate-zoomIn">
@@ -155,28 +246,62 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                    </div>
                 </div>
 
-                {/* AI Island Wisdom (Mnemonics) */}
-                {aiInfo && (
-                  <div className="bg-gradient-to-br from-[#f3e5f5] to-[#e1f5fe] p-6 rounded-[2rem] border-4 border-white shadow-md relative overflow-hidden group">
-                      <div className="absolute -right-6 -top-6 text-[#4b7d78]/5 rotate-12 group-hover:scale-110 transition-transform"><BrainCircuit size={120} /></div>
-                      <div className="relative z-10">
-                          <div className="flex items-center gap-2 mb-4">
-                              <Sparkles size={16} className="text-[#ab47bc] animate-pulse" />
-                              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#6a1b9a]">Memory Seeds</span>
-                          </div>
-                          <div className="space-y-4">
-                              <div>
-                                  <p className="text-[8px] font-black text-[#ab47bc] uppercase tracking-widest mb-1">Mnemonic Trick</p>
-                                  <p className="text-[#2d4a47] font-bold text-sm leading-tight">"{aiInfo.mnemonics}"</p>
-                              </div>
-                              <div className="pt-3 border-t border-white/40">
-                                  <p className="text-[8px] font-black text-[#0288d1] uppercase tracking-widest mb-1">Smart Hint</p>
-                                  <p className="text-[#2d4a47] text-xs font-medium leading-relaxed">{aiInfo.hint}</p>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-                )}
+                {/* AI Island Wisdom (Mnemonics) - Soft Locked */}
+                <div className={`bg-gradient-to-br from-[#f3e5f5] to-[#e1f5fe] p-6 rounded-[2rem] border-4 border-white shadow-md relative overflow-hidden group transition-all`}>
+                    <div className="absolute -right-6 -top-6 text-[#4b7d78]/5 rotate-12 group-hover:scale-110 transition-transform"><BrainCircuit size={120} /></div>
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                                <Sparkles size={16} className="text-[#ab47bc] animate-pulse" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#6a1b9a]">Memory Seeds</span>
+                            </div>
+                            {!isPremium && !isMnemonicRevealed && (
+                                <div className="text-[9px] font-black text-[#8d99ae] bg-white/50 px-2 py-0.5 rounded-full border border-white">
+                                    {mnemonicUsesLeft} Free Reveals Left
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Reveal Logic */}
+                        {!isMnemonicRevealed ? (
+                            <div className="flex flex-col items-center justify-center py-6 gap-3">
+                                <p className="text-center text-[#4b7d78]/60 text-xs font-bold px-4">
+                                    Unlock a powerful AI mnemonic to stick this word in your brain forever.
+                                </p>
+                                <button 
+                                    onClick={handleRevealMnemonic}
+                                    className="bg-white text-[#6a1b9a] px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                                >
+                                    {isMnemonicLoading ? <Loader2 className="animate-spin" size={16} /> : <Eye size={16} />}
+                                    Tap to Reveal
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-4 animate-fadeIn">
+                                {isMnemonicLoading ? (
+                                    <div className="flex items-center justify-center py-8 text-[#ab47bc]">
+                                        <Loader2 className="animate-spin" size={32} />
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div>
+                                            <p className="text-[8px] font-black text-[#ab47bc] uppercase tracking-widest mb-1">Mnemonic Trick</p>
+                                            <p className="text-[#2d4a47] font-bold text-sm leading-tight">
+                                                "{aiInfo?.mnemonics || 'Loading...'}"
+                                            </p>
+                                        </div>
+                                        <div className="pt-3 border-t border-white/40">
+                                            <p className="text-[8px] font-black text-[#0288d1] uppercase tracking-widest mb-1">Smart Hint</p>
+                                            <p className="text-[#2d4a47] text-xs font-medium leading-relaxed">
+                                                {aiInfo?.hint || 'Consulting the island spirits...'}
+                                            </p>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
 
                 <div className="relative group">
                     <div className="bg-white/50 p-6 rounded-[2rem] border-2 border-dashed relative transform -rotate-1 hover:rotate-0 transition-transform duration-300" style={{ borderColor: theme.main }}>   
