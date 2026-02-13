@@ -6,7 +6,7 @@ import { X, Volume2, Sparkles, AudioLines, BookOpen, PenTool, ArrowLeftRight, Ma
 import { useTranslation } from 'react-i18next';
 import { playClick, playSparkle, playSwish } from '../utils/sfx';
 import { useIslandStore } from '../store/useIslandStore';
-import { GoogleGenAI } from "@google/genai";
+import { getAIChallengeFeedback } from '../services/geminiService';
 
 interface WordDetailModalProps {
   word: Word;
@@ -49,27 +49,16 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
 
   const handleAiChallenge = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userInput.trim() || isAiProcessing || !isAIAvailable) return;
+    // Allow challenge if we have backend connectivity (isAIAvailable check logic might need update in store, but assuming true for now if deployed)
+    if (!userInput.trim() || isAiProcessing) return;
 
     setIsAiProcessing(true);
     setAiFeedback(null);
     playSwish();
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: `I am trying to learn the Spanish word "${word.s}". My sentence is: "${userInput}". 
-        Be a friendly Islander tutor. 
-        1. If the sentence has errors, respond starting with "I hear you! Did you mean..." and provide a corrected version. 
-        2. If correct, celebrate and acknowledge my use of "${word.s}".
-        3. No grades, just re-understanding and appreciation. Keep it concise.`,
-        config: {
-          systemInstruction: "You are a warm, encouraging Spanish Islander tutor. You use 'Recast' feedback logic: repeat the user's intent correctly if they made a mistake, or celebrate if they are right. Never use numbers or letter grades."
-        }
-      });
+      const text = await getAIChallengeFeedback(word.s, userInput);
 
-      const text = response.text;
       if (text) {
         setAiFeedback({ recast: text });
         playSparkle();
@@ -139,7 +128,7 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                          </div>
                          <button 
                             type="submit"
-                            disabled={!userInput.trim() || isAiProcessing || !isAIAvailable}
+                            disabled={!userInput.trim() || isAiProcessing}
                             className="w-full bg-[#0288d1] text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-[0_4px_0_#01579b] hover:bg-[#03a9f4] active:translate-y-1 disabled:opacity-30 transition-all flex items-center justify-center gap-2"
                          >
                             {isAiProcessing ? <Loader2 className="animate-spin" /> : <><Send size={14} /> Send to Island spirits</>}
