@@ -16,11 +16,9 @@ export interface Post {
   level: 'Beginner' | 'Intermediate' | 'Expert';
   tags: string[];
   content: React.ReactNode;
-  relatedWordIds?: string[];
 }
 
 export const BLOG_POSTS: Post[] = [
-  // ... (Posts 1, 2, 4, 5 are assumed to remain or be replaced by the full list)
   {
     id: 'neuroscience-fluency',
     slug: 'stop-translating-spanish-neuroscience',
@@ -33,7 +31,6 @@ export const BLOG_POSTS: Post[] = [
     readTime: '8 min', 
     level: 'Expert',
     tags: ['Neuro-Learning', 'Fluency Hacks'],
-    relatedWordIds: ['ser', 'estar', 'hablar'],
     content: (
       <div className="space-y-10 pb-20 leading-relaxed text-slate-700">
         <section className="space-y-6">
@@ -117,7 +114,6 @@ export const BLOG_POSTS: Post[] = [
     readTime: '7 min',
     level: 'Beginner',
     tags: ['Efficiency', 'RAE Data'],
-    relatedWordIds: ['ir', 'hacer', 'tener', 'poder'],
     content: (
       <div className="space-y-10 pb-20 leading-relaxed text-slate-700">
         <section className="space-y-6">
@@ -323,7 +319,6 @@ export const BLOG_POSTS: Post[] = [
     readTime: '7 min',
     level: 'Beginner',
     tags: ['Grammar Maps', 'Logic'],
-    relatedWordIds: ['comer', 'vivir', 'hablar'],
     content: (
       <div className="space-y-10 pb-20 leading-relaxed text-slate-700">
         <section className="space-y-6">
@@ -573,7 +568,6 @@ export const BLOG_POSTS: Post[] = [
     readTime: '12 min',
     level: 'Beginner',
     tags: ['Linguistic Core', 'Pareto'],
-    relatedWordIds: ['ser', 'estar', 'tener', 'hacer', 'ir', 'poder', 'saber', 'querer', 'ver', 'dar'],
     content: (
       <div className="space-y-10 pb-20 leading-relaxed text-slate-700">
         <section className="space-y-6">

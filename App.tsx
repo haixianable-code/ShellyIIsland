@@ -161,24 +161,28 @@ const AppContent: React.FC = () => {
         onLogout={handleLogout} onShareAchievement={() => openModal('ACHIEVEMENT', { name: travelerName })}
       />
       
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-4 border-[#e0d9b4] flex justify-around items-center p-3 pb-5 z-40">
-        <button onClick={() => navigate('/')} className={`flex flex-col items-center gap-1 transition-all w-16 ${currentView === AppView.DASHBOARD ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
-          <Home size={22} className={currentView === AppView.DASHBOARD ? 'fill-current' : ''} />
+      <nav 
+        className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-4 border-[#e0d9b4] flex justify-around items-center p-3 pb-5 z-40" 
+        role="navigation" 
+        aria-label="Mobile Bottom Navigation"
+      >
+        <button onClick={() => navigate('/')} className={`flex flex-col items-center gap-1 transition-all w-16 ${currentView === AppView.DASHBOARD ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`} aria-label="Home">
+          <Home size={22} className={currentView === AppView.DASHBOARD ? 'fill-current' : ''} aria-hidden="true" />
           <span className="text-[9px] font-black uppercase">{t('ui.nav.home')}</span>
         </button>
-        <button onClick={() => navigate('/pocket')} className={`flex flex-col items-center gap-1 transition-all w-16 ${currentView === AppView.VOCABULARY ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
-          <ShoppingBag size={22} className={currentView === AppView.VOCABULARY ? 'fill-current' : ''} />
+        <button onClick={() => navigate('/pocket')} className={`flex flex-col items-center gap-1 transition-all w-16 ${currentView === AppView.VOCABULARY ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`} aria-label="My Pocket Vocabulary">
+          <ShoppingBag size={22} className={currentView === AppView.VOCABULARY ? 'fill-current' : ''} aria-hidden="true" />
           <span className="text-[9px] font-black uppercase">{t('ui.nav.pocket')}</span>
         </button>
-        <button onClick={() => navigate('/stories')} className={`flex flex-col items-center gap-1 transition-all w-16 ${currentView === AppView.BLOG ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
-          <Newspaper size={22} className={currentView === AppView.BLOG ? 'fill-current' : ''} />
+        <button onClick={() => navigate('/stories')} className={`flex flex-col items-center gap-1 transition-all w-16 ${currentView === AppView.BLOG ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`} aria-label="Island Stories">
+          <Newspaper size={22} className={currentView === AppView.BLOG ? 'fill-current' : ''} aria-hidden="true" />
           <span className="text-[9px] font-black uppercase">Stories</span>
         </button>
-        <button onClick={() => navigate('/menu')} className={`flex flex-col items-center gap-1 transition-all w-16 ${currentView === AppView.SETTINGS ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
-           <Menu size={22} />
+        <button onClick={() => navigate('/menu')} className={`flex flex-col items-center gap-1 transition-all w-16 ${currentView === AppView.SETTINGS ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`} aria-label="Menu and Settings">
+           <Menu size={22} aria-hidden="true" />
            <span className="text-[9px] font-black uppercase">{t('ui.nav.menu')}</span>
         </button>
-      </div>
+      </nav>
 
       <main className="flex-1 md:ml-72 p-4 md:p-12 overflow-y-auto mb-24 md:mb-0">
         <div className="hidden md:flex absolute top-4 right-4 bg-white/80 px-3 py-1 rounded-full text-[10px] text-[#4b7d78] font-black border border-[#e0d9b4] items-center gap-2">

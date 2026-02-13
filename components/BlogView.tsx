@@ -10,7 +10,7 @@ import {
 import { playClick, playSwish, playSparkle } from '../utils/sfx';
 import { useTranslation } from 'react-i18next';
 import { BLOG_POSTS, BlogTab, Post } from '../data/blogPosts';
-import SEO from './SEO';
+import SEO, { BreadcrumbItem } from './SEO';
 import { useIslandStore } from '../store/useIslandStore';
 
 const BlogView: React.FC = () => {
@@ -60,7 +60,9 @@ const BlogView: React.FC = () => {
 
   // --- Article View ---
   if (selectedPost) {
-    const jsonLd = {
+    const articleUrl = `https://ssisland.space/#/stories/${selectedPost.slug}`;
+    
+    const blogPostingJsonLd = {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
       "headline": selectedPost.title,
@@ -71,26 +73,52 @@ const BlogView: React.FC = () => {
       "publisher": { "@type": "Organization", "name": "Shelly Spanish Island" }
     };
 
+    const breadcrumbs: BreadcrumbItem[] = [
+      { name: 'Home', item: '#/' },
+      { name: 'Stories', item: '#/stories' },
+      { name: selectedPost.title, item: `#/stories/${selectedPost.slug}` }
+    ];
+
+    // Conditional Extra Schema
+    const extraSchema = [];
+    if (selectedPost.id === 'neuroscience-fluency') {
+       extraSchema.push({
+         "@context": "https://schema.org",
+         "@type": "FAQPage",
+         "mainEntity": [{
+           "@type": "Question",
+           "name": "Why do I translate Spanish in my head?",
+           "acceptedAnswer": {
+             "@type": "Answer",
+             "text": "This is called Translation Interference. Your brain creates a detour through your native language instead of direct neural concept-to-Spanish mapping."
+           }
+         }]
+       });
+    }
+
     return (
-      <div className="max-w-2xl mx-auto animate-fadeIn pb-32 px-2">
+      <article className="max-w-2xl mx-auto animate-fadeIn pb-32 px-2" role="main">
         <SEO 
           title={selectedPost.title}
           description={selectedPost.description}
           keywords={selectedPost.keywords}
-          url={`https://ssisland.space/stories/${selectedPost.slug}`}
+          url={articleUrl}
           type="article"
-          jsonLd={jsonLd}
+          jsonLd={[blogPostingJsonLd, ...extraSchema]}
+          breadcrumbs={breadcrumbs}
+          themeColor="#4b7d78"
         />
 
-        <div className="fixed top-0 left-0 right-0 md:left-72 h-1 bg-slate-100/30 z-[60]">
+        <div className="fixed top-0 left-0 right-0 md:left-72 h-1 bg-slate-100/30 z-[60]" aria-hidden="true">
            <div className="h-full bg-gradient-to-r from-[#ffa600] to-[#ff7b72] transition-all duration-150" style={{ width: `${scrollProgress}%` }} />
         </div>
 
         <button 
           onClick={() => { playSwish(); navigate('/stories'); }}
+          aria-label="Back to stories list"
           className="flex items-center gap-2 text-[#8d99ae] font-black text-[9px] uppercase tracking-widest mb-4 hover:text-[#4b7d78] transition-all py-1.5 px-3 bg-white rounded-full shadow-sm w-fit active:scale-95 border border-slate-100"
         >
-          <ArrowLeft size={10} /> Back to Archives
+          <ArrowLeft size={10} aria-hidden="true" /> Back to Archives
         </button>
 
         <header className="space-y-4 mb-8">
@@ -98,35 +126,42 @@ const BlogView: React.FC = () => {
             <span className="bg-[#ffa600] text-white px-2.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest shadow-sm">
               {selectedPost.level}
             </span>
-            <span className="text-[#8d99ae] text-[8px] font-black uppercase tracking-widest">
+            <time className="text-[#8d99ae] text-[8px] font-black uppercase tracking-widest" dateTime={new Date(selectedPost.date).toISOString().split('T')[0]}>
               {selectedPost.date}
-            </span>
+            </time>
           </div>
           <h1 className="text-2xl md:text-5xl font-black text-[#4b7d78] tracking-tight leading-tight uppercase">
             {selectedPost.title}
           </h1>
           <div className="flex items-center gap-4 text-[#8d99ae] text-[8px] font-black uppercase tracking-widest border-t border-dashed border-slate-100 pt-4">
-             <div className="flex items-center gap-1.5"><Clock size={10} className="text-[#ffa600]" /> {selectedPost.readTime} Read</div>
-             <button onClick={handleCopyLink} className={`ml-auto flex items-center gap-1.5 transition-colors ${copiedLink ? 'text-[#78c850]' : 'text-[#4b7d78]'}`}>
+             <div className="flex items-center gap-1.5">
+                <Clock size={10} className="text-[#ffa600]" aria-hidden="true" /> {selectedPost.readTime} Read
+             </div>
+             <button 
+                onClick={handleCopyLink} 
+                aria-label="Copy article link to clipboard"
+                className={`ml-auto flex items-center gap-1.5 transition-colors ${copiedLink ? 'text-[#78c850]' : 'text-[#4b7d78]'}`}
+             >
                 {copiedLink ? <Check size={10} /> : <Share2 size={10} />}
                 <span>{copiedLink ? 'Link Copied!' : 'Share Story'}</span>
              </button>
           </div>
         </header>
 
-        <div className="prose prose-slate max-w-none mb-12">
+        <section className="prose prose-slate max-w-none mb-12">
            {selectedPost.content}
-        </div>
+        </section>
 
         <footer className="mt-12 pt-8 border-t border-dashed border-slate-100 text-center space-y-4">
            <button 
              onClick={() => { playSwish(); navigate('/stories'); }}
+             aria-label="Return to library"
              className="bg-[#4b7d78] text-white px-8 py-3.5 rounded-full font-black text-[9px] uppercase tracking-[0.2em] shadow-lg active:scale-95 w-full md:w-auto"
            >
              Return to Archives
            </button>
         </footer>
-      </div>
+      </article>
     );
   }
 
@@ -136,7 +171,9 @@ const BlogView: React.FC = () => {
       <SEO 
         title="Island Stories - Strategic Spanish Learning"
         description="Deep dives into neuro-linguistic Spanish learning, RAE corpus data, and AI-powered fluency protocols."
-        url="https://ssisland.space/stories"
+        url="https://ssisland.space/#/stories"
+        breadcrumbs={[{ name: 'Home', item: '#/' }, { name: 'Stories', item: '#/stories' }]}
+        themeColor="#ffa600"
       />
 
       <header className="space-y-4 text-center md:text-left">
@@ -152,10 +189,11 @@ const BlogView: React.FC = () => {
 
            <div className="w-full md:w-64">
               <div className="relative">
-                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8d99ae]/50" size={14} />
+                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8d99ae]/50" size={14} aria-hidden="true" />
                  <input 
                    type="text" 
-                   placeholder="Search..." 
+                   aria-label="Search stories"
+                   placeholder="Search logs..." 
                    value={searchQuery}
                    onChange={(e) => setSearchQuery(e.target.value)}
                    className="w-full pl-10 pr-4 py-2.5 bg-white border-2 border-[#e0d9b4] rounded-xl focus:outline-none focus:border-[#4b7d78] font-bold text-xs text-[#4b7d78] shadow-sm"
@@ -165,7 +203,7 @@ const BlogView: React.FC = () => {
         </div>
       </header>
 
-      <div className="flex overflow-x-auto no-scrollbar gap-2 sticky top-2 z-40 bg-white/80 backdrop-blur-xl p-1.5 rounded-xl border border-[#e0d9b4]/20 shadow-lg">
+      <nav className="flex overflow-x-auto no-scrollbar gap-2 sticky top-2 z-40 bg-white/80 backdrop-blur-xl p-1.5 rounded-xl border border-[#e0d9b4]/20 shadow-lg" aria-label="Category tabs">
         {[
           { id: 'all', label: 'All', icon: Newspaper },
           { id: 'strategy', label: 'Strategy', icon: Target },
@@ -175,14 +213,15 @@ const BlogView: React.FC = () => {
           <button 
             key={tab.id}
             onClick={() => { playSwish(); setActiveTab(tab.id as BlogTab); }}
+            aria-label={`Show ${tab.label} category`}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-black text-[8px] uppercase transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-[#4b7d78] text-white shadow-sm' : 'text-[#8d99ae] hover:bg-slate-50'}`}
           >
             {tab.label}
           </button>
         ))}
-      </div>
+      </nav>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredPosts.map((post) => (
           <article 
             key={post.id} 
@@ -197,7 +236,7 @@ const BlogView: React.FC = () => {
                      </span>
                   </div>
                   <div className="flex items-center gap-1.5 text-[#8d99ae] text-[7px] font-black uppercase">
-                     <Clock size={10} /> {post.readTime}
+                     <Clock size={10} aria-hidden="true" /> {post.readTime}
                   </div>
                </div>
 
@@ -211,17 +250,17 @@ const BlogView: React.FC = () => {
                </div>
 
                <div className="pt-3 flex items-center justify-between border-t border-dashed border-slate-100">
-                  <div className="text-[8px] font-black text-[#8d99ae] uppercase opacity-50">
+                  <time className="text-[8px] font-black text-[#8d99ae] uppercase opacity-50" dateTime={new Date(post.date).toISOString().split('T')[0]}>
                      {post.date}
-                  </div>
-                  <div className="flex items-center gap-1 text-[#ffa600] font-black text-[9px] uppercase group-hover:translate-x-1 transition-transform">
+                  </time>
+                  <div className="flex items-center gap-1 text-[#ffa600] font-black text-[9px] uppercase group-hover:translate-x-1 transition-transform" aria-hidden="true">
                      Read <ArrowRight size={12} />
                   </div>
                </div>
             </div>
           </article>
         ))}
-      </div>
+      </section>
     </div>
   );
 };
