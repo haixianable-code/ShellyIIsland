@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { X, Crown, Check, Sparkles, Zap, Heart, Star, Infinity, ShieldCheck } from 'lucide-react';
+import { X, Crown, Check, Sparkles, Zap, Heart, Star, Infinity, ShieldCheck, Loader2 } from 'lucide-react';
 import { playClick, playSparkle } from '../utils/sfx';
 import confetti from 'canvas-confetti';
 import { useIslandStore } from '../store/useIslandStore';
@@ -10,22 +11,20 @@ interface SubscriptionModalProps {
 
 const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
-  const { upgradeToPremium } = useIslandStore();
+  const { startSubscriptionCheckout } = useIslandStore();
 
   const handleSubscribe = async () => {
     playSparkle();
     setLoading(true);
-    // Simulate payment processing
-    await new Promise(res => setTimeout(res, 2000));
-    await upgradeToPremium();
-    confetti({
-      particleCount: 150,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#ffa600', '#ff7b72', '#ffffff']
-    });
-    setLoading(false);
-    onClose();
+    
+    try {
+        await startSubscriptionCheckout();
+        // The page will redirect, so we don't strictly need to close, 
+        // but if it fails, we catch it.
+    } catch (e) {
+        console.error(e);
+        setLoading(false);
+    }
   };
 
   const perks = [
@@ -88,7 +87,7 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose }) => {
             disabled={loading}
             className="w-full bg-[#ffa600] text-white py-6 rounded-[2.5rem] font-black text-xl shadow-[0_10px_0_#e65100] border-4 border-white bubble-button flex items-center justify-center gap-3 hover:bg-[#ffb74d] transition-all relative overflow-hidden"
           >
-            {loading ? <Zap size={24} className="animate-spin" /> : (
+            {loading ? <Loader2 size={24} className="animate-spin" /> : (
               <>
                 <ShieldCheck size={24} />
                 <span>Join Supporter Island</span>
@@ -97,7 +96,7 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose }) => {
           </button>
           
           <p className="text-center text-[10px] font-bold text-[#8d99ae] opacity-60">
-            Secure checkout via Island Credits. Cancel anytime from your Passport.
+            Secure checkout via Lemon Squeezy. Cancel anytime.
           </p>
         </div>
       </div>

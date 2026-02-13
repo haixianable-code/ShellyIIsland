@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { AppView, Word, FeedbackQuality, ProgressMap, UserStats, UserProfile, SRSData } from '../types';
 import { storageService } from '../services/storageService';
@@ -12,6 +13,10 @@ const PROGRESS_KEY = 'hola_word_srs_v4_offline';
 const STATS_KEY = 'hola_user_stats_v1_offline';
 const AI_CACHE_KEY = 'ssi_ai_content_v1';
 const DAILY_GOAL_VALUE = 20;
+
+// Replace this with your actual Variant ID from Lemon Squeezy Dashboard
+// Example: 123456
+const LEMON_VARIANT_ID = 'YOUR_VARIANT_ID_HERE'; 
 
 const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
@@ -48,7 +53,7 @@ interface IslandState {
   addExtraWords: (words: Word[]) => Promise<void>;
   warmupAI: (words: Word[], isBackground?: boolean) => Promise<void>;
   resetIsland: () => void;
-  upgradeToPremium: () => Promise<void>;
+  startSubscriptionCheckout: () => Promise<void>;
 }
 
 export const useIslandStore = create<IslandState>((set, get) => {
@@ -132,7 +137,6 @@ export const useIslandStore = create<IslandState>((set, get) => {
 
           if (!error && cloudData) {
             const cloudProgress: ProgressMap = {};
-            // Fix: Cast row to any to avoid TypeScript "Property does not exist on type 'unknown'" errors
             cloudData.forEach((row: any) => {
               cloudProgress[row.word_id] = {
                 level: row.srs_level,
@@ -173,7 +177,6 @@ export const useIslandStore = create<IslandState>((set, get) => {
       const { user, progress } = get();
       if (!user || !supabase) return;
       set({ syncStatus: 'syncing' });
-      // Fix: Explicitly cast Object.entries(progress) to [string, SRSData][] to resolve "Property does not exist on type 'unknown'" error.
       const entries = (Object.entries(progress) as [string, SRSData][]).map(([wordId, data]) => ({
         user_id: user.id,
         word_id: wordId,
@@ -270,10 +273,32 @@ export const useIslandStore = create<IslandState>((set, get) => {
       window.location.reload();
     },
 
-    upgradeToPremium: async () => {
-      const { user, profile } = get();
-      if (!user) return;
-      await get().updateProfile({ is_premium: true });
+    startSubscriptionCheckout: async () => {
+      const { user } = get();
+      if (!user) return; // Should allow guest to signup first, but let's assume UI handles it
+      
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            productId: LEMON_VARIANT_ID, 
+            userId: user.id,
+            userEmail: user.email 
+          })
+        });
+        
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url; // Redirect to payment
+        } else {
+          console.error("Checkout failed", data);
+          alert("Could not start checkout. Please try again.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Network error starting checkout.");
+      }
     }
   };
 });
