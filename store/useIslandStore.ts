@@ -19,7 +19,7 @@ const DAILY_AI_LIMIT = 3;
 const DAILY_MNEMONIC_LIMIT = 5;
 
 // Replace this with your actual Variant ID from Lemon Squeezy Dashboard
-const LEMON_VARIANT_ID = 'YOUR_VARIANT_ID_HERE'; 
+const LEMON_VARIANT_ID = '828679'; 
 
 const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
