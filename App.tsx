@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AppView, Word, FeedbackQuality } from './types';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -38,13 +38,12 @@ const AppContent: React.FC = () => {
   const [isGuest, setIsGuest] = useState(false);
   const [showAuthView, setShowAuthView] = useState(false);
   
-  // Clean URL path detection
+  // Sync the AppView state with the URL
   const currentView = useMemo(() => {
-    const path = location.pathname;
-    if (path.startsWith('/stories')) return AppView.BLOG;
-    if (path === '/pocket') return AppView.VOCABULARY;
-    if (path === '/menu') return AppView.SETTINGS;
-    if (path === '/study' || path === '/review') return AppView.STUDY;
+    if (location.pathname.startsWith('/stories')) return AppView.BLOG;
+    if (location.pathname === '/pocket') return AppView.VOCABULARY;
+    if (location.pathname === '/menu') return AppView.SETTINGS;
+    if (location.pathname === '/study' || location.pathname === '/review') return AppView.STUDY;
     return AppView.DASHBOARD;
   }, [location.pathname]);
 

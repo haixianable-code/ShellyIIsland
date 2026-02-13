@@ -1,16 +1,12 @@
-
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Word } from '../types';
 import { playAudio } from '../utils/audio';
 import { getTypeTheme, getPosLabel } from '../utils/theme';
-// Added Search to the lucide-react imports
-import { X, Volume2, Sparkles, AudioLines, BookOpen, PenTool, ArrowLeftRight, Map, Star, BrainCircuit, Loader2, Send, MessageSquareText, ThumbsUp, Heart, Newspaper, ChevronRight, ExternalLink, ShieldCheck, Globe, Link as LinkIcon, Search } from 'lucide-react';
+import { X, Volume2, Sparkles, AudioLines, BookOpen, PenTool, ArrowLeftRight, Map, Star, BrainCircuit, Loader2, Send, MessageSquareText, ThumbsUp, Heart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { playClick, playSparkle, playSwish } from '../utils/sfx';
 import { useIslandStore } from '../store/useIslandStore';
 import { GoogleGenAI } from "@google/genai";
-import { BLOG_POSTS } from '../data/blogPosts';
-import { useNavigate } from 'react-router-dom';
 
 interface WordDetailModalProps {
   word: Word;
@@ -19,26 +15,17 @@ interface WordDetailModalProps {
 
 const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { aiCache, isAIAvailable } = useIslandStore();
   const [activeText, setActiveText] = useState<string | null>(null);
   
-  // States
+  // AI Challenge State
   const [userInput, setUserInput] = useState('');
   const [aiFeedback, setAiFeedback] = useState<{recast?: string, note?: string} | null>(null);
   const [isAiProcessing, setIsAiProcessing] = useState(false);
-  
-  // Real World Grounding States
-  const [isSearchingContext, setIsSearchingContext] = useState(false);
-  const [groundedContext, setGroundedContext] = useState<{ text: string, sources: { title: string, uri: string }[] } | null>(null);
 
   const theme = getTypeTheme(word);
   const conjugationList = word.forms ? word.forms.split(', ') : [];
   const aiInfo = aiCache[word.id];
-
-  const relatedArticles = useMemo(() => 
-    BLOG_POSTS.filter(post => post.relatedWordIds?.includes(word.id)),
-  [word.id]);
 
   const pronouns = word.type === 'verb' 
     ? [t('ui.grammar.yo'), t('ui.grammar.tu'), t('ui.grammar.el'), t('ui.grammar.nos'), t('ui.grammar.vos'), t('ui.grammar.ellos')] 
@@ -58,37 +45,6 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
     setActiveText(text);
     playAudio(text, () => setActiveText(text), () => setActiveText(null));
     try { playClick(); } catch (err) {}
-  };
-
-  const handleFetchRealWorldContext = async () => {
-    if (isSearchingContext || !isAIAvailable) return;
-    setIsSearchingContext(true);
-    playSwish();
-
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Find a real-world example of the Spanish word "${word.s}" being used in a news headline or a famous quote from a Spanish-speaking country (like Spain, Mexico, Argentina). Provide a short summary in English explaining why it's used that way.`,
-        config: {
-          tools: [{ googleSearch: {} }],
-        },
-      });
-
-      const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks
-        ?.map((chunk: any) => chunk.web)
-        .filter(Boolean) || [];
-
-      setGroundedContext({
-        text: response.text || "No context found.",
-        sources: sources.map((s: any) => ({ title: s.title, uri: s.uri }))
-      });
-      playSparkle();
-    } catch (err) {
-      console.error("Search Grounding failed:", err);
-    } finally {
-      setIsSearchingContext(false);
-    }
   };
 
   const handleAiChallenge = async (e: React.FormEvent) => {
@@ -136,12 +92,6 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
     });
   };
 
-  const handleArticleNav = (slug: string) => {
-     playClick();
-     onClose();
-     navigate(`/stories/${slug}`);
-  };
-
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
       <div className="relative w-full max-w-md bg-[#fffdf5] rounded-[3rem] shadow-[0_30px_60px_-10px_rgba(0,0,0,0.3)] overflow-hidden animate-zoomIn flex flex-col max-h-[95vh]">
@@ -165,106 +115,6 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                 <div className="flex justify-center gap-2 opacity-60">
                     <span className="px-3 py-1 rounded-full border border-slate-300 text-[9px] font-black uppercase tracking-widest text-slate-500">{getPosLabel(word)}</span>
                     <span className="px-3 py-1 rounded-full border border-slate-300 text-[9px] font-black uppercase tracking-widest text-slate-500">Level {word.level}</span>
-                </div>
-
-                {/* Linguistic Strategy Bridge */}
-                {relatedArticles.length > 0 && (
-                  <div className="space-y-3">
-                     <div className="flex items-center gap-2 px-2">
-                        <Newspaper size={14} className="text-[#8bc34a]" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#4b7d78]">Linguistic Strategy</span>
-                     </div>
-                     <div className="space-y-2">
-                        {relatedArticles.map(post => (
-                          <button 
-                            key={post.id}
-                            onClick={() => handleArticleNav(post.slug)}
-                            className="w-full text-left bg-gradient-to-r from-[#f1f8e9] to-white p-4 rounded-2xl border-2 border-dashed border-[#c5e1a5] hover:border-[#8bc34a] transition-all flex items-center justify-between group"
-                          >
-                             <div className="flex-1 pr-4">
-                                <p className="text-[8px] font-black text-[#8bc34a] uppercase mb-1">Deep Dive Article</p>
-                                <p className="text-xs font-black text-[#4b7d78] leading-tight line-clamp-1">{post.title}</p>
-                             </div>
-                             <ChevronRight size={14} className="text-[#8bc34a] group-hover:translate-x-1 transition-transform" />
-                          </button>
-                        ))}
-                     </div>
-                  </div>
-                )}
-
-                {/* Real-World Grounding (Stage 4 SEO/UX) */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 px-2">
-                        <Globe size={14} className="text-[#29b6f6]" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#4b7d78]">Real-World Echoes</span>
-                    </div>
-
-                    {!groundedContext ? (
-                      <button 
-                        onClick={handleFetchRealWorldContext}
-                        disabled={isSearchingContext || !isAIAvailable}
-                        className="w-full bg-white p-6 rounded-[2.5rem] border-4 border-[#e1f5fe] shadow-sm flex flex-col items-center justify-center gap-2 group hover:border-[#29b6f6]/30 transition-all"
-                      >
-                         {isSearchingContext ? (
-                           <>
-                             <Loader2 size={24} className="animate-spin text-[#29b6f6]" />
-                             <span className="text-[10px] font-black text-[#29b6f6] uppercase tracking-widest">Scanning Spanish Media...</span>
-                           </>
-                         ) : (
-                           <>
-                             <div className="bg-[#e1f5fe] p-3 rounded-2xl text-[#0288d1] group-hover:scale-110 transition-transform">
-                                <Search size={20} />
-                             </div>
-                             <span className="text-xs font-black text-[#0288d1] uppercase tracking-tighter">Find "{word.s}" in the wild</span>
-                           </>
-                         )}
-                      </button>
-                    ) : (
-                      <div className="bg-white p-6 rounded-[2.5rem] border-4 border-[#e1f5fe] shadow-sm space-y-4 animate-fadeIn">
-                         <div className="flex items-center gap-2 text-[#0288d1]">
-                            <div className="bg-[#e1f5fe] p-1.5 rounded-lg font-black text-[8px] uppercase">Live AI Context</div>
-                         </div>
-                         <p className="text-sm font-bold text-[#4b7d78] leading-relaxed italic">
-                           "{groundedContext.text}"
-                         </p>
-                         
-                         {groundedContext.sources.length > 0 && (
-                           <div className="pt-4 border-t border-dashed border-[#e1f5fe]">
-                              <p className="text-[8px] font-black text-[#8d99ae] uppercase mb-2 tracking-widest">Verified Sources:</p>
-                              <div className="space-y-1.5">
-                                 {groundedContext.sources.slice(0, 2).map((s, idx) => (
-                                   <a key={idx} href={s.uri} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-[10px] font-black text-[#29b6f6] hover:underline">
-                                      <LinkIcon size={10} />
-                                      <span className="truncate max-w-[200px]">{s.title || 'Source'}</span>
-                                   </a>
-                                 ))}
-                              </div>
-                           </div>
-                         )}
-                      </div>
-                    )}
-                </div>
-
-                {/* Academic Authority Bridge */}
-                <div className="space-y-3">
-                    <div className="flex items-center gap-2 px-2">
-                        <ShieldCheck size={14} className="text-slate-400" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#4b7d78]">Academic Authority</span>
-                    </div>
-                    <a 
-                      href={`https://dle.rae.es/${word.s}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="block w-full bg-slate-50 p-4 rounded-2xl border-2 border-slate-100 hover:border-slate-300 transition-all group"
-                    >
-                      <div className="flex items-center justify-between">
-                         <div className="flex items-center gap-3">
-                            <div className="bg-white p-2 rounded-lg shadow-sm font-black text-[10px] text-slate-400 border border-slate-100">RAE</div>
-                            <span className="text-xs font-bold text-slate-500">Official RAE Definition</span>
-                         </div>
-                         <ExternalLink size={14} className="text-slate-300 group-hover:text-slate-500" />
-                      </div>
-                    </a>
                 </div>
 
                 {/* AI Challenge Area */}
@@ -316,7 +166,7 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                    </div>
                 </div>
 
-                {/* AI Island Wisdom */}
+                {/* AI Island Wisdom (Mnemonics) */}
                 {aiInfo && (
                   <div className="bg-gradient-to-br from-[#f3e5f5] to-[#e1f5fe] p-6 rounded-[2rem] border-4 border-white shadow-md relative overflow-hidden group">
                       <div className="absolute -right-6 -top-6 text-[#4b7d78]/5 rotate-12 group-hover:scale-110 transition-transform"><BrainCircuit size={120} /></div>

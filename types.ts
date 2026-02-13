@@ -1,4 +1,3 @@
-
 export interface WordExample {
   txt: string;
   eng: string;
@@ -7,10 +6,10 @@ export interface WordExample {
 export type FeedbackQuality = 'forgot' | 'hard' | 'good' | 'easy';
 
 export interface WordNuance {
-  type: 'warning' | 'upgrade'; // warning for distinctions (Ser/Estar), upgrade for advanced synonyms
-  baseWord?: string; // Optional ID of the base word (e.g. 'grande' for 'enorme')
-  label: string; // Title e.g., "Don't confuse with..." or "Level Up"
-  note: string; // The explanation
+  type: 'warning' | 'upgrade'; 
+  baseWord?: string; 
+  label: string; 
+  note: string; 
 }
 
 export type WordLevel = 'A1' | 'A2' | 'B1';
@@ -18,25 +17,27 @@ export type WordTopic = 'travel' | 'food' | 'work' | 'nature' | 'daily' | 'feeli
 
 export interface Word {
   id: string;
-  s: string; // Spanish
-  t: string; // Translation (English)
-  level: WordLevel; // CEFR Level
-  topic: WordTopic; // Contextual Topic
+  s: string; 
+  t: string; 
+  level: WordLevel; 
+  topic: WordTopic; 
   type: 'verb' | 'adj' | 'noun' | 'misc';
-  category?: string; // For catalog organization (legacy/specific)
-  reg?: boolean; // Regularity
-  forms?: string; // Conjugations (Present tense)
-  ant?: string; // Antonym Spanish
-  antT?: string; // Antonym Translation (English)
-  grammarTip: string; // Required manual tip
-  nuance?: WordNuance; // New: For distinctions and upgrades
-  examples: WordExample[]; // Exactly 2 examples
-  nounNotes: string; // English explanation of nouns used in examples
+  category?: string; 
+  reg?: boolean; 
+  forms?: string; 
+  ant?: string; 
+  antT?: string; 
+  grammarTip: string; 
+  nuance?: WordNuance; 
+  examples: WordExample[]; 
+  nounNotes: string; 
 }
 
 export interface SRSData {
   level: number;
   nextReviewDate: string;
+  easeFactor: number;
+  failureCount: number;
 }
 
 export interface ProgressMap {
@@ -53,6 +54,7 @@ export interface UserProfile {
   id: string;
   traveler_name: string | null;
   avatar_id: string;
+  is_premium: boolean;
   updated_at: string;
 }
 
@@ -61,11 +63,21 @@ export enum AppView {
   STUDY = 'STUDY',
   REVIEW = 'REVIEW',
   VOCABULARY = 'VOCABULARY',
-  SETTINGS = 'SETTINGS'
+  SETTINGS = 'SETTINGS',
+  BLOG = 'BLOG'
 }
 
 export interface DayPack {
   id: string;
   title: string;
   words: Word[];
+}
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  date: string;
+  tags: string[];
 }

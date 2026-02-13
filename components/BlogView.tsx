@@ -4,86 +4,14 @@ import {
   Newspaper, Calendar, ArrowRight, Clock, 
   Compass, BrainCircuit, Target, 
   ArrowLeft, Share2, Search, Sparkles, 
-  Flame, Copy, Check, Leaf,
-  Microscope, BarChart3, Radio, Zap, Users, GraduationCap, History, ChevronRight
+  Flame, Copy, Check,
+  Microscope, BarChart3, Radio, Zap, Users, GraduationCap, History
 } from 'lucide-react';
 import { playClick, playSwish, playSparkle } from '../utils/sfx';
 import { useTranslation } from 'react-i18next';
 import { BLOG_POSTS, BlogTab, Post } from '../data/blogPosts';
 import SEO from './SEO';
 import { useIslandStore } from '../store/useIslandStore';
-import { getTypeTheme } from '../utils/theme';
-
-const Breadcrumbs: React.FC<{ post?: Post }> = ({ post }) => {
-  const navigate = useNavigate();
-  return (
-    <nav className="flex items-center gap-2 mb-6 text-[9px] font-black uppercase tracking-widest text-slate-400">
-      <button onClick={() => navigate('/stories')} className="hover:text-[#4b7d78] transition-colors">Stories</button>
-      {post && (
-        <>
-          <ChevronRight size={10} className="opacity-40" />
-          <span className="text-[#ffa600] opacity-80">{post.category}</span>
-          <ChevronRight size={10} className="opacity-40" />
-          <span className="text-slate-500 truncate max-w-[120px]">{post.title}</span>
-        </>
-      )}
-    </nav>
-  );
-};
-
-const IslandSeedSnapshot: React.FC<{ wordIds: string[] }> = ({ wordIds }) => {
-  const { wordMap, openModal } = useIslandStore();
-  const { t } = useTranslation();
-
-  const relatedWords = useMemo(() => 
-    wordIds.map(id => wordMap.get(id)).filter(Boolean),
-  [wordIds, wordMap]);
-
-  if (relatedWords.length === 0) return null;
-
-  return (
-    <div className="mt-16 pt-10 border-t-4 border-[#f7f9e4] animate-fadeIn">
-      <div className="flex items-center gap-3 mb-8 px-2">
-         <div className="bg-[#ffa600] p-2 rounded-xl text-white shadow-sm">
-            <Leaf size={18} fill="currentColor" />
-         </div>
-         <div className="text-left">
-            <h3 className="text-lg font-black text-[#4b7d78] uppercase tracking-tight">Strategy Seedlings</h3>
-            <p className="text-[10px] font-bold text-[#8d99ae] uppercase tracking-widest">Master words discussed in this guide</p>
-         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {relatedWords.map((word: any) => {
-          const theme = getTypeTheme(word);
-          return (
-            <button
-              key={word.id}
-              onClick={() => { playClick(); openModal('WORD_DETAIL', word); }}
-              className="bg-white p-6 rounded-[2.5rem] border-4 border-[#f7f9e4] shadow-sm hover:shadow-md hover:border-[#ffa600]/20 transition-all flex items-center justify-between group text-left"
-            >
-              <div className="space-y-1">
-                 <span style={{ color: theme.main }} className="text-[8px] font-black uppercase tracking-[0.2em]">{word.type}</span>
-                 <h4 className="text-2xl font-black text-[#4b7d78] group-hover:text-[#ffa600] transition-colors">{word.s}</h4>
-                 <p className="text-xs font-bold text-[#8d99ae] italic">{t(`vocab.${word.id}.t`, { defaultValue: word.t })}</p>
-              </div>
-              <div className="bg-[#f7f9e4] p-3 rounded-2xl group-hover:bg-[#ffa600] group-hover:text-white transition-all">
-                 <ArrowRight size={20} />
-              </div>
-            </button>
-          );
-        })}
-      </div>
-      
-      <div className="mt-8 bg-[#fff9c4] p-5 rounded-[2rem] border-2 border-dashed border-[#fdd835]/50 flex items-start gap-4">
-         <div className="p-2 bg-white rounded-xl shadow-sm shrink-0"><Sparkles size={16} className="text-[#ffa600]" /></div>
-         <p className="text-[11px] font-bold text-[#8e6b23] leading-relaxed">
-            <strong>Pro Tip:</strong> Tapping these seeds will open the interactive Island Card. You can use our AI Mirror Protocol to test if you've internalized the neuroscience strategies mentioned above!
-         </p>
-      </div>
-    </div>
-  );
-};
 
 const BlogView: React.FC = () => {
   const { t } = useTranslation();
@@ -124,7 +52,7 @@ const BlogView: React.FC = () => {
 
   const handleCopyLink = () => {
     playSparkle();
-    const url = `${window.location.origin}/stories/${selectedPost?.slug}`;
+    const url = `${window.location.origin}/#/stories/${selectedPost?.slug}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -134,30 +62,13 @@ const BlogView: React.FC = () => {
   if (selectedPost) {
     const jsonLd = {
       "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "BlogPosting",
-          "headline": selectedPost.title,
-          "description": selectedPost.description,
-          "datePublished": selectedPost.date,
-          "author": { "@type": "Person", "name": "SSI Editorial" },
-          "image": "https://ssisland.space/og-preview.png",
-          "publisher": { "@type": "Organization", "name": "Shelly Spanish Island" },
-          "about": selectedPost.relatedWordIds?.map(id => ({
-             "@type": "DefinedTerm",
-             "name": id,
-             "inDefinedTermSet": "https://ssisland.space/vocabulary"
-          }))
-        },
-        {
-          "@type": "BreadcrumbList",
-          "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Stories", "item": "https://ssisland.space/stories" },
-            { "@type": "ListItem", "position": 2, "name": selectedPost.category, "item": `https://ssisland.space/stories?tab=${selectedPost.category}` },
-            { "@type": "ListItem", "position": 3, "name": selectedPost.title, "item": `https://ssisland.space/stories/${selectedPost.slug}` }
-          ]
-        }
-      ]
+      "@type": "BlogPosting",
+      "headline": selectedPost.title,
+      "description": selectedPost.description,
+      "datePublished": selectedPost.date,
+      "author": { "@type": "Person", "name": "SSI Editorial" },
+      "image": "https://ssisland.space/og-preview.png",
+      "publisher": { "@type": "Organization", "name": "Shelly Spanish Island" }
     };
 
     return (
@@ -174,8 +85,6 @@ const BlogView: React.FC = () => {
         <div className="fixed top-0 left-0 right-0 md:left-72 h-1 bg-slate-100/30 z-[60]">
            <div className="h-full bg-gradient-to-r from-[#ffa600] to-[#ff7b72] transition-all duration-150" style={{ width: `${scrollProgress}%` }} />
         </div>
-
-        <Breadcrumbs post={selectedPost} />
 
         <button 
           onClick={() => { playSwish(); navigate('/stories'); }}
@@ -205,14 +114,9 @@ const BlogView: React.FC = () => {
           </div>
         </header>
 
-        <div className="prose prose-slate max-w-none">
+        <div className="prose prose-slate max-w-none mb-12">
            {selectedPost.content}
         </div>
-
-        {/* Dynamic Bridge: Word Cards */}
-        {selectedPost.relatedWordIds && (
-          <IslandSeedSnapshot wordIds={selectedPost.relatedWordIds} />
-        )}
 
         <footer className="mt-12 pt-8 border-t border-dashed border-slate-100 text-center space-y-4">
            <button 
@@ -234,8 +138,6 @@ const BlogView: React.FC = () => {
         description="Deep dives into neuro-linguistic Spanish learning, RAE corpus data, and AI-powered fluency protocols."
         url="https://ssisland.space/stories"
       />
-
-      <Breadcrumbs />
 
       <header className="space-y-4 text-center md:text-left">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">

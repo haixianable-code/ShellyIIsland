@@ -24,7 +24,6 @@ import {
   Cloud
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import SEO from './SEO';
 
 interface DashboardProps {
   progress: any;
@@ -97,12 +96,6 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="p-4 max-w-2xl mx-auto space-y-6 animate-fadeIn pb-2 relative">
-      <SEO 
-        title="Shelly Spanish Island - Master Spanish with AI Mnemonics"
-        description="The ultimate tropical oasis for learning Spanish. Build your vocabulary garden with AI sentence challenges and scientific SRS."
-        url="https://ssisland.space/"
-      />
-
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-[0.05]">
          <Cloud className="absolute top-[15%] -left-8 text-[#4b7d78] animate-float-slow" size={120} />
          <TreePalm className="absolute bottom-[5%] -left-12 text-[#78c850] animate-sway" size={240} />

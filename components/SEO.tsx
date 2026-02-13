@@ -20,21 +20,18 @@ const SEO: React.FC<SEOProps> = ({
   jsonLd
 }) => {
   useEffect(() => {
-    const originalTitle = document.title;
     // 1. Update Title
     document.title = `${title} | Shelly Spanish Island`;
 
     // 2. Update Meta Tags
-    const tagsToCleanup: HTMLMetaElement[] = [];
     const updateMeta = (name: string, content: string, attr: 'name' | 'property' = 'name') => {
-      let el = document.querySelector(`meta[${attr}="${name}"]`) as HTMLMetaElement;
+      let el = document.querySelector(`meta[${attr}="${name}"]`);
       if (!el) {
         el = document.createElement('meta');
         el.setAttribute(attr, name);
         document.head.appendChild(el);
       }
       el.setAttribute('content', content);
-      tagsToCleanup.push(el);
     };
 
     updateMeta('description', description);
@@ -66,14 +63,11 @@ const SEO: React.FC<SEOProps> = ({
     }
 
     return () => {
-      document.title = originalTitle;
-      // Clean up dynamic scripts but keep standard metas
-      const script = document.getElementById(scriptId);
-      if (script) script.remove();
+      // Optional: Reset to defaults on unmount
     };
   }, [title, description, keywords, url, type, image, jsonLd]);
 
-  return null;
+  return null; // Side-effect component
 };
 
 export default SEO;

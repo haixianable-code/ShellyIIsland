@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Word, ProgressMap, WordLevel, WordTopic } from '../types';
 import { Search, ShoppingBag, CircleDot, Sprout, Flower2, TreeDeciduous, Filter, Plane, Apple, Briefcase, Leaf, Home, Heart, Users, Brain, Cpu, Palette, PenTool, Sparkles, Clock, User, Calculator, FlaskConical, Cloud, TreePalm } from 'lucide-react';
@@ -9,7 +10,6 @@ import { useTranslation } from 'react-i18next';
 import { getTypeTheme, getPosLabel } from '../utils/theme';
 import { useIslandStore } from '../store/useIslandStore';
 import LazyCard from './LazyCard';
-import SEO from './SEO';
 
 interface VocabularyViewProps {
   words: Word[];
@@ -35,6 +35,7 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
   const [selectedTopic, setSelectedTopic] = useState<WordTopic | 'ALL'>('ALL');
 
   const filteredWords = useMemo(() => {
+    // Performance optimization: Start with pre-indexed sets if possible
     let baseList = allWords;
     
     if (selectedTopic !== 'ALL') {
@@ -68,13 +69,6 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
 
   return (
     <div className="space-y-8 animate-fadeIn pb-24 md:pb-12 relative">
-      <SEO 
-        title="My Spanish Pocket - Frequency Vocabulary List"
-        description="Your personal high-frequency Spanish vocabulary collection. Cross-referenced with RAE corpus data for functional fluency."
-        keywords={['Spanish vocabulary list', 'Spanish high frequency words', 'RAE corpus Spanish', 'Spanish fluency words']}
-        url="https://ssisland.space/pocket"
-      />
-
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-[0.07]">
          <Cloud className="absolute top-[10%] -left-10 text-[#4b7d78] animate-float-slow" size={120} />
          <TreePalm className="absolute bottom-[10%] -left-16 text-[#78c850] animate-sway" size={240} />
