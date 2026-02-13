@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Word } from '../types';
 import { playAudio } from '../utils/audio';
 import { getTypeTheme, getPosLabel } from '../utils/theme';
-import { X, Volume2, Sparkles, AudioLines, BookOpen, PenTool, ArrowLeftRight, Map, Star, BrainCircuit, Loader2, Send, MessageSquareText, ThumbsUp, Heart, Lock, Crown, Eye } from 'lucide-react';
+import { X, Volume2, Sparkles, AudioLines, BookOpen, PenTool, BrainCircuit, Loader2, Send, MessageSquareText, Heart, Lock, Crown, Eye, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { playClick, playSparkle, playSwish } from '../utils/sfx';
 import { useIslandStore } from '../store/useIslandStore';
@@ -17,10 +17,13 @@ interface WordDetailModalProps {
   onClose: () => void;
 }
 
+type ActiveTool = 'none' | 'challenge' | 'mnemonic';
+
 const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
   const { t } = useTranslation();
   const { aiCache, consumeAIToken, consumeMnemonicToken, aiUsage, mnemonicUsage, profile, openModal } = useIslandStore();
   const [activeText, setActiveText] = useState<string | null>(null);
+  const [activeTool, setActiveTool] = useState<ActiveTool>('none');
   
   // AI Challenge State
   const [userInput, setUserInput] = useState('');
@@ -136,6 +139,19 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
     }
   };
 
+  const toggleTool = (tool: ActiveTool) => {
+    playClick();
+    if (activeTool === tool) {
+      setActiveTool('none');
+    } else {
+      setActiveTool(tool);
+      // Auto-trigger load for mnemonic if selected and premium
+      if (tool === 'mnemonic' && isPremium && !aiInfo && !isMnemonicLoading) {
+         // Logic already handled in useEffect, but good to ensure
+      }
+    }
+  };
+
   const renderFormText = (text: string) => {
     if (!text) return null;
     const parts = text.split(/(\[.*?\])/g);
@@ -151,6 +167,7 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
       <div className="relative w-full max-w-md bg-[#fffdf5] rounded-[3rem] shadow-[0_30px_60px_-10px_rgba(0,0,0,0.3)] overflow-hidden animate-zoomIn flex flex-col max-h-[95vh]">
         <div className="overflow-y-auto no-scrollbar h-full relative">
+            {/* Header */}
             <div style={{ backgroundColor: theme.main }} className="relative pt-10 pb-20 px-6 text-center shrink-0 transition-colors duration-300">
                 <button onClick={onClose} className="absolute top-6 right-6 z-50 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all active:scale-90 backdrop-blur-sm"><X size={20} strokeWidth={3} /></button>
                 <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
@@ -166,145 +183,171 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                 </div>
             </div>
 
-            <div className="px-6 md:px-8 pt-16 pb-12 bg-[#fffdf5] relative z-10 space-y-10">
+            <div className="px-6 md:px-8 pt-16 pb-12 bg-[#fffdf5] relative z-10 space-y-8">
+                {/* Meta Tags */}
                 <div className="flex justify-center gap-2 opacity-60">
                     <span className="px-3 py-1 rounded-full border border-slate-300 text-[9px] font-black uppercase tracking-widest text-slate-500">{getPosLabel(word)}</span>
                     <span className="px-3 py-1 rounded-full border border-slate-300 text-[9px] font-black uppercase tracking-widest text-slate-500">Level {word.level}</span>
                 </div>
 
-                {/* AI Challenge Area */}
-                <div className="space-y-4">
-                   <div className="flex items-center justify-between px-2">
-                      <div className="flex items-center gap-2">
-                        <Sparkles size={16} className="text-[#ffa600]" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#4b7d78]">Island Challenge</span>
-                      </div>
-                      {!isPremium && (
-                        <div className="text-[9px] font-black text-[#8d99ae] bg-white border border-slate-200 px-2 py-0.5 rounded-full shadow-sm">
-                           {challengeUsesLeft} Uses Left Today
-                        </div>
-                      )}
-                   </div>
-                   
-                   <div className={`bg-white p-6 rounded-[2.5rem] border-4 ${isChallengeLocked ? 'border-slate-200 bg-slate-50' : 'border-[#e1f5fe]'} shadow-sm relative overflow-hidden transition-all`}>
-                      <div className="absolute right-[-20px] top-[-20px] opacity-5 rotate-12"><MessageSquareText size={120} /></div>
-                      <p className="text-xs font-black text-[#0288d1] uppercase tracking-widest mb-3">Goal: Use "{word.s}" in a sentence</p>
-                      
-                      {isChallengeLocked ? (
-                        <div className="relative z-20 flex flex-col items-center justify-center py-6 space-y-4">
-                           <div className="bg-slate-200 p-4 rounded-full">
-                              <Lock size={32} className="text-slate-400" />
-                           </div>
-                           <div className="text-center">
-                              <p className="text-[#4b7d78] font-black text-sm uppercase">Daily Energy Depleted</p>
-                              <p className="text-[10px] text-[#8d99ae] font-bold max-w-[200px] mx-auto leading-tight mt-1">Get unlimited feedback and faster learning with SSI Supporter.</p>
-                           </div>
-                           <button 
-                             onClick={() => openModal('SUBSCRIPTION')}
-                             className="bg-gradient-to-r from-[#ffa600] to-[#ff7b72] text-white px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-md hover:scale-105 transition-transform flex items-center gap-2"
-                           >
-                             <Crown size={14} /> Unlock Now
-                           </button>
-                        </div>
-                      ) : (
-                        <form onSubmit={handleAiChallenge} className="relative z-10 space-y-3">
-                           <div className="bg-slate-50 rounded-2xl p-4 border-2 border-dashed border-slate-200 focus-within:border-[#0288d1] transition-colors">
-                              <textarea 
-                                value={userInput}
-                                onChange={(e) => setUserInput(e.target.value)}
-                                placeholder="Yo..."
-                                className="w-full bg-transparent text-sm font-bold text-[#4b7d78] focus:outline-none placeholder:text-slate-300 min-h-[60px]"
-                              />
-                           </div>
-                           <button 
-                              type="submit"
-                              disabled={!userInput.trim() || isAiProcessing}
-                              className="w-full bg-[#0288d1] text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-[0_4px_0_#01579b] hover:bg-[#03a9f4] active:translate-y-1 disabled:opacity-30 transition-all flex items-center justify-center gap-2"
-                           >
-                              {isAiProcessing ? <Loader2 className="animate-spin" /> : <><Send size={14} /> Send to Island spirits</>}
-                           </button>
-                        </form>
-                      )}
-
-                      {aiFeedback && (
-                        <div className="mt-6 p-5 bg-[#e8f5e9] rounded-2xl border-2 border-[#8bc34a] animate-zoomIn">
-                           <div className="flex items-center gap-2 mb-2">
-                              <Heart size={14} className="text-[#2e7d32] fill-current" />
-                              <span className="text-[10px] font-black text-[#2e7d32] uppercase tracking-widest">Island Feedback</span>
-                           </div>
-                           <p className="text-sm font-bold text-[#2e7d32] leading-relaxed italic">
-                             "{aiFeedback.recast}"
-                           </p>
-                           <button 
-                             onClick={(e) => handleSpeak(e, aiFeedback.recast!)}
-                             className="mt-3 flex items-center gap-2 text-[10px] font-black text-[#2e7d32]/60 uppercase hover:text-[#2e7d32]"
-                           >
-                             <Volume2 size={12} /> Listen
-                           </button>
-                        </div>
-                      )}
-                   </div>
+                {/* Island Toolkit (Action Bar) */}
+                <div className="flex items-center gap-3">
+                   <button 
+                     onClick={() => toggleTool('mnemonic')}
+                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border-2 transition-all active:scale-95 ${activeTool === 'mnemonic' ? 'bg-[#f3e5f5] border-[#ab47bc] text-[#6a1b9a]' : 'bg-white border-slate-100 text-slate-400 hover:border-[#ab47bc]/30'}`}
+                   >
+                      <BrainCircuit size={18} />
+                      <span className="text-[10px] font-black uppercase tracking-widest">Memory Seed</span>
+                      {activeTool === 'mnemonic' && <ChevronDown size={14} />}
+                   </button>
+                   <button 
+                     onClick={() => toggleTool('challenge')}
+                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border-2 transition-all active:scale-95 ${activeTool === 'challenge' ? 'bg-[#e1f5fe] border-[#0288d1] text-[#0288d1]' : 'bg-white border-slate-100 text-slate-400 hover:border-[#0288d1]/30'}`}
+                   >
+                      <Sparkles size={18} />
+                      <span className="text-[10px] font-black uppercase tracking-widest">Challenge</span>
+                      {activeTool === 'challenge' && <ChevronDown size={14} />}
+                   </button>
                 </div>
 
-                {/* AI Island Wisdom (Mnemonics) - Soft Locked */}
-                <div className={`bg-gradient-to-br from-[#f3e5f5] to-[#e1f5fe] p-6 rounded-[2rem] border-4 border-white shadow-md relative overflow-hidden group transition-all`}>
-                    <div className="absolute -right-6 -top-6 text-[#4b7d78]/5 rotate-12 group-hover:scale-110 transition-transform"><BrainCircuit size={120} /></div>
-                    <div className="relative z-10">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
-                                <Sparkles size={16} className="text-[#ab47bc] animate-pulse" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#6a1b9a]">Memory Seeds</span>
+                {/* Collapsible Content Area */}
+                {activeTool !== 'none' && (
+                  <div className="animate-slideDown">
+                    {/* Challenge Tool */}
+                    {activeTool === 'challenge' && (
+                        <div className="bg-white p-6 rounded-[2.5rem] border-4 border-[#e1f5fe] shadow-sm relative overflow-hidden transition-all">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <MessageSquareText size={16} className="text-[#0288d1]" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#4b7d78]">Island Challenge</span>
+                                </div>
+                                {!isPremium && (
+                                    <div className="text-[9px] font-black text-[#8d99ae] bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
+                                        {challengeUsesLeft} Left
+                                    </div>
+                                )}
                             </div>
-                            {!isPremium && !isMnemonicRevealed && (
-                                <div className="text-[9px] font-black text-[#8d99ae] bg-white/50 px-2 py-0.5 rounded-full border border-white">
-                                    {mnemonicUsesLeft} Free Reveals Left
+                            
+                            <p className="text-xs font-black text-[#0288d1] uppercase tracking-widest mb-3">Goal: Use "{word.s}" in a sentence</p>
+                            
+                            {isChallengeLocked ? (
+                                <div className="relative z-20 flex flex-col items-center justify-center py-6 space-y-4">
+                                    <div className="bg-slate-100 p-4 rounded-full">
+                                        <Lock size={32} className="text-slate-300" />
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-[#4b7d78] font-black text-sm uppercase">Energy Depleted</p>
+                                        <button 
+                                            onClick={() => openModal('SUBSCRIPTION')}
+                                            className="mt-3 text-[#ffa600] font-black text-[10px] uppercase tracking-widest border-b-2 border-[#ffa600] pb-0.5"
+                                        >
+                                            Get Unlimited Access
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleAiChallenge} className="relative z-10 space-y-3">
+                                    <div className="bg-slate-50 rounded-2xl p-4 border-2 border-dashed border-slate-200 focus-within:border-[#0288d1] transition-colors">
+                                        <textarea 
+                                            value={userInput}
+                                            onChange={(e) => setUserInput(e.target.value)}
+                                            placeholder="Yo..."
+                                            className="w-full bg-transparent text-sm font-bold text-[#4b7d78] focus:outline-none placeholder:text-slate-300 min-h-[60px]"
+                                        />
+                                    </div>
+                                    <button 
+                                        type="submit"
+                                        disabled={!userInput.trim() || isAiProcessing}
+                                        className="w-full bg-[#0288d1] text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-[0_4px_0_#01579b] hover:bg-[#03a9f4] active:translate-y-1 disabled:opacity-30 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        {isAiProcessing ? <Loader2 className="animate-spin" /> : <><Send size={14} /> Check</>}
+                                    </button>
+                                </form>
+                            )}
+
+                            {aiFeedback && (
+                                <div className="mt-6 p-5 bg-[#e8f5e9] rounded-2xl border-2 border-[#8bc34a] animate-zoomIn">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Heart size={14} className="text-[#2e7d32] fill-current" />
+                                        <span className="text-[10px] font-black text-[#2e7d32] uppercase tracking-widest">Island Feedback</span>
+                                    </div>
+                                    <p className="text-sm font-bold text-[#2e7d32] leading-relaxed italic">
+                                        "{aiFeedback.recast}"
+                                    </p>
+                                    <button 
+                                        onClick={(e) => handleSpeak(e, aiFeedback.recast!)}
+                                        className="mt-3 flex items-center gap-2 text-[10px] font-black text-[#2e7d32]/60 uppercase hover:text-[#2e7d32]"
+                                    >
+                                        <Volume2 size={12} /> Listen
+                                    </button>
                                 </div>
                             )}
                         </div>
+                    )}
 
-                        {/* Reveal Logic */}
-                        {!isMnemonicRevealed ? (
-                            <div className="flex flex-col items-center justify-center py-6 gap-3">
-                                <p className="text-center text-[#4b7d78]/60 text-xs font-bold px-4">
-                                    Unlock a powerful AI mnemonic to stick this word in your brain forever.
-                                </p>
-                                <button 
-                                    onClick={handleRevealMnemonic}
-                                    className="bg-white text-[#6a1b9a] px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
-                                >
-                                    {isMnemonicLoading ? <Loader2 className="animate-spin" size={16} /> : <Eye size={16} />}
-                                    Tap to Reveal
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="space-y-4 animate-fadeIn">
-                                {isMnemonicLoading ? (
-                                    <div className="flex items-center justify-center py-8 text-[#ab47bc]">
-                                        <Loader2 className="animate-spin" size={32} />
+                    {/* Mnemonic Tool */}
+                    {activeTool === 'mnemonic' && (
+                        <div className={`bg-gradient-to-br from-[#f3e5f5] to-[#e1f5fe] p-6 rounded-[2rem] border-4 border-white shadow-md relative overflow-hidden group transition-all`}>
+                            <div className="absolute -right-6 -top-6 text-[#4b7d78]/5 rotate-12 group-hover:scale-110 transition-transform"><BrainCircuit size={120} /></div>
+                            <div className="relative z-10">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <Sparkles size={16} className="text-[#ab47bc] animate-pulse" />
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#6a1b9a]">Memory Seed</span>
+                                    </div>
+                                    {!isPremium && !isMnemonicRevealed && (
+                                        <div className="text-[9px] font-black text-[#8d99ae] bg-white/50 px-2 py-0.5 rounded-full border border-white">
+                                            {mnemonicUsesLeft} Left
+                                        </div>
+                                    )}
+                                </div>
+
+                                {!isMnemonicRevealed ? (
+                                    <div className="flex flex-col items-center justify-center py-6 gap-3">
+                                        <p className="text-center text-[#4b7d78]/60 text-xs font-bold px-4">
+                                            Unlock a powerful mnemonic to stick this word in your brain.
+                                        </p>
+                                        <button 
+                                            onClick={handleRevealMnemonic}
+                                            className="bg-white text-[#6a1b9a] px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+                                        >
+                                            {isMnemonicLoading ? <Loader2 className="animate-spin" size={16} /> : <Eye size={16} />}
+                                            Reveal
+                                        </button>
                                     </div>
                                 ) : (
-                                    <>
-                                        <div>
-                                            <p className="text-[8px] font-black text-[#ab47bc] uppercase tracking-widest mb-1">Mnemonic Trick</p>
-                                            <p className="text-[#2d4a47] font-bold text-sm leading-tight">
-                                                "{aiInfo?.mnemonics || 'Loading...'}"
-                                            </p>
-                                        </div>
-                                        <div className="pt-3 border-t border-white/40">
-                                            <p className="text-[8px] font-black text-[#0288d1] uppercase tracking-widest mb-1">Smart Hint</p>
-                                            <p className="text-[#2d4a47] text-xs font-medium leading-relaxed">
-                                                {aiInfo?.hint || 'Consulting the island spirits...'}
-                                            </p>
-                                        </div>
-                                    </>
+                                    <div className="space-y-4 animate-fadeIn">
+                                        {isMnemonicLoading ? (
+                                            <div className="flex items-center justify-center py-8 text-[#ab47bc]">
+                                                <Loader2 className="animate-spin" size={32} />
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <div>
+                                                    <p className="text-[8px] font-black text-[#ab47bc] uppercase tracking-widest mb-1">Mnemonic Trick</p>
+                                                    <p className="text-[#2d4a47] font-bold text-sm leading-tight">
+                                                        "{aiInfo?.mnemonics || 'Loading...'}"
+                                                    </p>
+                                                </div>
+                                                <div className="pt-3 border-t border-white/40">
+                                                    <p className="text-[8px] font-black text-[#0288d1] uppercase tracking-widest mb-1">Smart Hint</p>
+                                                    <p className="text-[#2d4a47] text-xs font-medium leading-relaxed">
+                                                        {aiInfo?.hint || 'Consulting the island spirits...'}
+                                                    </p>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
                                 )}
                             </div>
-                        )}
-                    </div>
-                </div>
+                        </div>
+                    )}
+                  </div>
+                )}
 
+                {/* Standard Grammar Note */}
                 <div className="relative group">
-                    <div className="bg-white/50 p-6 rounded-[2rem] border-2 border-dashed relative transform -rotate-1 hover:rotate-0 transition-transform duration-300" style={{ borderColor: theme.main }}>   
+                    <div className="bg-white/50 p-6 rounded-[2rem] border-2 border-dashed relative transform hover:rotate-0 transition-transform duration-300" style={{ borderColor: theme.main }}>   
                          <div className="absolute -top-3 left-6 bg-[#fffdf5] px-2 flex items-center gap-1">
                             <PenTool size={14} style={{ color: theme.main }} />
                             <span style={{ color: theme.main }} className="text-[10px] font-black uppercase tracking-widest">Grammar Note</span>
@@ -324,6 +367,7 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                     </div>
                 </div>
 
+                {/* Examples */}
                 <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-2 opacity-40 px-2"><BookOpen size={14} /><span className="text-[9px] font-black uppercase tracking-widest">Usage History</span></div>
                     {word.examples.map((ex, i) => (
@@ -336,7 +380,7 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                     ))}
                 </div>
 
-                <div className="pt-8 pb-2 flex justify-center opacity-10"><Star size={16} fill="black" /></div>
+                <div className="pt-8 pb-2 flex justify-center opacity-10"><BookOpen size={16} fill="black" /></div>
             </div>
         </div>
       </div>

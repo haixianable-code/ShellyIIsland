@@ -24,7 +24,8 @@ import {
   List,
   Flame,
   Cloud,
-  Infinity
+  Infinity,
+  ShoppingBag
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useIslandStore } from '../store/useIslandStore';
@@ -101,6 +102,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   // Premium users ignore the crate limit
   const canGetPack = (newWordsAvailable === 0 && unlearnedExtraWords.length > 0) && (isPremium || crateTracker.count < DAILY_CRATE_LIMIT);
   const isDailyGoalMet = newWordsAvailable === 0 && (unlearnedExtraWords.length === 0 || (!isPremium && crateTracker.count >= DAILY_CRATE_LIMIT));
+  
+  const missionStarted = learnedToday.length > 0;
 
   // --- Structured Data ---
   const webAppJsonLd = {
@@ -221,7 +224,9 @@ const Dashboard: React.FC<DashboardProps> = ({
               <Shovel size={20} className={`fill-current md:w-6 md:h-6 ${newWordsAvailable > 0 ? 'animate-sway' : ''}`} />
             </div>
             <div className="text-left">
-              <div className="text-lg md:text-xl">{t('ui.dashboard.start_planting')}</div>
+              <div className="text-lg md:text-xl">
+                {missionStarted && newWordsAvailable > 0 ? `Continue Mission (${newWordsAvailable} Left)` : t('ui.dashboard.start_planting')}
+              </div>
               <div className="text-[8px] md:text-[9px] uppercase opacity-80 tracking-widest font-black">
                 {newWordsAvailable > 0 ? t('ui.dashboard.dig_into', { count: newWordsAvailable }) : t('ui.dashboard.no_seeds')}
               </div>
@@ -250,6 +255,47 @@ const Dashboard: React.FC<DashboardProps> = ({
           <ArrowRight className="text-white w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-1 transition-transform" strokeWidth={3} aria-hidden="true" />
         </button>
       </section>
+
+      {/* Recently Planted Today (GREEN ISLAND THEME) */}
+      {learnedToday.length > 0 && (
+        <section className="relative z-10 animate-slideUp" aria-label="Today Harvest">
+          <div className="flex items-center justify-between px-4 mb-2">
+            <h3 className="text-[10px] font-black text-[#558b2f] uppercase tracking-widest flex items-center gap-2">
+              <ShoppingBag size={12} className="fill-current" /> {t('ui.dashboard.recently_planted')}
+            </h3>
+            <span className="bg-[#8bc34a] text-white text-[9px] font-black px-2 py-0.5 rounded-md shadow-sm border border-[#558b2f]/20">
+              {learnedToday.length}
+            </span>
+          </div>
+          <button 
+            onClick={() => { playClick(); onViewAllHarvest?.(); }}
+            className="w-full bg-[#dcedc8] p-4 rounded-[2rem] border-4 border-[#8bc34a] shadow-[0_6px_0_#558b2f] flex items-center justify-between group hover:bg-[#c5e1a5] transition-all bubble-button relative overflow-hidden"
+          >
+            {/* Texture */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #33691e 1px, transparent 0)', backgroundSize: '16px 16px' }} />
+            
+            <div className="flex items-center gap-3 overflow-hidden relative z-10">
+               <div className="flex -space-x-3">
+                  {learnedToday.slice(0, 5).map((w, i) => (
+                     <div key={w.id} className="w-10 h-10 rounded-full bg-[#f1f8e9] border-2 border-[#8bc34a] flex items-center justify-center shadow-sm relative z-10" style={{ zIndex: 10 - i }}>
+                        <span className="text-[10px] font-black text-[#558b2f] uppercase">{w.s.slice(0,2)}</span>
+                     </div>
+                  ))}
+               </div>
+               <div className="flex flex-col text-left pl-2">
+                   <span className="text-xs font-black text-[#33691e] uppercase tracking-tighter truncate max-w-[120px]">
+                      {learnedToday.length > 5 ? `+${learnedToday.length - 5} More` : (learnedToday[0]?.s || '...')}
+                   </span>
+                   <span className="text-[8px] font-bold text-[#689f38] uppercase tracking-widest">Open Basket</span>
+               </div>
+            </div>
+            
+            <div className="bg-[#f1f8e9] p-2.5 rounded-xl text-[#558b2f] border-2 border-[#8bc34a] shadow-sm group-hover:bg-[#8bc34a] group-hover:text-white transition-colors relative z-10">
+               <List size={20} strokeWidth={3} />
+            </div>
+          </button>
+        </section>
+      )}
 
       <aside 
         className={`rounded-3xl p-4 md:p-5 border-2 md:border-4 border-dashed flex items-start space-x-4 shadow-sm relative transition-colors z-10 ${isSpicy ? 'bg-rose-50 border-rose-300' : 'bg-[#fff9c4] border-[#fdd835]'}`}

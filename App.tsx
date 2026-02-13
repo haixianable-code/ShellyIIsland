@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { BrowserRouter, HashRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AppView, Word, FeedbackQuality } from './types';
@@ -195,6 +196,7 @@ const AppContent: React.FC = () => {
                   onStartStudy={handleStartStudy} onStartReview={handleStartReview}
                   onGetSeedPack={() => addExtraWords(unlearnedExtraWords.slice(0, 10))}
                   onWordClick={(w) => openModal('WORD_DETAIL', w)}
+                  onViewAllHarvest={() => openModal('DAILY_HARVEST')}
                 />
               } />
               <Route path="/pocket" element={

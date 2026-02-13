@@ -15,7 +15,7 @@ export const useSRS = () => {
   // Deriving data purely from store state with explicit types to ensure downstream inference
   const allAvailableWords = useMemo<Word[]>(() => Array.from(store.wordMap.values()), [store.wordMap]);
 
-  // FIX: Added learnedWords to track all words that have progress data in the user's pocket
+  // Learned words are those present in the progress map
   const learnedWords = useMemo<Word[]>(() => {
     return Object.keys(store.progress)
       .map(id => store.wordMap.get(id))
@@ -40,19 +40,38 @@ export const useSRS = () => {
   }, [store.progress, todayTimestamp, store.wordMap]);
 
   const newWordsForToday = useMemo<Word[]>(() => {
+    // 1. Calculate how many words are left to reach the daily goal
+    const wordsNeeded = DAILY_GOAL - learnedToday.length;
+    if (wordsNeeded <= 0) return [];
+
+    // 2. First, retrieve any Level 1 words (In Progress / "Leftovers")
     const activeManualWords = (Object.entries(store.progress) as [string, SRSData][])
       .filter(([_, data]) => data.level === 1)
       .map(([id]) => store.wordMap.get(id))
       .filter((w): w is Word => w !== undefined);
 
-    if (activeManualWords.length > 0) return activeManualWords;
-    if (learnedToday.length >= DAILY_GOAL) return [];
+    let sessionQueue = [...activeManualWords];
 
-    for (const dayPack of VOCABULARY_DATA) {
-      const unlearnedInPack = dayPack.words.filter(w => !store.progress[w.id]);
-      if (unlearnedInPack.length > 0) return unlearnedInPack;
+    // 3. If "Leftovers" aren't enough to fill the session, fetch new words from packs
+    if (sessionQueue.length < wordsNeeded) {
+        for (const dayPack of VOCABULARY_DATA) {
+            // Find words in this pack that have NO progress record yet
+            const unlearnedInPack = dayPack.words.filter(w => !store.progress[w.id]);
+            
+            // Calculate space left in the current session queue
+            const spaceLeft = wordsNeeded - sessionQueue.length;
+            
+            if (unlearnedInPack.length > 0) {
+                // Add as many as needed/available
+                sessionQueue.push(...unlearnedInPack.slice(0, spaceLeft));
+            }
+
+            if (sessionQueue.length >= wordsNeeded) break;
+        }
     }
-    return [];
+
+    // 4. Return exactly enough to hit the goal (or whatever we found)
+    return sessionQueue.slice(0, wordsNeeded);
   }, [store.progress, store.wordMap, learnedToday]);
 
   const unlearnedExtraWords = useMemo<Word[]>(() => {
