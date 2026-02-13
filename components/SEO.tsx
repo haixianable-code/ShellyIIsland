@@ -64,11 +64,11 @@ const SEO: React.FC<SEOProps> = ({
     updateMeta('twitter:description', description);
     updateMeta('twitter:image', image);
 
-    // 3. Handle Canonical and Hreflang
-    const currentOrigin = window.location.origin;
-    const currentPath = window.location.pathname.replace(/\/$/, ""); 
-    const currentHash = window.location.hash;
-    const fullNormalizedUrl = `${currentOrigin}${currentPath}${currentHash}`;
+    // 3. Normalize URL for SEO (Strip hash for canonicals)
+    const origin = window.location.origin;
+    const pathFromHash = window.location.hash.startsWith('#/') ? window.location.hash.substring(1) : '';
+    const currentCleanPath = (pathFromHash || window.location.pathname).replace(/\/$/, "") || "/";
+    const fullNormalizedUrl = `${origin}${currentCleanPath === "/" ? "/" : currentCleanPath}`;
 
     const updateLink = (rel: string, href: string, hreflang?: string) => {
       const selector = hreflang 
@@ -97,7 +97,6 @@ const SEO: React.FC<SEOProps> = ({
 
     const schemas: any[] = [];
     
-    // Add custom page schemas (like BlogPosting or WebApplication)
     if (jsonLd) {
       if (Array.isArray(jsonLd)) schemas.push(...jsonLd);
       else schemas.push(jsonLd);
@@ -108,12 +107,19 @@ const SEO: React.FC<SEOProps> = ({
       schemas.push({
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
-        "itemListElement": breadcrumbs.map((crumb, index) => ({
-          "@type": "ListItem",
-          "position": index + 1,
-          "name": crumb.name,
-          "item": crumb.item.startsWith('http') ? crumb.item : `${currentOrigin}${currentPath}${crumb.item}`
-        }))
+        "itemListElement": breadcrumbs.map((crumb, index) => {
+          // Normalize item URL: strip #/ and ensure origin is present
+          const cleanItemPath = crumb.item.startsWith('#/') ? crumb.item.substring(1) : crumb.item;
+          const absolutePath = cleanItemPath.startsWith('/') ? cleanItemPath : '/' + cleanItemPath;
+          const finalItemUrl = crumb.item.startsWith('http') ? crumb.item : `${origin}${absolutePath === '/' ? '' : absolutePath}`;
+          
+          return {
+            "@type": "ListItem",
+            "position": index + 1,
+            "name": crumb.name,
+            "item": finalItemUrl
+          };
+        })
       });
     }
 

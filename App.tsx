@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AppView, Word, FeedbackQuality } from './types';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -38,7 +38,6 @@ const AppContent: React.FC = () => {
   const [isGuest, setIsGuest] = useState(false);
   const [showAuthView, setShowAuthView] = useState(false);
   
-  // Sync the AppView state with the URL
   const currentView = useMemo(() => {
     if (location.pathname.startsWith('/stories')) return AppView.BLOG;
     if (location.pathname === '/pocket') return AppView.VOCABULARY;
@@ -161,11 +160,7 @@ const AppContent: React.FC = () => {
         onLogout={handleLogout} onShareAchievement={() => openModal('ACHIEVEMENT', { name: travelerName })}
       />
       
-      <nav 
-        className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-4 border-[#e0d9b4] flex justify-around items-center p-3 pb-5 z-40" 
-        role="navigation" 
-        aria-label="Mobile Bottom Navigation"
-      >
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-4 border-[#e0d9b4] flex justify-around items-center p-3 pb-5 z-40" role="navigation" aria-label="Mobile Bottom Navigation">
         <button onClick={() => navigate('/')} className={`flex flex-col items-center gap-1 transition-all w-16 ${currentView === AppView.DASHBOARD ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`} aria-label="Home">
           <Home size={22} className={currentView === AppView.DASHBOARD ? 'fill-current' : ''} aria-hidden="true" />
           <span className="text-[9px] font-black uppercase">{t('ui.nav.home')}</span>
@@ -239,6 +234,9 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  const isProduction = window.location.hostname === 'ssisland.space';
+  const Router = isProduction ? BrowserRouter : HashRouter;
+
   return (
     <Router>
       <AppContent />

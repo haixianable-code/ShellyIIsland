@@ -71,8 +71,8 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
       <SEO 
         title="My Pocket - Vocabulary Collection"
         description="Review and manage your grown Spanish vocabulary seeds. Track your mastery levels and filter by topic."
-        url="https://ssisland.space/#/pocket"
-        breadcrumbs={[{ name: 'Home', item: '#/' }, { name: 'Pocket', item: '#/pocket' }]}
+        url="https://ssisland.space/pocket"
+        breadcrumbs={[{ name: 'Home', item: '/' }, { name: 'Pocket', item: '/pocket' }]}
         themeColor="#ffb74d"
       />
 

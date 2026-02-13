@@ -52,7 +52,11 @@ const BlogView: React.FC = () => {
 
   const handleCopyLink = () => {
     playSparkle();
-    const url = `${window.location.origin}/#/stories/${selectedPost?.slug}`;
+    const isProduction = window.location.hostname === 'ssisland.space';
+    const url = isProduction 
+      ? `${window.location.origin}/stories/${selectedPost?.slug}`
+      : `${window.location.origin}/#/stories/${selectedPost?.slug}`;
+    
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -60,7 +64,7 @@ const BlogView: React.FC = () => {
 
   // --- Article View ---
   if (selectedPost) {
-    const articleUrl = `https://ssisland.space/#/stories/${selectedPost.slug}`;
+    const articleUrl = `https://ssisland.space/stories/${selectedPost.slug}`;
     
     const blogPostingJsonLd = {
       "@context": "https://schema.org",
@@ -74,9 +78,9 @@ const BlogView: React.FC = () => {
     };
 
     const breadcrumbs: BreadcrumbItem[] = [
-      { name: 'Home', item: '#/' },
-      { name: 'Stories', item: '#/stories' },
-      { name: selectedPost.title, item: `#/stories/${selectedPost.slug}` }
+      { name: 'Home', item: '/' },
+      { name: 'Stories', item: '/stories' },
+      { name: selectedPost.title, item: `/stories/${selectedPost.slug}` }
     ];
 
     // Conditional Extra Schema
@@ -171,8 +175,8 @@ const BlogView: React.FC = () => {
       <SEO 
         title="Island Stories - Strategic Spanish Learning"
         description="Deep dives into neuro-linguistic Spanish learning, RAE corpus data, and AI-powered fluency protocols."
-        url="https://ssisland.space/#/stories"
-        breadcrumbs={[{ name: 'Home', item: '#/' }, { name: 'Stories', item: '#/stories' }]}
+        url="https://ssisland.space/stories"
+        breadcrumbs={[{ name: 'Home', item: '/' }, { name: 'Stories', item: '/stories' }]}
         themeColor="#ffa600"
       />
 

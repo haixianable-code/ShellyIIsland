@@ -8,13 +8,13 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://ssisland.space/#/pocket</loc>
+    <loc>https://ssisland.space/pocket</loc>
     <lastmod>2025-05-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ssisland.space/#/stories</loc>
+    <loc>https://ssisland.space/stories</loc>
     <lastmod>2025-05-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -22,61 +22,61 @@
 
   <!-- Island Stories (Blog Posts) -->
   <url>
-    <loc>https://ssisland.space/#/stories/stop-translating-spanish-neuroscience</loc>
+    <loc>https://ssisland.space/stories/stop-translating-spanish-neuroscience</loc>
     <lastmod>2026-02-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ssisland.space/#/stories/spanish-80-20-rule-rae-corpus</loc>
+    <loc>https://ssisland.space/stories/spanish-80-20-rule-rae-corpus</loc>
     <lastmod>2026-02-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ssisland.space/#/stories/ai-mnemonics-spanish-memory-hacks</loc>
+    <loc>https://ssisland.space/stories/ai-mnemonics-spanish-memory-hacks</loc>
     <lastmod>2026-02-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ssisland.space/#/stories/spaced-repetition-science-forgetting-curve</loc>
+    <loc>https://ssisland.space/stories/spaced-repetition-science-forgetting-curve</loc>
     <lastmod>2026-02-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ssisland.space/#/stories/spanish-verb-conjugation-patterns-guide</loc>
+    <loc>https://ssisland.space/stories/spanish-verb-conjugation-patterns-guide</loc>
     <lastmod>2026-02-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ssisland.space/#/stories/sentence-mining-polyglot-fluency-secret</loc>
+    <loc>https://ssisland.space/stories/sentence-mining-polyglot-fluency-secret</loc>
     <lastmod>2026-02-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ssisland.space/#/stories/spanish-slang-social-rapport</loc>
+    <loc>https://ssisland.space/stories/spanish-slang-social-rapport</loc>
     <lastmod>2026-02-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ssisland.space/#/stories/micro-learning-spanish-habits-consistency</loc>
+    <loc>https://ssisland.space/stories/micro-learning-spanish-habits-consistency</loc>
     <lastmod>2026-02-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ssisland.space/#/stories/10-verbs-spanish-functional-fluency</loc>
+    <loc>https://ssisland.space/stories/10-verbs-spanish-functional-fluency</loc>
     <lastmod>2026-02-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://ssisland.space/#/stories/ai-mirror-protocol-error-correction</loc>
+    <loc>https://ssisland.space/stories/ai-mirror-protocol-error-correction</loc>
     <lastmod>2026-02-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

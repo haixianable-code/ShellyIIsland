@@ -135,7 +135,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         description="Master Spanish with AI Mnemonics on your personal tropical island. Restrictive challenges for direct neural acquisition."
         url="https://ssisland.space/"
         jsonLd={[webAppJsonLd, courseJsonLd]}
-        breadcrumbs={[{ name: 'Home', item: '#/' }]}
+        breadcrumbs={[{ name: 'Home', item: '/' }]}
         themeColor="#78c850"
       />
 
