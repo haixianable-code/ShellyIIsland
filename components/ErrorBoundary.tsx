@@ -1,22 +1,23 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { ShieldAlert, RotateCcw, Home, CloudRain } from 'lucide-react';
 
-interface Props {
+interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
 }
 
-interface State {
+interface ErrorBoundaryState {
   hasError: boolean;
   error?: Error;
 }
 
-class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
+// Fix: Use React.Component and rename interfaces for better clarity/resolution in TypeScript
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  public state: ErrorBoundaryState = {
     hasError: false
   };
 
-  public static getDerivedStateFromError(error: Error): State {
+  public static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
   }
 
@@ -33,8 +34,12 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   public render() {
-    if (this.state.hasError) {
-      if (this.props.fallback) return this.props.fallback;
+    // Fix: Destructure props and state to avoid issues with 'this.props' resolution in some environments
+    const { hasError } = this.state;
+    const { fallback, children } = this.props;
+
+    if (hasError) {
+      if (fallback) return fallback;
 
       return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#f7f9e4] text-center animate-fadeIn">
@@ -78,7 +83,7 @@ class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return this.props.children;
+    return children;
   }
 }
 

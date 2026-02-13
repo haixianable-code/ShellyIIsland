@@ -3,60 +3,56 @@ import { FeedbackQuality, SRSData } from '../types';
 import { SRS_INTERVALS, TODAY_SIMULATED } from '../constants';
 
 /**
- * 核心 SRS 算法：计算下一个复习等级和日期
- * 这是一个纯函数，非常适合进行单元测试
+ * 升级版核心 SRS 算法 (SM-2 启发式)
+ * 利用 easeFactor 和 failureCount 计算更精准的复习时间
  */
 export const calculateNextProgress = (
   currentData: SRSData, 
   quality: FeedbackQuality,
   baseDate: string = TODAY_SIMULATED
 ): SRSData => {
-  let newLevel = currentData.level;
-  const isBrandNew = currentData.level === 1;
+  // 1. 初始化默认值（防空保护）
+  let { level, easeFactor = 2.5, failureCount = 0 } = currentData;
+  const isBrandNew = level === 1;
 
-  // 等级跃迁逻辑
-  switch (quality) {
-    case 'easy': 
-      newLevel += 2; 
-      break;
-    case 'good': 
-      newLevel += 1; 
-      break;
-    case 'hard': 
-      newLevel = Math.max(1, newLevel - 1); 
-      break;
-    case 'forgot': 
-      newLevel = 1; 
-      break;
+  // 2. 更新 Easy Factor 和 错误计数
+  if (quality === 'forgot') {
+    failureCount += 1;
+    easeFactor = Math.max(1.3, easeFactor - 0.2);
+    level = 1; // 忘记了就打回原型
+  } else if (quality === 'hard') {
+    easeFactor = Math.max(1.3, easeFactor - 0.15);
+    level = Math.max(1, level - 1);
+  } else if (quality === 'easy') {
+    easeFactor = Math.min(3.0, easeFactor + 0.15);
+    level += 2;
+  } else {
+    // 'good'
+    level += 1;
   }
 
-  // 边界约束
-  newLevel = Math.max(1, Math.min(newLevel, SRS_INTERVALS.length - 1));
+  // 3. 边界约束
+  level = Math.max(1, Math.min(level, SRS_INTERVALS.length - 1));
 
-  // 日期计算逻辑
-  let nextReviewInDays = (quality === 'hard' || quality === 'forgot') 
-    ? (isBrandNew ? 1 : 0) // 刚开始背错，明天复习；已经背过的词突然忘了，立刻重背
-    : SRS_INTERVALS[newLevel];
+  // 4. 计算下一次复习间隔 (天)
+  // 如果是错词，固定 1 天或 0 天（取决于业务逻辑）
+  // 如果是正常词，根据 Level 和 EaseFactor 动态计算
+  let nextReviewInDays = SRS_INTERVALS[level];
+  
+  if (quality === 'forgot' || quality === 'hard') {
+    nextReviewInDays = isBrandNew ? 1 : 0; 
+  } else {
+    // 对已经掌握较好的词，根据简易度系数放大间隔
+    nextReviewInDays = Math.round(nextReviewInDays * (easeFactor / 2.5));
+  }
 
   const date = new Date(baseDate);
   date.setDate(date.getDate() + nextReviewInDays);
   
   return {
-    level: newLevel,
-    nextReviewDate: date.toISOString().split('T')[0] // 仅保留日期部分
+    level,
+    easeFactor: parseFloat(easeFactor.toFixed(2)),
+    failureCount,
+    nextReviewDate: date.toISOString().split('T')[0]
   };
-};
-
-/**
- * 模拟复习曲线（用于开发调试）
- */
-export const simulateLearningCurve = (wordId: string, streak: FeedbackQuality[]) => {
-  let current: SRSData = { level: 1, nextReviewDate: TODAY_SIMULATED };
-  console.group(`Learning Curve Simulation for: ${wordId}`);
-  streak.forEach((q, i) => {
-    current = calculateNextProgress(current, q, current.nextReviewDate);
-    console.log(`Day ${i+1}: Quality=${q} -> New Level=${current.level}, Next Review=${current.nextReviewDate}`);
-  });
-  console.groupEnd();
-  return current;
 };

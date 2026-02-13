@@ -1,31 +1,32 @@
-
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AppView, Word, FeedbackQuality } from './types';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import StudyView from './components/StudyView';
 import VocabularyView from './components/VocabularyView';
+import BlogView from './components/BlogView';
 import MobileSettings from './components/MobileSettings';
 import ModalManager from './components/ModalManager';
-import NotificationToast from './components/NotificationToast';
 import ErrorBoundary from './components/ErrorBoundary';
 import { AuthView } from './components/AuthView';
 import WelcomeView from './components/WelcomeView';
 import { useSRS } from './hooks/useSRS';
-import { useProfile } from './hooks/useProfile';
-import { Heart, Home, ShoppingBag, Leaf, Loader2, Cloud, CloudOff, Menu } from 'lucide-react';
+import { Leaf, Loader2, Cloud, CloudOff, Menu, Newspaper, Home, ShoppingBag } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { isSupabaseConfigured, supabase } from './services/supabaseClient';
 import { initAudioSystem } from './utils/audio'; 
 import { useTranslation } from 'react-i18next';
 import { useIslandStore } from './store/useIslandStore';
-import { useNotificationStore } from './store/useNotificationStore';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   const { 
-    view, setView, initialize, syncStatus, loading: islandLoading, 
-    activeModal, openModal, closeModal, wordMap, progress, stats,
+    initialize, syncStatus, loading: islandLoading, 
+    openModal, wordMap, progress, stats, profile,
     updateProgress, addExtraWords
   } = useIslandStore();
 
@@ -37,7 +38,15 @@ const App: React.FC = () => {
   const [isGuest, setIsGuest] = useState(false);
   const [showAuthView, setShowAuthView] = useState(false);
   
-  const { profile, updateProfile, loading: profileLoading } = useProfile(user);
+  // Clean URL path detection
+  const currentView = useMemo(() => {
+    const path = location.pathname;
+    if (path.startsWith('/stories')) return AppView.BLOG;
+    if (path === '/pocket') return AppView.VOCABULARY;
+    if (path === '/menu') return AppView.SETTINGS;
+    if (path === '/study' || path === '/review') return AppView.STUDY;
+    return AppView.DASHBOARD;
+  }, [location.pathname]);
 
   useEffect(() => {
     initAudioSystem();
@@ -49,7 +58,7 @@ const App: React.FC = () => {
     }
   }, [user, authChecking, initialize]);
   
-  const { allAvailableWords, reviewWords, newWordsForToday, unlearnedExtraWords, learnedToday } = useSRS(); 
+  const { reviewWords, newWordsForToday, unlearnedExtraWords, learnedToday, allAvailableWords } = useSRS(); 
 
   useEffect(() => {
     if (user && !islandLoading) {
@@ -83,16 +92,16 @@ const App: React.FC = () => {
     setIsBlitzMode(false);
     setSessionVersion(v => v + 1);
     setSessionWords([...newWordsForToday]);
-    setView(AppView.STUDY);
-  }, [newWordsForToday, setView]);
+    navigate('/study');
+  }, [newWordsForToday, navigate]);
 
   const handleStartReview = useCallback(() => {
     if (reviewWords.length === 0) return;
     setIsBlitzMode(false);
     setSessionVersion(v => v + 1);
     setSessionWords([...reviewWords]);
-    setView(AppView.REVIEW);
-  }, [reviewWords, setView]);
+    navigate('/review');
+  }, [reviewWords, navigate]);
 
   const handleStartExtraStudy = useCallback((selected: Word[]) => {
     if (selected.length === 0) return;
@@ -100,18 +109,8 @@ const App: React.FC = () => {
     setSessionVersion(v => v + 1);
     addExtraWords(selected);
     setSessionWords([...selected]);
-    setView(AppView.STUDY);
-  }, [addExtraWords, setView]);
-
-  const handleStartBlitz = useCallback((wordsToReview?: Word[]) => {
-    const targetWords = wordsToReview || learnedToday;
-    if (targetWords.length === 0) return;
-    setIsBlitzMode(true);
-    setSessionVersion(v => v + 1);
-    setSessionWords([...targetWords].sort(() => 0.5 - Math.random()));
-    closeModal();
-    setView(AppView.STUDY);
-  }, [learnedToday, setView, closeModal]);
+    navigate('/study');
+  }, [addExtraWords, navigate]);
 
   const handleFeedback = useCallback(async (wordId: string, quality: FeedbackQuality) => {
     if (isBlitzMode) return; 
@@ -158,21 +157,25 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       <Sidebar 
-        currentView={view} setView={setView} user={user} displayName={travelerName}
+        currentView={currentView} setView={(v) => navigate(v === AppView.BLOG ? '/stories' : v === AppView.VOCABULARY ? '/pocket' : v === AppView.SETTINGS ? '/menu' : '/')} user={user} displayName={travelerName}
         isSupabaseConfigured={isSupabaseConfigured} onLoginRequest={handleLoginRequest}
         onLogout={handleLogout} onShareAchievement={() => openModal('ACHIEVEMENT', { name: travelerName })}
       />
       
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-4 border-[#e0d9b4] flex justify-around items-center p-3 pb-5 z-40">
-        <button onClick={() => setView(AppView.DASHBOARD)} className={`flex flex-col items-center gap-1 transition-all w-16 ${view === AppView.DASHBOARD ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
-          <Home size={22} className={view === AppView.DASHBOARD ? 'fill-current' : ''} />
+        <button onClick={() => navigate('/')} className={`flex flex-col items-center gap-1 transition-all w-16 ${currentView === AppView.DASHBOARD ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
+          <Home size={22} className={currentView === AppView.DASHBOARD ? 'fill-current' : ''} />
           <span className="text-[9px] font-black uppercase">{t('ui.nav.home')}</span>
         </button>
-        <button onClick={() => setView(AppView.VOCABULARY)} className={`flex flex-col items-center gap-1 transition-all w-16 ${view === AppView.VOCABULARY ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
-          <ShoppingBag size={22} className={view === AppView.VOCABULARY ? 'fill-current' : ''} />
+        <button onClick={() => navigate('/pocket')} className={`flex flex-col items-center gap-1 transition-all w-16 ${currentView === AppView.VOCABULARY ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
+          <ShoppingBag size={22} className={currentView === AppView.VOCABULARY ? 'fill-current' : ''} />
           <span className="text-[9px] font-black uppercase">{t('ui.nav.pocket')}</span>
         </button>
-        <button onClick={() => setView(AppView.SETTINGS)} className={`flex flex-col items-center gap-1 transition-all w-16 ${view === AppView.SETTINGS ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
+        <button onClick={() => navigate('/stories')} className={`flex flex-col items-center gap-1 transition-all w-16 ${currentView === AppView.BLOG ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
+          <Newspaper size={22} className={currentView === AppView.BLOG ? 'fill-current' : ''} />
+          <span className="text-[9px] font-black uppercase">Stories</span>
+        </button>
+        <button onClick={() => navigate('/menu')} className={`flex flex-col items-center gap-1 transition-all w-16 ${currentView === AppView.SETTINGS ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
            <Menu size={22} />
            <span className="text-[9px] font-black uppercase">{t('ui.nav.menu')}</span>
         </button>
@@ -185,49 +188,58 @@ const App: React.FC = () => {
 
         <div className="max-w-4xl mx-auto w-full">
           <ErrorBoundary>
-            {view === AppView.DASHBOARD ? (
-              <Dashboard 
-                progress={progress} stats={stats} wordsDue={reviewWords.length}
-                newWordsAvailable={newWordsForToday.length} unlearnedExtraWords={unlearnedExtraWords}
-                newWordsList={newWordsForToday} learnedToday={learnedToday}
-                onStartStudy={handleStartStudy} onStartReview={handleStartReview}
-                onGetSeedPack={() => addExtraWords(unlearnedExtraWords.slice(0, 10))}
-                onWordClick={(w) => openModal('WORD_DETAIL', w)}
-                onViewAllHarvest={() => openModal('DAILY_HARVEST')}
-              />
-            ) : view === AppView.VOCABULARY ? (
-              <VocabularyView 
-                words={allAvailableWords} progress={progress} 
-                onWordClick={(w) => openModal('WORD_DETAIL', w)}
-                onAddExtraWords={addExtraWords} onStartExtraStudy={handleStartExtraStudy}
-              />
-            ) : view === AppView.SETTINGS ? (
-              <MobileSettings
-                user={user} stats={stats} displayName={travelerName}
-                isSupabaseConfigured={isSupabaseConfigured} onLoginRequest={handleLoginRequest}
-                onLogout={handleLogout} onShareAchievement={() => openModal('ACHIEVEMENT', { name: travelerName })}
-              />
-            ) : null}
+            <Routes>
+              <Route path="/" element={
+                <Dashboard 
+                  progress={progress} stats={stats} wordsDue={reviewWords.length}
+                  newWordsAvailable={newWordsForToday.length} unlearnedExtraWords={unlearnedExtraWords}
+                  newWordsList={newWordsForToday} learnedToday={learnedToday}
+                  onStartStudy={handleStartStudy} onStartReview={handleStartReview}
+                  onGetSeedPack={() => addExtraWords(unlearnedExtraWords.slice(0, 10))}
+                  onWordClick={(w) => openModal('WORD_DETAIL', w)}
+                />
+              } />
+              <Route path="/pocket" element={
+                <VocabularyView 
+                  words={allAvailableWords} progress={progress} 
+                  onWordClick={(w) => openModal('WORD_DETAIL', w)}
+                  onAddExtraWords={addExtraWords} onStartExtraStudy={handleStartExtraStudy}
+                />
+              } />
+              <Route path="/stories" element={<BlogView />} />
+              <Route path="/stories/:slug" element={<BlogView />} />
+              <Route path="/menu" element={
+                <MobileSettings
+                  user={user} stats={stats} displayName={travelerName}
+                  isSupabaseConfigured={isSupabaseConfigured} onLoginRequest={handleLoginRequest}
+                  onLogout={handleLogout} onShareAchievement={() => openModal('ACHIEVEMENT', { name: travelerName })}
+                />
+              } />
+              <Route path="/study" element={
+                <div className="fixed inset-0 z-50 overflow-hidden flex flex-col bg-[#f7f9e4]">
+                   <StudyView key={`session-${sessionVersion}`} user={user} words={sessionWords} dailyHarvest={learnedToday} onFinish={() => navigate('/')} onFeedback={handleFeedback} userStats={stats} onLoginRequest={handleLoginRequest} />
+                </div>
+              } />
+              <Route path="/review" element={
+                <div className="fixed inset-0 z-50 overflow-hidden flex flex-col bg-[#f7f9e4]">
+                   <StudyView key={`session-${sessionVersion}`} user={user} words={sessionWords} dailyHarvest={learnedToday} onFinish={() => navigate('/')} onFeedback={handleFeedback} userStats={stats} onLoginRequest={handleLoginRequest} />
+                </div>
+              } />
+            </Routes>
           </ErrorBoundary>
         </div>
       </main>
 
-      {(view === AppView.STUDY || view === AppView.REVIEW) && (
-        <div className={`fixed inset-0 z-50 overflow-hidden flex flex-col ${isBlitzMode ? 'bg-[#f3e5f5]' : 'bg-[#f7f9e4]'}`}>
-          <ErrorBoundary>
-            <StudyView 
-              key={`session-${sessionVersion}`} user={user} words={sessionWords}
-              dailyHarvest={learnedToday} onFinish={() => setView(AppView.DASHBOARD)}
-              onFeedback={handleFeedback} isBlitz={isBlitzMode}
-              onLoginRequest={handleLoginRequest} userStats={stats} 
-            />
-          </ErrorBoundary>
-        </div>
-      )}
-
       <ModalManager />
-      <NotificationToast />
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   );
 };
 

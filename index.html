@@ -1,9 +1,30 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Shelly Spanish Island</title>
+    <title>Shelly Spanish Island - Master Spanish with AI Mnemonics</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="A tropical oasis for learning Spanish. Master 1000+ high-frequency words with AI-powered mnemonics, restrictive sentence challenges, and scientific SRS algorithms.">
+    <meta name="keywords" content="Spanish learning, Spanish vocabulary, AI Spanish tutor, SRS flashcards, Spanish mnemonics, Shelly Spanish Island">
+    <meta name="author" content="Shelly">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ssisland.space/">
+    <meta property="og:title" content="Shelly Spanish Island - Your Personal Spanish Oasis">
+    <meta property="og:description" content="Stop memorizing, start growing. Use AI to build sentences and master Spanish naturally.">
+    <meta property="og:image" content="https://ssisland.space/og-preview.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://ssisland.space/">
+    <meta property="twitter:title" content="Shelly Spanish Island - AI Spanish Tutor">
+    <meta property="twitter:description" content="Tropical-themed Spanish learning app with restrictive AI sentence challenges.">
+    <meta property="twitter:image" content="https://ssisland.space/og-preview.png">
+
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2378c850' d='M11,20C4.3,18.3,2,12.1,4,6c2.4-7.2,12.7-7.2,15.1,0C21,12.1,17.7,18.3,11,20z'/%3E%3C/svg%3E">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -42,7 +63,6 @@
           height: 100vh;
         }
 
-        /* 核心卡片容器 */
         .card-perspective { perspective: 2500px; }
         .card-inner {
           position: relative; width: 100%; height: 100%;
@@ -51,7 +71,6 @@
         }
         .card-inner.is-flipped { transform: rotateY(180deg); }
 
-        /* 物理离场动画 */
         .card-exit-left { animation: yeetLeft 0.5s cubic-bezier(0.4, 0, 1, 1) forwards; pointer-events: none; }
         .card-exit-right { animation: yeetRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; pointer-events: none; }
         .card-exit-fast-right { animation: yeetFastRight 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards; pointer-events: none; }
@@ -71,7 +90,6 @@
         .card-face-front { background: #fffdf5; }
         .card-face-back { transform: rotateY(180deg); background-color: #fffdf5; }
 
-        /* 环境与悬浮动画库 */
         @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
         @keyframes float-small { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-4px); } }
         @keyframes sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
@@ -99,6 +117,7 @@
     "react": "https://esm.sh/react@^19.2.4",
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
     "react/": "https://esm.sh/react@^19.2.4/",
+    "react-router-dom": "https://esm.sh/react-router-dom@^6.22.0",
     "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.95.3",
     "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
     "react-i18next": "https://esm.sh/react-i18next@^16.5.4",

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useIslandStore } from '../store/useIslandStore';
 import WordDetailModal from './WordDetailModal';
@@ -8,13 +7,12 @@ import SyncCompleteModal from './SyncCompleteModal';
 import ProfileEntryModal from './ProfileEntryModal';
 import ReturningWelcomeModal from './ReturningWelcomeModal';
 import AchievementShareModal from './AchievementShareModal';
+import SubscriptionModal from './SubscriptionModal';
 import { useSRS } from '../hooks/useSRS';
-import { useProfile } from '../hooks/useProfile';
 
 const ModalManager: React.FC = () => {
-  const { activeModal, modalData, closeModal, stats, progress, user } = useIslandStore();
+  const { activeModal, modalData, closeModal, stats, progress, updateProfile } = useIslandStore();
   const { learnedToday, learnedWords, reviewWords, newWordsForToday } = useSRS();
-  const { updateProfile } = useProfile(user);
 
   if (!activeModal) return null;
 
@@ -33,7 +31,6 @@ const ModalManager: React.FC = () => {
           onClose={closeModal}
           onWordClick={(w) => useIslandStore.getState().openModal('WORD_DETAIL', w)}
           onStartBlitz={(words) => {
-             // blitz logic handled via AppView change
              closeModal();
           }}
         />
@@ -65,6 +62,9 @@ const ModalManager: React.FC = () => {
           onClose={closeModal}
         />
       );
+
+    case 'SUBSCRIPTION':
+      return <SubscriptionModal onClose={closeModal} />;
 
     default:
       return null;

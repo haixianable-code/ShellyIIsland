@@ -1,8 +1,7 @@
 import React from 'react';
 import { AppView } from '../types';
 import { User } from '@supabase/supabase-js';
-// Added Heart to imports
-import { Home, Briefcase, Leaf, RotateCcw, Download, Volume2, VolumeX, LogOut, ShieldCheck, ChevronRight, UserPlus, Trophy, Heart } from 'lucide-react';
+import { Home, Briefcase, Leaf, RotateCcw, Download, Volume2, VolumeX, LogOut, ShieldCheck, ChevronRight, UserPlus, Trophy, Heart, Newspaper, Crown } from 'lucide-react';
 import { playClick, playSparkle } from '../utils/sfx';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -21,8 +20,9 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayName, isSupabaseConfigured, onLoginRequest, onLogout, onShareAchievement }) => {
   const { t } = useTranslation();
-  const { isMuted, setMuted } = useIslandStore();
+  const { isMuted, setMuted, profile, openModal } = useIslandStore();
   const isGuest = isSupabaseConfigured && !user;
+  const isPremium = profile?.is_premium;
 
   const handleToggleMute = () => {
     playClick();
@@ -31,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
 
   const handleExport = () => {
     playClick();
-    const data = localStorage.getItem('hola_word_srs_v3_offline');
+    const data = localStorage.getItem('hola_word_srs_v4_offline');
     if (!data) return;
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -50,7 +50,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
 
   return (
     <aside className="w-72 bg-[#f9f5da] border-r-4 border-[#e0d9b4] hidden md:flex flex-col h-screen fixed left-0 top-0 z-50 shadow-[10px_0_0_rgba(224,217,180,0.4)]">
-      {/* Logo Section */}
       <div className="p-8 pb-4 text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-[#78c850] rounded-[2rem] shadow-[0_6px_0_#5a9a3b] mb-3 border-4 border-white">
           <Leaf className="text-white w-8 h-8 fill-current" />
@@ -58,8 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
         <h1 className="text-xl font-black text-[#4b7d78] tracking-tight uppercase">SS Island</h1>
       </div>
 
-      {/* Main Navigation */}
-      <nav className="px-4 py-4 space-y-3">
+      <nav className="px-4 py-4 space-y-2">
         <button
           onClick={() => { playClick(); setView(AppView.DASHBOARD); }}
           className={`w-full flex items-center gap-4 px-6 py-4 rounded-[2.2rem] transition-all duration-200 border-b-4 ${currentView === AppView.DASHBOARD ? 'bg-[#ffa600] text-white font-black border-[#cc8400] shadow-md -translate-y-0.5' : 'text-[#8d99ae] hover:bg-white/50 border-transparent'}`}
@@ -74,10 +72,16 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
           <Briefcase size={22} className={currentView === AppView.VOCABULARY ? 'fill-current' : ''} />
           <span className="text-base font-black uppercase tracking-tight">{t('ui.nav.pocket')}</span>
         </button>
+        <button
+          onClick={() => { playClick(); setView(AppView.BLOG); }}
+          className={`w-full flex items-center gap-4 px-6 py-4 rounded-[2.2rem] transition-all duration-200 border-b-4 ${currentView === AppView.BLOG ? 'bg-[#ffa600] text-white font-black border-[#cc8400] shadow-md -translate-y-0.5' : 'text-[#8d99ae] hover:bg-white/50 border-transparent'}`}
+        >
+          <Newspaper size={22} className={currentView === AppView.BLOG ? 'fill-current' : ''} />
+          <span className="text-base font-black uppercase tracking-tight">Island Stories</span>
+        </button>
       </nav>
 
-      {/* Identity Card */}
-      <div className="px-4 py-6">
+      <div className="px-4 py-4">
         <div className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.3em] mb-3 pl-4">Citizenship</div>
         {isGuest ? (
           <button 
@@ -103,16 +107,31 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
                className={`w-full text-left bg-white p-5 rounded-[2.5rem] border-4 ${currentView === AppView.SETTINGS ? 'border-[#ffa600]' : 'border-[#e0d9b4]'} shadow-sm relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-md group`}
             >
                <div className="flex items-center gap-4">
-                  <div className="bg-[#78c850] p-2.5 rounded-xl border-2 border-white shadow-inner">
-                     <ShieldCheck className="text-white" size={20} />
+                  <div className={`${isPremium ? 'bg-[#ffa600]' : 'bg-[#78c850]'} p-2.5 rounded-xl border-2 border-white shadow-inner transition-colors`}>
+                     {isPremium ? <Crown className="text-white" size={20} /> : <ShieldCheck className="text-white" size={20} />}
                   </div>
                   <div className="flex-1 min-w-0">
                      <h4 className="text-[#4b7d78] text-xs font-black uppercase leading-none mb-1 truncate">{displayName}</h4>
-                     <p className="text-[#8bc34a] text-[9px] font-black uppercase tracking-widest">SSI CITIZEN</p>
+                     <p className={`${isPremium ? 'text-[#ffa600]' : 'text-[#8bc34a]'} text-[9px] font-black uppercase tracking-widest`}>
+                       {isPremium ? 'SSI SUPPORTER' : 'SSI CITIZEN'}
+                     </p>
                   </div>
                </div>
-               <div className="absolute -right-2 -bottom-2 text-[10px] font-black border-2 border-[#8bc34a]/10 text-[#8bc34a]/10 px-2 py-0.5 rounded rotate-12">OFFICIAL</div>
+               <div className={`absolute -right-2 -bottom-2 text-[10px] font-black border-2 ${isPremium ? 'border-[#ffa600]/20 text-[#ffa600]/20' : 'border-[#8bc34a]/10 text-[#8bc34a]/10'} px-2 py-0.5 rounded rotate-12`}>
+                 {isPremium ? 'PREMIUM' : 'OFFICIAL'}
+               </div>
             </button>
+            
+            {!isPremium && (
+              <button 
+                onClick={() => { playSparkle(); openModal('SUBSCRIPTION'); }}
+                className="w-full bg-gradient-to-r from-[#ffa600] to-[#ff7b72] text-white flex items-center justify-center gap-2 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-md hover:scale-[1.02] active:scale-95 transition-all animate-glow"
+              >
+                 <Crown size={14} />
+                 <span>Become Supporter</span>
+              </button>
+            )}
+
             <button 
                onClick={() => { playSparkle(); onShareAchievement(); }}
                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#ff7b72]/10 text-[#ff7b72] font-black text-[10px] uppercase tracking-widest hover:bg-[#ff7b72]/20 transition-all border border-dashed border-[#ff7b72]/30"
@@ -124,8 +143,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
         ) : null}
       </div>
 
-      {/* Utilities Section */}
-      <div className="flex-1 flex flex-col justify-end px-4 py-8 space-y-6">
+      <div className="flex-1 flex flex-col justify-end px-4 py-8 space-y-4">
         <div className="space-y-1 bg-black/5 p-4 rounded-[2rem] border-2 border-transparent">
           <div className="px-2 mb-2 flex justify-center">
             <LanguageSwitcher />

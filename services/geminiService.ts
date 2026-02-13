@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 
 // AI Word Info structure for smart hints
@@ -15,12 +14,8 @@ const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
  */
 export const testAISpiritConnection = async (): Promise<{ success: boolean; message: string }> => {
   try {
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) {
-      return { success: false, message: "API_KEY is missing from environment." };
-    }
-    
-    const ai = new GoogleGenAI({ apiKey });
+    // 🏝️ Fix: Directly use process.env.API_KEY in the initialization as per GenAI coding guidelines
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: "Say 'Success' in Spanish.",
@@ -46,14 +41,8 @@ export const getAISmartHint = async (word: string, translation: string, retries 
   const MAX_RETRIES = 3;
   
   try {
-    const apiKey = process.env.API_KEY;
-    
-    if (!apiKey) {
-      console.warn("AI Service: API_KEY is undefined.");
-      return null;
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
+    // 🏝️ Fix: Directly use process.env.API_KEY in the initialization as per GenAI coding guidelines
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Provide a short smart grammar hint and a funny mnemonic for the Spanish word "${word}" (English: "${translation}"). Concise JSON only.`,
