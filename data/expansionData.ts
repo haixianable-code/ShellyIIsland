@@ -4,6 +4,75 @@ import { n, m, a, v } from '../utils/wordRegistry';
 
 export const EXTRA_CANDIDATES: Word[] = [
   // ==============================================
+  // 🏙️ PACK E: THE CITIZEN (House, City, Clothes)
+  // Category: 'citizen'
+  // ==============================================
+  
+  // --- LA CASA (The House) ---
+  n('habitacion', 'habitación', 'Room', 'daily', 'f', 'Space.', 'Mi habitación.', 'My room.', 'Habitación doble.', 'Double room.', 'Suffix -ción is always Feminine.'),
+  n('dormitorio', 'dormitorio', 'Bedroom', 'daily', 'm', 'Sleeping.', 'Dormitorio grande.', 'Big bedroom.', 'Muebles de dormitorio.', 'Bedroom furniture.', 'Root: Dormir (to sleep).'),
+  n('cocina', 'cocina', 'Kitchen', 'food', 'f', 'Cooking.', 'Cocina limpia.', 'Clean kitchen.', 'Estoy en la cocina.', 'I am in the kitchen.', 'Verb: Cocinar.'),
+  n('salon', 'salón', 'Living Room', 'daily', 'm', 'Leisure.', 'En el salón.', 'In the living room.', 'Salón amplio.', 'Spacious living room.', 'Big room suffix -on.'),
+  n('puerta', 'puerta', 'Door', 'daily', 'f', 'Access.', 'Abre la puerta.', 'Open the door.', 'Puerta cerrada.', 'Closed door.', 'Port (Puerto) is related.'),
+  n('ventana', 'ventana', 'Window', 'daily', 'f', 'View.', 'Mira la ventana.', 'Look at the window.', 'Ventana abierta.', 'Open window.', 'Wind flows through it.'),
+  n('pared', 'pared', 'Wall', 'daily', 'f', 'Structure.', 'Pared blanca.', 'White wall.', 'Reloj de pared.', 'Wall clock.', 'Fem: La pared.'),
+  n('suelo', 'suelo', 'Floor/Ground', 'daily', 'm', 'Surface.', 'En el suelo.', 'On the floor.', 'Suelo mojado.', 'Wet floor.', 'Also means Soil.'),
+  n('techo', 'techo', 'Ceiling/Roof', 'daily', 'm', 'Top.', 'Techo alto.', 'High ceiling.', 'Bajo el techo.', 'Under the roof.', 'Protection.'),
+  n('luz', 'luz', 'Light', 'tech', 'f', 'Energy.', 'Enciende la luz.', 'Turn on the light.', 'Luz solar.', 'Sunlight.', 'Fem: La luz.'),
+  
+  // --- MUEBLES Y OBJETOS (Furniture & Objects) ---
+  n('mesa', 'mesa', 'Table', 'daily', 'f', 'Furniture.', 'Ponlo en la mesa.', 'Put it on the table.', 'Mesa redonda.', 'Round table.', 'Essential object.'),
+  n('silla', 'silla', 'Chair', 'daily', 'f', 'Sitting.', 'Siéntate en la silla.', 'Sit on the chair.', 'Silla cómoda.', 'Comfortable chair.', 'Pair with Sentarse.'),
+  n('cama', 'cama', 'Bed', 'daily', 'f', 'Sleeping.', 'Voy a la cama.', 'I go to bed.', 'Hacer la cama.', 'To make the bed.', 'Time to sleep.'),
+  n('vaso', 'vaso', 'Glass (Drinking)', 'food', 'm', 'Container.', 'Vaso de agua.', 'Glass of water.', 'Vaso vacío.', 'Empty glass.', 'Not for windows (Vidrio).'),
+  n('plato', 'plato', 'Plate/Dish', 'food', 'm', 'Eating.', 'Plato limpio.', 'Clean plate.', 'Primer plato.', 'First course.', 'Can mean the meal itself.'),
+  n('cuchillo', 'cuchillo', 'Knife', 'food', 'm', 'Tool.', 'Corta con cuchillo.', 'Cut with knife.', 'Cuchillo afilado.', 'Sharp knife.', 'Double L sound.'),
+  n('tenedor', 'tenedor', 'Fork', 'food', 'm', 'Tool.', 'Usa el tenedor.', 'Use the fork.', 'Tenedor de plástico.', 'Plastic fork.', 'Sounds like "Tenure".'),
+  n('cuchara', 'cuchara', 'Spoon', 'food', 'f', 'Tool.', 'Sopa con cuchara.', 'Soup with spoon.', 'Una cucharada.', 'A spoonful.', 'Fem: La cuchara.'),
+  n('reloj', 'reloj', 'Clock/Watch', 'time', 'm', 'Timepiece.', 'Mira el reloj.', 'Look at the watch.', 'Reloj caro.', 'Expensive watch.', 'J is silent/soft.'),
+  n('gafas', 'gafas', 'Glasses', 'body', 'f', 'Vision.', 'Llevo gafas.', 'I wear glasses.', 'Gafas de sol.', 'Sunglasses.', 'Always plural.'),
+  n('ordenador', 'ordenador', 'Computer', 'tech', 'm', 'Device.', 'Mi ordenador.', 'My computer.', 'Ordenador portátil.', 'Laptop.', 'Spain (LatAm: Computadora).'),
+  n('cosa', 'cosa', 'Thing', 'abstract', 'f', 'Object.', '¿Qué es esa cosa?', 'What is that thing?', 'Muchas cosas.', 'Many things.', 'Very common filler.'),
+
+  // --- LA ROPA (Clothing) ---
+  n('camisa', 'camisa', 'Shirt', 'daily', 'f', 'Top.', 'Camisa blanca.', 'White shirt.', 'Camisa de botones.', 'Button shirt.', 'Formal shirt.'),
+  n('camiseta', 'camiseta', 'T-Shirt', 'daily', 'f', 'Casual.', 'Camiseta negra.', 'Black t-shirt.', 'Camiseta de fútbol.', 'Soccer jersey.', 'Diminutive of Camisa.'),
+  n('pantalon', 'pantalón', 'Pants', 'daily', 'm', 'Bottom.', 'Pantalón largo.', 'Long pants.', 'Pantalón vaquero.', 'Jeans.', 'Often plural (Pantalones).'),
+  n('zapato', 'zapato', 'Shoe', 'daily', 'm', 'Footwear.', 'Zapatos nuevos.', 'New shoes.', 'Atar los zapatos.', 'Tie the shoes.', 'Pair with Pie.'),
+  n('abrigo', 'abrigo', 'Coat', 'daily', 'm', 'Winter.', 'Hace frío, lleva abrigo.', 'It is cold, wear a coat.', 'Abrigo grueso.', 'Thick coat.', 'Root: Abrigar (to shelter).'),
+  n('vestido', 'vestido', 'Dress', 'daily', 'm', 'Outfit.', 'Vestido rojo.', 'Red dress.', 'Vestido largo.', 'Long dress.', 'Warning: Masculine (El vestido).'),
+  n('falda', 'falda', 'Skirt', 'daily', 'f', 'Outfit.', 'Falda corta.', 'Short skirt.', 'Falda azul.', 'Blue skirt.', 'Fem: La falda.'),
+
+  // --- LA CIUDAD (The City) ---
+  n('ciudad', 'ciudad', 'City', 'travel', 'f', 'Urban.', 'Ciudad grande.', 'Big city.', 'Vivo en la ciudad.', 'I live in the city.', 'Ends in D -> Feminine.'),
+  n('pueblo', 'pueblo', 'Town/Village', 'travel', 'm', 'Rural.', 'Pueblo pequeño.', 'Small town.', 'Mi pueblo.', 'My hometown.', 'Can also mean "The People".'),
+  n('edificio', 'edificio', 'Building', 'travel', 'm', 'Structure.', 'Edificio alto.', 'Tall building.', 'Entra al edificio.', 'Enter the building.', 'Looks like Edifice.'),
+  n('tienda', 'tienda', 'Shop/Store', 'society', 'f', 'Commerce.', 'Voy a la tienda.', 'I go to the store.', 'Tienda de ropa.', 'Clothes shop.', 'Verb: Tender.'),
+  n('supermercado', 'supermercado', 'Supermarket', 'food', 'm', 'Commerce.', 'Comprar comida.', 'Buy food.', 'Carro de supermercado.', 'Shopping cart.', 'Cognate.'),
+  n('banco', 'banco', 'Bank/Bench', 'society', 'm', 'Finance.', 'Dinero en el banco.', 'Money in the bank.', 'Siéntate en el banco.', 'Sit on the bench.', 'Same word for both.'),
+  n('escuela', 'escuela', 'School', 'work', 'f', 'Education.', 'Niños en la escuela.', 'Kids at school.', 'Escuela pública.', 'Public school.', 'Related to Scholar.'),
+  n('tren', 'tren', 'Train', 'travel', 'm', 'Transport.', 'Viajar en tren.', 'Travel by train.', 'Estación de tren.', 'Train station.', 'Cognate.'),
+  n('autobus', 'autobús', 'Bus', 'travel', 'm', 'Transport.', 'Parada de autobús.', 'Bus stop.', 'Esperar el autobús.', 'Wait for the bus.', 'Short: Bus.'),
+  n('avion', 'avión', 'Airplane', 'travel', 'm', 'Transport.', 'Avión rápido.', 'Fast plane.', 'Billete de avión.', 'Plane ticket.', 'Related to Aviation.'),
+
+  // --- INTERACTION VERBS ---
+  v('abrir', 'abrir', 'To open', 'daily', 'Action.', 'Abro la puerta.', 'I open the door.', 'Abren la tienda.', 'They open the shop.', 'Opposite: Cerrar.', undefined, true),
+  v('cerrar', 'cerrar', 'To close', 'daily', 'Action.', 'Cierra la ventana.', 'Close the window.', 'La tienda cierra.', 'The shop closes.', 'Stem E->IE (Cierro).', 'cierro, cierras, cierra, cerramos, cerráis, cierran', false),
+  v('encender', 'encender', 'To turn on/light', 'tech', 'Power.', 'Enciende la luz.', 'Turn on the light.', 'Encender el fuego.', 'Light the fire.', 'Stem E->IE.', 'enciendo, enciendes, enciende, encendemos, encendéis, encienden', false),
+  v('apagar', 'apagar', 'To turn off', 'tech', 'Power.', 'Apaga la tele.', 'Turn off the TV.', 'Apaga la luz.', 'Turn off the light.', 'Use for electronics/fire.', undefined, true),
+  v('usar', 'usar', 'To use', 'tech', 'Utility.', 'Uso el ordenador.', 'I use the computer.', '¿Puedo usar esto?', 'Can I use this?', 'Cognate.', undefined, true),
+  v('romper', 'romper', 'To break', 'daily', 'Destruction.', 'He roto el vaso.', 'I have broken the glass.', 'Se rompió.', 'It broke.', 'Participle: Roto.', undefined, true),
+  v('arreglar', 'arreglar', 'To fix/arrange', 'daily', 'Repair.', 'Arreglo el coche.', 'I fix the car.', 'Arreglar la casa.', 'Tidy up the house.', 'Multi-use verb.', undefined, true),
+  v('limpiar', 'limpiar', 'To clean', 'daily', 'Hygiene.', 'Limpio la cocina.', 'I clean the kitchen.', 'Limpiar el suelo.', 'Clean the floor.', 'Adj: Limpio.', undefined, true),
+
+  // --- DEMONSTRATIVES (Pointing Tools) ---
+  m('este_dem', 'este', 'This (Masc)', 'grammar', 'Near.', 'Este libro.', 'This book.', 'Este es mi amigo.', 'This is my friend.', 'citizen', 'For masculine nouns nearby.'),
+  m('esta_dem', 'esta', 'This (Fem)', 'grammar', 'Near.', 'Esta casa.', 'This house.', 'Esta semana.', 'This week.', 'citizen', 'For feminine nouns nearby.'),
+  m('ese_dem', 'ese', 'That (Masc)', 'grammar', 'Far.', 'Ese coche.', 'That car.', 'Quiero ese.', 'I want that one.', 'citizen', 'For masculine nouns further away.'),
+  m('esa_dem', 'esa', 'That (Fem)', 'grammar', 'Far.', 'Esa chica.', 'That girl.', 'Esa es la verdad.', 'That is the truth.', 'citizen', 'For feminine nouns further away.'),
+  m('esto_dem', 'esto', 'This (Neutral)', 'grammar', 'Unknown.', '¿Qué es esto?', 'What is this?', 'Esto es raro.', 'This is strange.', 'citizen', 'Use when you don\'t know the gender.'),
+
+  // ==============================================
   // 🚑 PACK D: THE SURVIVOR (Health, City, directions)
   // Category: 'survivor'
   // ==============================================
