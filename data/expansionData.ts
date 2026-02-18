@@ -4,6 +4,44 @@ import { n, m, a, v } from '../utils/wordRegistry';
 
 export const EXTRA_CANDIDATES: Word[] = [
   // ==============================================
+  // 🚑 PACK D: THE SURVIVOR (Health, City, directions)
+  // Category: 'survivor'
+  // ==============================================
+  // --- BODY & HEALTH ---
+  n('cuerpo', 'cuerpo', 'Body', 'body', 'm', 'Anatomy.', 'Me duele el cuerpo.', 'My body hurts.', 'Cuerpo humano.', 'Human body.', 'Root of "Corpse".'),
+  n('cabeza', 'cabeza', 'Head', 'body', 'f', 'Anatomy.', 'Dolor de cabeza.', 'Headache.', 'Usa la cabeza.', 'Use your head.', 'Fem: La cabeza.'),
+  n('mano', 'mano', 'Hand', 'body', 'f', 'Anatomy.', 'Dame la mano.', 'Give me your hand.', 'Mano derecha.', 'Right hand.', 'WARNING: Ends in O but is Feminine (La mano).'),
+  n('pie', 'pie', 'Foot', 'body', 'm', 'Anatomy.', 'Estoy de pie.', 'I am standing (on foot).', 'Pie izquierdo.', 'Left foot.', 'Masc: El pie.'),
+  n('estomago', 'estómago', 'Stomach', 'body', 'm', 'Anatomy.', 'Me duele el estómago.', 'My stomach hurts.', 'Estómago vacío.', 'Empty stomach.', 'Note accent on ó.'),
+  n('dolor', 'dolor', 'Pain', 'body', 'm', 'Sensation.', 'Tengo dolor.', 'I have pain.', 'Sin dolor.', 'Without pain.', 'Verb: Doler.'),
+  n('medicina', 'medicina', 'Medicine', 'body', 'f', 'Health.', 'Toma la medicina.', 'Take the medicine.', 'Medicina fuerte.', 'Strong medicine.', 'Cognate.'),
+  n('medico', 'médico', 'Doctor', 'body', 'm', 'Profession.', 'Voy al médico.', 'I go to the doctor.', 'Médico bueno.', 'Good doctor.', 'Synonym: Doctor.'),
+  n('hospital', 'hospital', 'Hospital', 'body', 'm', 'Place.', '¿Dónde está el hospital?', 'Where is the hospital?', 'Hospital central.', 'Central hospital.', 'H is silent.'),
+  v('doler', 'doler', 'To hurt', 'body', 'Sensation.', 'Me duele aquí.', 'It hurts here.', 'Me duelen los pies.', 'My feet hurt.', 'Note: Works like Gustar (Me duele). Stem O->UE.', 'duele, duelen (usually)', false),
+  v('curar', 'curar', 'To cure/heal', 'body', 'Health.', 'El tiempo cura.', 'Time heals.', 'Curar la herida.', 'To heal the wound.', 'Tiempo: Time.', undefined, true),
+
+  // --- CITY & NAVIGATION ---
+  n('calle', 'calle', 'Street', 'travel', 'f', 'Location.', 'En la calle.', 'In the street.', 'Calle mayor.', 'Main street.', 'Double L sounds like Y.'),
+  n('bano', 'baño', 'Bathroom', 'daily', 'm', 'Place.', '¿Dónde está el baño?', 'Where is the bathroom?', 'Voy al baño.', 'I go to the bathroom.', 'Essential phrase.'),
+  n('mapa', 'mapa', 'Map', 'travel', 'm', 'Tool.', 'Mira el mapa.', 'Look at the map.', 'Mapa mundi.', 'World map.', 'WARNING: Ends in A but is Masculine (El mapa).'),
+  n('lugar', 'lugar', 'Place', 'travel', 'm', 'Location.', 'Lugar bonito.', 'Beautiful place.', 'En este lugar.', 'In this place.', 'Plural: Lugares.'),
+  n('entrada', 'entrada', 'Entrance', 'travel', 'f', 'Location.', 'Esa es la entrada.', 'That is the entrance.', 'Entrada libre.', 'Free entrance.', 'Opposite: Salida.'),
+  n('salida', 'salida', 'Exit', 'travel', 'f', 'Location.', 'Busco la salida.', 'I look for the exit.', 'Salida de emergencia.', 'Emergency exit.', 'Verb: Salir.'),
+  m('izquierda', 'izquierda', 'Left', 'travel', 'Direction.', 'A la izquierda.', 'To the left.', 'Mano izquierda.', 'Left hand.', 'survivor', 'Direction.'),
+  m('derecha', 'derecha', 'Right', 'travel', 'Direction.', 'A la derecha.', 'To the right.', 'Gira a la derecha.', 'Turn right.', 'survivor', 'Direction.'),
+  m('arriba_dir', 'arriba', 'Up/Above', 'travel', 'Direction.', 'Mira arriba.', 'Look up.', 'Está arriba.', 'It is upstairs.', 'survivor', 'Direction.'),
+  m('abajo_dir', 'abajo', 'Down/Below', 'travel', 'Direction.', 'Mira abajo.', 'Look down.', 'Está abajo.', 'It is downstairs.', 'survivor', 'Direction.'),
+
+  // --- TRANSACTIONS & NUMBERS ---
+  v('costar', 'costar', 'To cost', 'society', 'Value.', '¿Cuánto cuesta?', 'How much does it cost?', 'Cuesta mucho.', 'It costs a lot.', 'Note: Stem O->UE.', 'cuesta, cuestan (usually)', false),
+  n('precio', 'precio', 'Price', 'society', 'm', 'Value.', 'Buen precio.', 'Good price.', '¿Qué precio tiene?', 'What price does it have?', 'Cognate.'),
+  n('cuenta', 'cuenta', 'Bill/Account', 'society', 'f', 'Payment.', 'La cuenta, por favor.', 'The check, please.', 'Cuenta bancaria.', 'Bank account.', 'Essential for restaurants.'),
+  n('tarjeta', 'tarjeta', 'Card', 'society', 'f', 'Payment.', 'Pago con tarjeta.', 'I pay with card.', 'Tarjeta de crédito.', 'Credit card.', 'Pair with Pagar.'),
+  n('efectivo', 'efectivo', 'Cash', 'society', 'm', 'Payment.', 'Pago en efectivo.', 'I pay in cash.', 'No tengo efectivo.', 'I have no cash.', 'Essential transaction.'),
+  n('billete', 'billete', 'Ticket/Banknote', 'travel', 'm', 'Paper.', 'Billete de tren.', 'Train ticket.', 'Billete de avión.', 'Plane ticket.', 'Also means paper money.'),
+  n('numero', 'número', 'Number', 'abstract', 'm', 'Math.', 'Tu número de teléfono.', 'Your phone number.', 'Número uno.', 'Number one.', 'Cognate.'),
+  
+  // ==============================================
   // 📦 PACK A: THE STORYTELLER (Narrative & Time)
   // Category: 'storyteller'
   // ==============================================
