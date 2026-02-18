@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Word } from '../types';
 import { 
   X, Check, ArrowRight, PackagePlus, Clock, Scroll, Key, MapPin,
-  Search, Wand2, PlusCircle, PackageOpen, Box, Star, Leaf, Sparkles, Lock, Crown, ChevronRight, BookOpen, MessageCircle, Zap
+  Search, Wand2, PlusCircle, PackageOpen, Box, Star, Leaf, Sparkles, Lock, Crown, ChevronRight, BookOpen, MessageCircle, Zap, LifeBuoy
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playClick, playSparkle, playSwish } from '../utils/sfx';
@@ -20,6 +20,7 @@ interface ExpansionModalProps {
 
 const RAW_CATEGORIES = [
   { id: 'all', icon: PackagePlus, label: 'All' },
+  { id: 'survivor', icon: LifeBuoy, label: 'Survivor' },
   { id: 'storyteller', icon: BookOpen, label: 'Storyteller' },
   { id: 'debater', icon: MessageCircle, label: 'Debater' },
   { id: 'cognates', icon: Zap, label: 'Speed Boost' },
@@ -45,7 +46,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
     document.body.classList.add('modal-open');
     // Sort logic: Prioritize new packs if they exist
     const shuffled = [...availableWords].sort((a, b) => {
-       const priority = ['storyteller', 'debater', 'cognates'];
+       const priority = ['survivor', 'storyteller', 'debater', 'cognates'];
        const aP = priority.includes(a.category || '') ? 1 : 0;
        const bP = priority.includes(b.category || '') ? 1 : 0;
        if (aP !== bP) return bP - aP;
