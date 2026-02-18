@@ -45,6 +45,31 @@ export const EXTRA_CANDIDATES: Word[] = [
   v('sere', 'seré', 'I will be', 'time', 'Identity.', 'Seré rico.', 'I will be rich.', 'Seré mejor.', 'I will be better.', 'Root: Ser.', undefined, true),
 
   // ==============================================
+  // 🏢 PACK P: THE PROFESSIONAL (Work & Travel - Phase 3)
+  // Category: 'citizen'
+  // ==============================================
+  // --- WORKPLACE (La Oficina) ---
+  n('oficina', 'oficina', 'Office', 'work', 'f', 'Workplace.', 'Voy a la oficina.', 'I go to the office.', 'Oficina central.', 'Headquarters.', 'Root of "Officer".'),
+  n('reunión', 'reunión', 'Meeting', 'work', 'f', 'Event.', 'Tengo una reunión.', 'I have a meeting.', 'Reunión importante.', 'Important meeting.', 'Verb: Reunirse.'),
+  n('jefe', 'jefe', 'Boss', 'work', 'm', 'Person.', 'Mi jefe es bueno.', 'My boss is good.', 'Hola jefe.', 'Hello boss.', 'Fem: Jefa.'),
+  n('cliente', 'cliente', 'Client/Customer', 'work', 'm', 'Person.', 'Cliente nuevo.', 'New client.', 'Atención al cliente.', 'Customer service.', 'Ends in E (can be fem: La cliente).'),
+  n('empresa', 'empresa', 'Company', 'work', 'f', 'Organization.', 'Empresa grande.', 'Big company.', 'Dueño de la empresa.', 'Owner of the company.', 'Synonym: Compañía.'),
+  n('contrato', 'contrato', 'Contract', 'work', 'm', 'Document.', 'Firmar el contrato.', 'Sign the contract.', 'Contrato fijo.', 'Permanent contract.', 'Cognate.'),
+  {
+    ...n('exito', 'éxito', 'Success', 'abstract', 'm', 'Goal.', 'Gran éxito.', 'Big success.', 'Tener éxito.', 'To be successful.', 'Goal.'),
+    nuance: { type: 'warning', label: 'False Friend', note: 'STOP! This is NOT "Exit" (Salida). It means "Success".' }
+  },
+  n('proyecto', 'proyecto', 'Project', 'work', 'm', 'Task.', 'Nuevo proyecto.', 'New project.', 'Líder de proyecto.', 'Project leader.', 'Cognate.'),
+  
+  // --- TRANSIT (El Viaje) ---
+  n('aeropuerto', 'aeropuerto', 'Airport', 'travel', 'm', 'Place.', 'Al aeropuerto, por favor.', 'To the airport, please.', 'Aeropuerto internacional.', 'International airport.', 'Air-Port.'),
+  n('vuelo', 'vuelo', 'Flight', 'travel', 'm', 'Transport.', 'Mi vuelo sale tarde.', 'My flight leaves late.', 'Número de vuelo.', 'Flight number.', 'Verb: Volar.'),
+  n('pasaporte', 'pasaporte', 'Passport', 'travel', 'm', 'Document.', 'Su pasaporte, por favor.', 'Your passport, please.', 'Perdí mi pasaporte.', 'I lost my passport.', 'Pass-Port.'),
+  n('maleta', 'maleta', 'Suitcase', 'travel', 'f', 'Object.', 'Hacer la maleta.', 'Pack the suitcase.', 'Maleta pesada.', 'Heavy suitcase.', 'Travel essential.'),
+  n('hotel', 'hotel', 'Hotel', 'travel', 'm', 'Place.', 'Hotel de lujo.', 'Luxury hotel.', 'Reserva de hotel.', 'Hotel reservation.', 'H is silent.'),
+  n('estacion', 'estación', 'Station/Season', 'travel', 'f', 'Place.', 'Estación de tren.', 'Train station.', 'Estación de metro.', 'Subway station.', 'Also means Season (Winter, etc).'),
+
+  // ==============================================
   // 🏙️ PACK E: THE CITIZEN (House, City, Clothes)
   // Category: 'citizen'
   // ==============================================
@@ -65,7 +90,10 @@ export const EXTRA_CANDIDATES: Word[] = [
   n('mesa', 'mesa', 'Table', 'daily', 'f', 'Furniture.', 'Ponlo en la mesa.', 'Put it on the table.', 'Mesa redonda.', 'Round table.', 'Essential object.'),
   n('silla', 'silla', 'Chair', 'daily', 'f', 'Sitting.', 'Siéntate en la silla.', 'Sit on the chair.', 'Silla cómoda.', 'Comfortable chair.', 'Pair with Sentarse.'),
   n('cama', 'cama', 'Bed', 'daily', 'f', 'Sleeping.', 'Voy a la cama.', 'I go to bed.', 'Hacer la cama.', 'To make the bed.', 'Time to sleep.'),
-  n('vaso', 'vaso', 'Glass (Drinking)', 'food', 'm', 'Container.', 'Vaso de agua.', 'Glass of water.', 'Vaso vacío.', 'Empty glass.', 'Not for windows (Vidrio).'),
+  {
+    ...n('vaso', 'vaso', 'Glass (Drinking)', 'food', 'm', 'Container.', 'Vaso de agua.', 'Glass of water.', 'Vaso vacío.', 'Empty glass.', 'Container.'),
+    nuance: { type: 'warning', label: 'False Friend', note: 'Not "Vase" (Florero). It is a drinking glass.' }
+  },
   n('plato', 'plato', 'Plate/Dish', 'food', 'm', 'Eating.', 'Plato limpio.', 'Clean plate.', 'Primer plato.', 'First course.', 'Can mean the meal itself.'),
   n('cuchillo', 'cuchillo', 'Knife', 'food', 'm', 'Tool.', 'Corta con cuchillo.', 'Cut with knife.', 'Cuchillo afilado.', 'Sharp knife.', 'Double L sound.'),
   n('tenedor', 'tenedor', 'Fork', 'food', 'm', 'Tool.', 'Usa el tenedor.', 'Use the fork.', 'Tenedor de plástico.', 'Plastic fork.', 'Sounds like "Tenure".'),
@@ -83,6 +111,10 @@ export const EXTRA_CANDIDATES: Word[] = [
   n('abrigo', 'abrigo', 'Coat', 'daily', 'm', 'Winter.', 'Hace frío, lleva abrigo.', 'It is cold, wear a coat.', 'Abrigo grueso.', 'Thick coat.', 'Root: Abrigar (to shelter).'),
   n('vestido', 'vestido', 'Dress', 'daily', 'm', 'Outfit.', 'Vestido rojo.', 'Red dress.', 'Vestido largo.', 'Long dress.', 'Warning: Masculine (El vestido).'),
   n('falda', 'falda', 'Skirt', 'daily', 'f', 'Outfit.', 'Falda corta.', 'Short skirt.', 'Falda azul.', 'Blue skirt.', 'Fem: La falda.'),
+  {
+    ...n('ropa', 'ropa', 'Clothes', 'daily', 'f', 'Apparel.', 'Llevo ropa roja.', 'I wear red clothes.', 'Ropa limpia.', 'Clean clothes.', 'Apparel.'),
+    nuance: { type: 'warning', label: 'False Friend', note: 'Not "Rope" (Cuerda). It means "Clothes".' }
+  },
 
   // --- LA CIUDAD (The City) ---
   n('ciudad', 'ciudad', 'City', 'travel', 'f', 'Urban.', 'Ciudad grande.', 'Big city.', 'Vivo en la ciudad.', 'I live in the city.', 'Ends in D -> Feminine.'),
@@ -214,7 +246,6 @@ export const EXTRA_CANDIDATES: Word[] = [
   n('dinero', 'dinero', 'Money', 'society', 'm', 'Currency.', 'No tengo dinero.', 'I have no money.', 'Mucho dinero.', 'A lot of money.', 'Note: Uncountable logic.'),
   n('llave', 'llave', 'Key', 'daily', 'f', 'Tool.', 'Busco la llave.', 'I look for my key.', 'Llaves de casa.', 'House keys.', 'Note: Plural is Llaves.'),
   n('movil', 'móvil', 'Mobile Phone', 'tech', 'm', 'Device.', 'Uso mi móvil.', 'I use my mobile.', 'Móvil nuevo.', 'New phone.', 'Note: Celular in LatAm.'),
-  n('ropa', 'ropa', 'Clothes', 'daily', 'f', 'Apparel.', 'Llevo ropa roja.', 'I wear red clothes.', 'Ropa limpia.', 'Clean clothes.', 'Note: Usually singular for "clothes".'),
   n('bolso', 'bolso', 'Bag', 'daily', 'm', 'Carrier.', 'Llevo mi bolso.', 'I carry my bag.', 'Bolso negro.', 'Black bag.', 'Note: Smaller than Maleta.'),
   n('familia', 'familia', 'Family', 'social', 'f', 'Relatives.', 'Mi familia.', 'My family.', 'Familia grande.', 'Large family.', 'Note: Singular in Spanish.'),
   n('madre', 'madre', 'Mother', 'social', 'f', 'Parent.', 'Mi madre es Ana.', 'My mother is Ana.', 'Madre joven.', 'Young mother.', 'Note: Mom is Mamá.'),

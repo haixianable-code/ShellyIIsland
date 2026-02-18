@@ -185,7 +185,10 @@ export const VOCABULARY_DATA: DayPack[] = [
       v('recibir', 'recibir', 'To receive', 'work', 'Accepting.', 'Recibo el paquete.', 'I receive the package.', '¿Recibes esto?', 'Do you receive this?', 'Paquete: Package.', undefined, true),
       v('preguntar', 'preguntar', 'To ask', 'social', 'Inquiry.', 'Pregunto hoy.', 'I ask today.', 'Juan pregunta.', 'Juan asks.', 'Hoy: Today.', undefined, true, N_PEDIR_PREGUNTAR),
       v('responder', 'responder', 'To answer', 'social', 'Reply.', 'Respondo ahora.', 'I answer now.', 'Ella responde.', 'She answers.', 'Ahora: Now.', undefined, true),
-      v('escuchar', 'escuchar', 'To listen', 'social', 'Hearing intent.', 'Escucho música.', 'I listen to music.', '¿Me escuchas?', 'Do you listen to me?', 'Música: Music.', undefined, true),
+      {
+        ...v('escuchar', 'escuchar', 'To listen', 'social', 'Hearing intent.', 'Escucho música.', 'I listen to music.', '¿Me escuchas?', 'Do you listen to me?', 'Música: Music.', undefined, true),
+        nuance: { type: 'warning', label: 'Grammar Trap', note: 'Includes "to". Never say "Escuchar a música". Just "Escuchar música".' }
+      },
       a('fácil', 'fácil', 'Easy', 'work', 'difícil', 'Difficult', 'Quality.', 'Tarea fácil.', 'Easy task.', 'Es fácil.', 'It is easy.', 'Tarea: Task.'),
       a('difícil', 'difícil', 'Difficult', 'work', 'fácil', 'Easy', 'Quality.', 'Examen difícil.', 'Difficult exam.', 'Muy difícil.', 'Very difficult.', 'Examen: Exam.'),
       a('importante', 'importante', 'Important', 'work', 'irrelevante', 'Irrelevant', 'Priority.', 'Cita importante.', 'Important appointment.', 'Es importante.', 'It is important.', 'Cita: Appointment.'),
@@ -242,10 +245,16 @@ export const VOCABULARY_DATA: DayPack[] = [
       v('ayudar', 'ayudar', 'To help', 'social', 'Assistance.', 'Ayudo a Juan.', 'I help Juan.', 'Nos ayudan.', 'They help us.', 'Juan: Name.', undefined, true),
       v('quedar', 'quedar', 'To stay/meet', 'social', 'Remaining/Appointment.', 'Me quedo aquí.', 'I stay here.', 'Quedamos hoy.', 'We meet today.', 'Aquí: Here. Hoy: Today.', undefined, true),
       v('invitar', 'invitar', 'To invite', 'social', 'Invitation.', 'Invito a Ana.', 'I invite Ana.', 'Él invita.', 'He invites.', 'Ana: Name.', undefined, true),
-      v('pagar', 'pagar', 'To pay', 'society', 'Payment.', 'Pago hoy.', 'I pay today.', 'Juan paga el té.', 'Juan pays for the tea.', 'Té: Tea.', 'pago, pagas, paga, pagamos, pagáis, pagan', true),
+      {
+        ...v('pagar', 'pagar', 'To pay', 'society', 'Payment.', 'Pago hoy.', 'I pay today.', 'Juan paga el té.', 'Juan pays for the tea.', 'Té: Tea.', 'pago, pagas, paga, pagamos, pagáis, pagan', true),
+        nuance: { type: 'warning', label: 'Grammar Trap', note: 'Includes "for". Never say "Pagar por la cena". Just "Pagar la cena".' }
+      },
       v('comprar', 'comprar', 'To buy', 'society', 'Purchase.', 'Compro pan.', 'I buy bread.', 'Él compra ropa.', 'He buys clothes.', 'Pan: Bread. Ropa: Clothes.', undefined, true),
       v('vender', 'vender', 'To sell', 'society', 'Selling.', 'Vendo mi coche.', 'I sell my car.', 'Ellos venden.', 'They sell.', 'Coche: Car.', undefined, true),
-      v('buscar', 'buscar', 'To look for', 'daily', 'Searching.', 'Busco mi llave.', 'I look for my key.', '¿Qué buscas?', 'What are you looking for?', 'Llave: Key.', undefined, true),
+      {
+        ...v('buscar', 'buscar', 'To look for', 'daily', 'Searching.', 'Busco mi llave.', 'I look for my key.', '¿Qué buscas?', 'What are you looking for?', 'Llave: Key.', undefined, true),
+        nuance: { type: 'warning', label: 'Grammar Trap', note: 'Includes "for". Never say "Buscar por/para". Just "Buscar algo".' }
+      },
       v('encontrar', 'encontrar', 'To find', 'daily', 'Discovery.', 'Encuentro dinero.', 'I find money.', 'Ella encuentra.', 'She finds.', 'Dinero: Money.', 'encuentro, encuentras, encuentra, encontramos, encontráis, encuentran', false),
       a('famoso', 'famoso', 'Famous', 'social', 'desconocido', 'Unknown', 'Trait.', 'Actor famoso.', 'Famous actor.', 'Es famoso.', 'He is famous.', 'Actor: Actor.'),
       a('desconocido', 'desconocido', 'Unknown', 'social', 'famoso', 'Famous', 'Trait.', 'Lugar desconocido.', 'Unknown place.', 'Gente desconocida.', 'Unknown people.', 'Lugar: Place.'),
@@ -278,7 +287,10 @@ export const VOCABULARY_DATA: DayPack[] = [
       v('cantar', 'cantar', 'To sing', 'art', 'Vocal art.', 'Canto hoy.', 'I sing today.', 'Ella canta.', 'She sings.', 'Hoy: Today.', undefined, true),
       v('bailar', 'bailar', 'To dance', 'art', 'Movement.', 'Bailo bien.', 'I dance well.', '¿Bailamos?', 'Shall we dance?', 'Bien: Well.', undefined, true),
       v('tocar', 'tocar', 'To play (inst)/touch', 'art', 'Music/Touch.', 'Toco el piano.', 'I play piano.', 'No toques.', "Don't touch.", 'Piano: Piano.', undefined, true),
-      v('jugar', 'jugar', 'To play (game)', 'social', 'Games/Sport.', 'Juego al fútbol.', 'I play football.', 'Ellos juegan.', 'They play.', 'Fútbol: Football.', 'juego, juegas, juega, jugamos, jugáis, juegan', false),
+      {
+        ...v('jugar', 'jugar', 'To play (game)', 'social', 'Games/Sport.', 'Juego al fútbol.', 'I play football.', 'Ellos juegan.', 'They play.', 'Fútbol: Football.', 'juego, juegas, juega, jugamos, jugáis, juegan', false),
+        nuance: { type: 'warning', label: 'Preposition', note: 'Sports require "a". Jugar AL fútbol (a + el).' }
+      },
       v('practicar', 'practicar', 'To practice', 'work', 'Exercise.', 'Practico tenis.', 'I practice tennis.', 'Él practica.', 'He practices.', 'Tenis: Tenis.', undefined, true),
       v('ganar', 'ganar', 'To win/earn', 'society', 'Victory/Salary.', 'Gano el juego.', 'I win the game.', 'Gano dinero.', 'I earn money.', 'Juego: Game. Dinero: Money.', undefined, true),
       v('perder', 'perder', 'To lose', 'society', 'Defeat/Misplace.', 'Pierdo la llave.', 'I lose the key.', 'Ellos pierden.', 'They lose.', 'Llave: Key.', 'pierdo, pierdes, pierde, perdemos, perdéis, pierden', false),
