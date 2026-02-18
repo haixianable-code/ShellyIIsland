@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Word } from '../types';
 import { 
   X, Check, ArrowRight, PackagePlus, Clock, Scroll, Key, MapPin,
-  Search, Wand2, PlusCircle, PackageOpen, Box, Star, Leaf, Sparkles, Lock, Crown, ChevronRight, BookOpen, MessageCircle, Zap, LifeBuoy, Building2
+  Search, Wand2, PlusCircle, PackageOpen, Box, Star, Leaf, Sparkles, Lock, Crown, ChevronRight, BookOpen, MessageCircle, Zap, LifeBuoy, Building2, Hourglass
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playClick, playSparkle, playSwish } from '../utils/sfx';
@@ -20,6 +20,7 @@ interface ExpansionModalProps {
 
 const RAW_CATEGORIES = [
   { id: 'all', icon: PackagePlus, label: 'All' },
+  { id: 'time_traveler', icon: Hourglass, label: 'Time Traveler' },
   { id: 'citizen', icon: Building2, label: 'Citizen' },
   { id: 'survivor', icon: LifeBuoy, label: 'Survivor' },
   { id: 'storyteller', icon: BookOpen, label: 'Storyteller' },
@@ -47,7 +48,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
     document.body.classList.add('modal-open');
     // Sort logic: Prioritize new packs if they exist
     const shuffled = [...availableWords].sort((a, b) => {
-       const priority = ['citizen', 'survivor', 'storyteller', 'debater', 'cognates'];
+       const priority = ['time_traveler', 'citizen', 'survivor', 'storyteller', 'debater', 'cognates'];
        const aP = priority.includes(a.category || '') ? 1 : 0;
        const bP = priority.includes(b.category || '') ? 1 : 0;
        if (aP !== bP) return bP - aP;
@@ -180,7 +181,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
                                <div className="absolute top-0 left-0 w-1.5 h-full" style={{ backgroundColor: theme.main }} />
                                <span className="text-[8px] font-black text-[#8d99ae] uppercase tracking-widest opacity-60">{getPosLabel(word)}</span>
                                <span className="font-black text-[#4b7d78] text-base md:text-lg uppercase leading-none truncate tracking-tight">{word.s}</span>
-                               <span className="text-[10px] font-bold text-[#8d99ae]/60 truncate italic">{t(`vocab.${word.id}.t`, { defaultValue: word.t })}</p>
+                               <span className="text-[10px] font-bold text-[#8d99ae]/60 truncate italic">{t(`vocab.${word.id}.t`, { defaultValue: word.t })}</span>
                             </div>
                          );
                       })}
