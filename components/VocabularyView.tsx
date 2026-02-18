@@ -43,7 +43,7 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
       baseList = baseList.filter(w => ids.includes(w.id));
     }
 
-    return baseList.filter(w => {
+    const filtered = baseList.filter(w => {
       // Logic: If it's already learned, always show it.
       // If NOT learned, show only if premium OR search matches.
       // BUT we want to show 'Locked' items to non-premium users for Upsell.
@@ -59,7 +59,45 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
       // If not searching, only show what the user "owns" (progress exists)
       return hasProgress;
     });
+
+    // SORTING: Prioritize learned words (Recently Learned / Higher Level)
+    return filtered.sort((a, b) => {
+        const progA = progress[a.id];
+        const progB = progress[b.id];
+        const hasA = !!progA;
+        const hasB = !!progB;
+
+        // 1. Learned words first
+        if (hasA !== hasB) return hasA ? -1 : 1;
+
+        // 2. If both learned, sort by level (higher level = more mastered)
+        // Or if you want "Recently learned" (which might be low level), 
+        // usually users want to see what they are working on.
+        // Let's sort by Reverse ID/Insertion order if no date available to mimic "recent"
+        return 0; // Default order
+    });
+
   }, [allWords, progress, searchTerm, selectedLevel, selectedTopic, t, wordsByTopic, wordsByLevel]);
+
+  // Special separate sorting for display: Put NEWEST learned items at the top
+  const sortedDisplayWords = useMemo(() => {
+      // We create a shallow copy to sort without mutating
+      return [...filteredWords].sort((a, b) => {
+          const progA = progress[a.id];
+          const progB = progress[b.id];
+          
+          // If both have progress, try to sort by 'nextReviewDate' or implicit newness (Level 1)
+          if (progA && progB) {
+             // If one is Level 1 (New) and other is Level 5 (Mastered), show Level 1 first?
+             // Or show recently added? 
+             // Let's prioritize NEW words (Level <= 3) at top for attention
+             if (progA.level !== progB.level) {
+                 return progA.level - progB.level; // Lower level (newer) first
+             }
+          }
+          return 0;
+      });
+  }, [filteredWords, progress]);
 
   const ownedWordsCount = useMemo(() => words.filter(w => !!progress[w.id]).length, [words, progress]);
   const unlearnedExtra = EXTRA_CANDIDATES.filter(w => !progress[w.id]);
@@ -135,7 +173,7 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10" aria-label="Vocabulary results list">
-        {filteredWords.map((word) => {
+        {sortedDisplayWords.map((word) => {
           const srs = progress[word.id];
           const hasProgress = !!srs;
           const level = srs?.level || 0;
