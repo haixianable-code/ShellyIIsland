@@ -8,73 +8,157 @@ export const VOCABULARY_DATA: DayPack[] = [
     id: 'day1',
     title: 'The Identity & The Body',
     words: [
-      {
-        ...v('ser', 'ser', 'To be (Identity)', 'grammar', 'Permanent traits.', 'Yo soy Juan.', 'I am Juan.', 'Ella es alta.', 'She is tall.', 'Juan: Name. Ella: She.', 'soy, eres, es, somos, sois, son', false, N_SER_ESTAR),
-        tense_forms: { past: 'era', future: 'seré' },
-        examples: [
-          { txt: 'Yo soy Juan.', eng: 'I am Juan.', tense: 'present' },
-          { txt: 'Yo era joven.', eng: 'I used to be young.', tense: 'past' },
-          { txt: 'Seré rico.', eng: 'I will be rich.', tense: 'future' },
-          { txt: 'Ella es alta.', eng: 'She is tall.', tense: 'present' }
-        ]
-      },
-      {
-        ...v('estar', 'estar', 'To be (State)', 'grammar', 'Temporary states/location.', 'Estoy feliz.', 'I am happy.', 'Estamos aquí.', 'We are here.', 'Feliz: Happy. Aquí: Here.', 'estoy, estás, está, estamos, estáis, están', false, N_SER_ESTAR),
-        tense_forms: { past: 'estaba', future: 'estaré' },
-        examples: [
-          { txt: 'Estoy feliz.', eng: 'I am happy.', tense: 'present' },
-          { txt: 'Estaba en casa.', eng: 'I was at home.', tense: 'past' },
-          { txt: 'Estaré allí.', eng: 'I will be there.', tense: 'future' },
-          { txt: 'Estamos aquí.', eng: 'We are here.', tense: 'present' }
-        ]
-      },
-      {
-        ...v('tener', 'tener', 'To have', 'grammar', 'Possession/Age.', 'Tengo hambre.', 'I am hungry.', 'Tienen un coche.', 'They have a car.', 'Hambre: Hunger. Coche: Car.', 'tengo, tienes, tiene, tenemos, tenéis, tienen', false),
-        tense_forms: { past: 'tenía', future: 'tendré' },
-        examples: [
-          { txt: 'Tengo hambre.', eng: 'I am hungry.', tense: 'present' },
-          { txt: 'Tenía miedo.', eng: 'I was afraid.', tense: 'past' },
-          { txt: 'Tendré tiempo.', eng: 'I will have time.', tense: 'future' },
-          { txt: 'Tienen un coche.', eng: 'They have a car.', tense: 'present' }
-        ]
-      },
-      v('llamarse', 'llamarse', 'To be called', 'social', 'Use for names.', 'Me llamo Ana.', 'My name is Ana.', '¿Cómo te llamas?', 'What is your name?', 'Ana: Name.', 'me llamo, te llamas, se llama, nos llamamos, os llamáis, se llaman', true),
-      v('vivir', 'vivir', 'To live', 'life', 'Residence.', 'Vivo en China.', 'I live in China.', '¿Dónde vives?', 'Where do you live?', 'China: Country.', undefined, true),
-      v('estudiar', 'estudiar', 'To study', 'work', 'Learning.', 'Estudio español.', 'I study Spanish.', 'Juan estudia mucho.', 'Juan studies a lot.', 'Mucho: A lot.', undefined, true),
-      v('trabajar', 'trabajar', 'To work', 'work', 'Employment.', 'Trabajo hoy.', 'I work today.', '¿Dónde trabajas?', 'Where do you work?', 'Hoy: Today.', undefined, true),
-      {
-        ...v('haber', 'haber', 'There is/are', 'grammar', 'Existence (Hay).', 'Hay un libro.', 'There is a book.', 'No hay agua.', 'There is no water.', 'Libro: Book. Agua: Water.', 'he, has, ha (hay), hemos, habéis, han', false),
-        tense_forms: { past: 'había', future: 'habrá' },
-        examples: [
-          { txt: 'Hay un libro.', eng: 'There is a book.', tense: 'present' },
-          { txt: 'Había mucha gente.', eng: 'There were many people.', tense: 'past' },
-          { txt: 'Habrá problemas.', eng: 'There will be problems.', tense: 'future' },
-          { txt: 'No hay agua.', eng: 'There is no water.', tense: 'present' }
-        ]
-      },
-      {
-        ...v('comer', 'comer', 'To eat', 'food', 'Regular meals.', 'Como pan.', 'I eat bread.', '¿Qué comes?', 'What do you eat?', 'Pan: Bread.', undefined, true),
-        tense_forms: { past: 'comí', future: 'comeré' },
-        examples: [
-          { txt: 'Como pan.', eng: 'I eat bread.', tense: 'present' },
-          { txt: 'Comí pan ayer.', eng: 'I ate bread yesterday.', tense: 'past' },
-          { txt: 'Comeré pan mañana.', eng: 'I will eat bread tomorrow.', tense: 'future' },
-          { txt: '¿Qué comes?', eng: 'What do you eat?', tense: 'present' }
-        ]
-      },
-      v('beber', 'beber', 'To drink', 'food', 'Liquids.', 'Bebo agua.', 'I drink water.', 'Juan bebe café.', 'Juan drinks coffee.', 'Café: Coffee.', undefined, true),
-      a('grande', 'grande', 'Big', 'quantity', 'pequeño', 'Small', 'Size.', 'Casa grande.', 'Big house.', 'Perro grande.', 'Big dog.', 'Casa: House. Perro: Dog.'),
-      a('pequeño', 'pequeño', 'Small', 'quantity', 'grande', 'Big', 'Size.', 'Gato pequeño.', 'Small cat.', 'Coche pequeño.', 'Small car.', 'Gato: Cat. Coche: Car.'),
-      a('bueno', 'bueno', 'Good', 'feelings', 'malo', 'Bad', 'Quality.', 'Buen día.', 'Good day.', 'Es bueno.', 'It is good.', 'Día: Day.'),
-      a('malo', 'malo', 'Bad', 'feelings', 'bueno', 'Good', 'Quality.', 'Día malo.', 'Bad day.', 'Es malo.', 'It is bad.', 'Día: Day.'),
-      a('nuevo', 'nuevo', 'New', 'time', 'viejo', 'Old', 'Freshness.', 'Móvil nuevo.', 'New mobile.', 'Zapato nuevo.', 'New shoe.', 'Móvil: Mobile. Zapato: Shoe.'),
-      a('viejo', 'viejo', 'Old', 'time', 'nuevo', 'New', 'Age.', 'Reloj viejo.', 'Old clock.', 'Libro viejo.', 'Old book.', 'Reloj: Clock. Libro: Book.'),
-      a('alto', 'alto', 'Tall', 'body', 'bajo', 'Short', 'Height.', 'Chico alto.', 'Tall boy.', 'Torre alta.', 'Tall tower.', 'Chico: Boy. Torre: Tower.'),
-      a('bajo', 'bajo', 'Short', 'body', 'alto', 'Tall', 'Height.', 'Hombre bajo.', 'Short man.', 'Mesa baja.', 'Low table.', 'Hombre: Man. Mesa: Table.'),
-      a('gordo', 'gordo', 'Fat', 'body', 'delgado', 'Thin', 'Weight.', 'Gato gordo.', 'Fat cat.', 'Hombre gordo.', 'Fat man.', 'Gato: Cat.'),
-      a('delgado', 'delgado', 'Thin', 'body', 'gordo', 'Fat', 'Weight.', 'Chica delgada.', 'Thin girl.', 'Perro delgado.', 'Thin dog.', 'Chica: Girl.')
-    ]
+     // 1. Ser (To be - Identity) - 完全不规则
+{
+  ...v('ser', 'ser', 'To be (Identity)', 'grammar', 'Permanent traits.', 'Yo soy Juan.', 'I am Juan.', 'Ella es alta.', 'She is tall.', 'Juan: Name. Ella: She.', 'soy, eres, es, somos, sois, son', false, N_SER_ESTAR),
+  tense_forms: { 
+    past: "fui, fuiste, fue, fuimos, fuisteis, fueron", 
+    future: "seré, serás, será, seremos, seréis, serán" 
   },
+  examples: [
+    { txt: 'Yo soy Juan.', eng: 'I am Juan.', tense: 'present' },
+    { txt: 'Ella es alta.', eng: 'She is tall.', tense: 'present' },
+    { txt: 'Ayer fui al cine.', eng: 'Yesterday I went to the cinema.', tense: 'past' }, // Ser/Ir share preterite
+    { txt: 'Cuando sea mayor, seré médico.', eng: 'When I grow up, I will be a doctor.', tense: 'future' }
+  ]
+},
+
+// 2. Estar (To be - State) - 不规则
+{
+  ...v('estar', 'estar', 'To be (State)', 'grammar', 'Temporary states/location.', 'Estoy feliz.', 'I am happy.', 'Estamos aquí.', 'We are here.', 'Feliz: Happy. Aquí: Here.', 'estoy, estás, está, estamos, estáis, están', false, N_SER_ESTAR),
+  tense_forms: { 
+    past: "estuve, estuviste, estuvo, estuvimos, estuvisteis, estuvieron", 
+    future: "estaré, estarás, estará, estaremos, estaréis, estarán" 
+  },
+  examples: [
+    { txt: 'Estoy feliz.', eng: 'I am happy.', tense: 'present' },
+    { txt: 'Estamos aquí.', eng: 'We are here.', tense: 'present' },
+    { txt: 'Ayer estuve enfermo.', eng: 'Yesterday I was sick.', tense: 'past' },
+    { txt: 'Mañana estaré en casa.', eng: 'Tomorrow I will be at home.', tense: 'future' }
+  ]
+},
+
+// 3. Tener (To have) - 不规则 (UV Stem)
+{
+  ...v('tener', 'tener', 'To have', 'grammar', 'Possession/Age.', 'Tengo hambre.', 'I am hungry.', 'Tienen un coche.', 'They have a car.', 'Hambre: Hunger. Coche: Car.', 'tengo, tienes, tiene, tenemos, tenéis, tienen', false),
+  tense_forms: { 
+    past: "tuve, tuviste, tuvo, tuvimos, tuvisteis, tuvieron", 
+    future: "tendré, tendrás, tendrá, tendremos, tendréis, tendrán" 
+  },
+  examples: [
+    { txt: 'Tengo hambre.', eng: 'I am hungry.', tense: 'present' },
+    { txt: 'Tienen un coche.', eng: 'They have a car.', tense: 'present' },
+    { txt: 'Tuve un perro.', eng: 'I had a dog.', tense: 'past' },
+    { txt: 'Tendrás tiempo luego.', eng: 'You will have time later.', tense: 'future' }
+  ]
+},
+
+// 4. Llamarse (To be called) - 规则 (Reflexive)
+{
+  ...v('llamarse', 'llamarse', 'To be called', 'social', 'Use for names.', 'Me llamo Ana.', 'My name is Ana.', '¿Cómo te llamas?', 'What is your name?', 'Ana: Name.', 'me llamo, te llamas, se llama, nos llamamos, os llamáis, se llaman', true),
+  tense_forms: { 
+    past: "me llamé, te llamaste, se llamó, nos llamamos, os llamasteis, se llamaron", 
+    future: "me llamaré, te llamarás, se llamará, nos llamaremos, os llamaréis, se llamarán" 
+  },
+  examples: [
+    { txt: 'Me llamo Ana.', eng: 'My name is Ana.', tense: 'present' },
+    { txt: '¿Cómo te llamas?', eng: 'What is your name?', tense: 'present' },
+    { txt: 'El perro se llamó Max.', eng: 'The dog was called Max.', tense: 'past' },
+    { txt: 'Te llamarás "Rey".', eng: 'You will be called "King".', tense: 'future' }
+  ]
+},
+
+// 5. Vivir (To live) - 规则
+{
+  ...v('vivir', 'vivir', 'To live', 'life', 'Residence.', 'Vivo en China.', 'I live in China.', '¿Dónde vives?', 'Where do you live?', 'China: Country.', undefined, true),
+  tense_forms: { 
+    past: "viví, viviste, vivió, vivimos, vivisteis, vivieron", 
+    future: "viviré, vivirás, vivirá, viviremos, viviréis, vivirán" 
+  },
+  examples: [
+    { txt: 'Vivo en China.', eng: 'I live in China.', tense: 'present' },
+    { txt: '¿Dónde vives?', eng: 'Where do you live?', tense: 'present' },
+    { txt: 'Viví en Madrid un año.', eng: 'I lived in Madrid for a year.', tense: 'past' },
+    { txt: 'Viviré cerca del mar.', eng: 'I will live near the sea.', tense: 'future' }
+  ]
+},
+
+// 6. Estudiar (To study) - 规则
+{
+  ...v('estudiar', 'estudiar', 'To study', 'work', 'Learning.', 'Estudio español.', 'I study Spanish.', 'Juan estudia mucho.', 'Juan studies a lot.', 'Mucho: A lot.', undefined, true),
+  tense_forms: { 
+    past: "estudié, estudiaste, estudió, estudiamos, estudiasteis, estudiaron", 
+    future: "estudiaré, estudiarás, estudiará, estudiaremos, estudiaréis, estudiarán" 
+  },
+  examples: [
+    { txt: 'Estudio español.', eng: 'I study Spanish.', tense: 'present' },
+    { txt: 'Juan estudia mucho.', eng: 'Juan studies a lot.', tense: 'present' },
+    { txt: 'Estudié toda la noche.', eng: 'I studied all night.', tense: 'past' },
+    { txt: 'Estudiarás en la universidad.', eng: 'You will study at the university.', tense: 'future' }
+  ]
+},
+
+// 7. Trabajar (To work) - 规则
+{
+  ...v('trabajar', 'trabajar', 'To work', 'work', 'Employment.', 'Trabajo hoy.', 'I work today.', '¿Dónde trabajas?', 'Where do you work?', 'Hoy: Today.', undefined, true),
+  tense_forms: { 
+    past: "trabajé, trabajaste, trabajó, trabajamos, trabajasteis, trabajaron", 
+    future: "trabajaré, trabajarás, trabajará, trabajaremos, trabajaréis, trabajarán" 
+  },
+  examples: [
+    { txt: 'Trabajo hoy.', eng: 'I work today.', tense: 'present' },
+    { txt: '¿Dónde trabajas?', eng: 'Where do you work?', tense: 'present' },
+    { txt: 'Trabajó en un banco.', eng: 'He worked in a bank.', tense: 'past' },
+    { txt: 'No trabajaré mañana.', eng: 'I will not work tomorrow.', tense: 'future' }
+  ]
+},
+
+// 8. Haber (There is/are) - 极度不规则 (辅助动词)
+{
+  ...v('haber', 'haber', 'There is/are', 'grammar', 'Existence (Hay).', 'Hay un libro.', 'There is a book.', 'No hay agua.', 'There is no water.', 'Libro: Book. Agua: Water.', 'he, has, ha (hay), hemos, habéis, han', false),
+  tense_forms: { 
+    // Haber 在表示“有/存在”时，过去式只有 hubo (发生过) 或 había (那时有)
+    // 这里我们提供 hubieron/había 混合供参考，但通常只用第三人称单数
+    past: "hube, hubiste, hubo, hubimos, hubisteis, hubieron", 
+    future: "habré, habrás, habrá, habremos, habréis, habrán" 
+  },
+  examples: [
+    { txt: 'Hay un libro.', eng: 'There is a book.', tense: 'present' },
+    { txt: 'No hay agua.', eng: 'There is no water.', tense: 'present' },
+    { txt: 'Hubo una fiesta.', eng: 'There was a party.', tense: 'past' },
+    { txt: 'Habrá problemas.', eng: 'There will be problems.', tense: 'future' }
+  ]
+},
+
+// 9. Comer (To eat) - 规则
+{
+  ...v('comer', 'comer', 'To eat', 'food', 'Regular meals.', 'Como pan.', 'I eat bread.', '¿Qué comes?', 'What do you eat?', 'Pan: Bread.', undefined, true),
+  tense_forms: { 
+    past: "comí, comiste, comió, comimos, comisteis, comieron", 
+    future: "comeré, comerás, comerá, comeremos, comeréis, comerán" 
+  },
+  examples: [
+    { txt: 'Como pan.', eng: 'I eat bread.', tense: 'present' },
+    { txt: '¿Qué comes?', eng: 'What do you eat?', tense: 'present' },
+    { txt: 'Comí una manzana.', eng: 'I ate an apple.', tense: 'past' },
+    { txt: 'Comeremos juntos.', eng: 'We will eat together.', tense: 'future' }
+  ]
+},
+
+// 10. Beber (To drink) - 规则
+{
+  ...v('beber', 'beber', 'To drink', 'food', 'Liquids.', 'Bebo agua.', 'I drink water.', 'Juan bebe café.', 'Juan drinks coffee.', 'Café: Coffee.', undefined, true),
+  tense_forms: { 
+    past: "bebí, bebiste, bebió, bebimos, bebisteis, bebieron", 
+    future: "beberé, beberás, beberá, beberemos, beberéis, beberán" 
+  },
+  examples: [
+    { txt: 'Bebo agua.', eng: 'I drink water.', tense: 'present' },
+    { txt: 'Juan bebe café.', eng: 'Juan drinks coffee.', tense: 'present' },
+    { txt: 'Bebió demasiado.', eng: 'He drank too much.', tense: 'past' },
+    { txt: 'No beberé alcohol.', eng: 'I will not drink alcohol.', tense: 'future' }
+  ]
+},
   {
     id: 'day2',
     title: 'Movement & Desires',
