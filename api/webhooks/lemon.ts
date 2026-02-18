@@ -1,6 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import { Buffer } from 'buffer';
 
 // Webhooks usually need Node.js runtime for raw body handling and crypto
 export const config = {

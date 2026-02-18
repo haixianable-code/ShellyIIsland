@@ -1,9 +1,9 @@
+
 import { useState, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 
 export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [authChecking, setAuthChecking] = useState(true);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export const useAuth = () => {
     // 2. Get Initial Session
     const getSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session }, error } = await (supabase.auth as any).getSession();
         if (error) {
           console.warn("Supabase Auth Error:", error.message);
         }
@@ -36,7 +36,7 @@ export const useAuth = () => {
     getSession();
 
     // 3. Listen for changes (Sign In, Sign Out)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = (supabase.auth as any).onAuthStateChange((_event: any, session: any) => {
       if (mounted) {
         setUser(session?.user ?? null);
         // Ensure loading stops on state change
@@ -56,8 +56,8 @@ export const useAuth = () => {
 
 // FIX: Created a standalone synchronous function to get the user from local storage.
 // This is a workaround to avoid violating hook rules inside a timeout.
-export const getSupabaseUserFromLocalStorage = (): { user: User | null } => {
-  let user: User | null = null;
+export const getSupabaseUserFromLocalStorage = (): { user: any } => {
+  let user: any = null;
   // Supabase stores the session in localStorage with a key like `sb-PROJECT_REF-auth-token`
   const key = Object.keys(localStorage).find(i => i.startsWith('sb-') && i.endsWith('-auth-token'));
   if (key) {

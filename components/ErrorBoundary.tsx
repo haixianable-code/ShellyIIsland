@@ -1,8 +1,9 @@
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { ShieldAlert, RotateCcw, Home, CloudRain } from 'lucide-react';
 
 interface ErrorBoundaryProps {
-  children: ReactNode;
+  children?: ReactNode;
   fallback?: ReactNode;
 }
 
@@ -11,9 +12,14 @@ interface ErrorBoundaryState {
   error?: Error;
 }
 
-// Fix: Use React.Component and rename interfaces for better clarity/resolution in TypeScript
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  public state: ErrorBoundaryState = {
+/**
+ * Standard Error Boundary component for catching runtime UI crashes.
+ * Inherits from React.Component as required by React for error boundaries.
+ */
+// Fix: Directly import Component and extend it to ensure TypeScript correctly resolves inherited properties like 'state' and 'props'
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  // Fix: Using class property for state initialization to resolve property existence issues in TypeScript
+  state: ErrorBoundaryState = {
     hasError: false
   };
 
@@ -34,7 +40,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   };
 
   public render() {
-    // Fix: Destructure props and state to avoid issues with 'this.props' resolution in some environments
+    // Fix: Accessing inherited state and props members through 'this'
     const { hasError } = this.state;
     const { fallback, children } = this.props;
 

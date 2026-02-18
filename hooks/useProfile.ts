@@ -1,10 +1,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import { UserProfile } from '../types';
 
-export const useProfile = (user: User | null) => {
+export const useProfile = (user: any) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
 

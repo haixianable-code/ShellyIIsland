@@ -1,38 +1,21 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#78c850">
-    <title>Shelly Spanish Island - Master Spanish with AI Mnemonics</title>
+    <title>Shelly Spanish Island - Professional AI Spanish Tutor</title>
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="A tropical oasis for learning Spanish. Master 1000+ high-frequency words with AI-powered mnemonics, restrictive sentence challenges, and scientific SRS algorithms.">
-    <meta name="keywords" content="Spanish learning, Spanish vocabulary, AI Spanish tutor, SRS flashcards, Spanish mnemonics, Shelly Spanish Island">
+    <meta name="description" content="A professional platform for mastering Spanish vocabulary using AI-powered mnemonics and SRS algorithms.">
+    <meta name="keywords" content="Spanish learning, Spanish vocabulary, AI Spanish tutor, SRS flashcards, Spanish mnemonics, Shelly Spanish">
     <meta name="author" content="Shelly">
     
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://ssisland.space/">
-    <meta property="og:title" content="Shelly Spanish Island - Your Personal Spanish Oasis">
-    <meta property="og:description" content="Stop memorizing, start growing. Use AI to build sentences and master Spanish naturally.">
-    <meta property="og:image" content="https://ssisland.space/og-preview.png">
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://ssisland.space/">
-    <meta property="twitter:title" content="Shelly Spanish Island - AI Spanish Tutor">
-    <meta property="twitter:description" content="Tropical-themed Spanish learning app with restrictive AI sentence challenges.">
-    <meta property="twitter:image" content="https://ssisland.space/og-preview.png">
-
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2378c850' d='M11,20C4.3,18.3,2,12.1,4,6c2.4-7.2,12.7-7.2,15.1,0C21,12.1,17.7,18.3,11,20z'/%3E%3C/svg%3E">
     
-    <!-- Performance Optimization: Preconnect & Preload -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com">
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700;900&display=swap" as="style">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700;800;900&display=swap">
@@ -64,10 +47,15 @@
           overflow-x: hidden;
         }
 
-        body.modal-open {
-          overflow: hidden !important;
-          height: 100vh;
+        /* Learners' Typography Fix: Chinese adjustment */
+        [lang^="zh"] * {
+          letter-spacing: 0.01em !important; /* Force tighter spacing for Chinese */
         }
+        [lang^="zh"] .font-black {
+          font-weight: 700 !important; /* Black weight is too heavy for Han characters */
+        }
+
+        body.modal-open { overflow: hidden !important; height: 100vh; }
 
         .card-perspective { perspective: 2500px; }
         .card-inner {
@@ -76,16 +64,6 @@
           transform-style: preserve-3d;
         }
         .card-inner.is-flipped { transform: rotateY(180deg); }
-
-        .card-exit-left { animation: yeetLeft 0.5s cubic-bezier(0.4, 0, 1, 1) forwards; pointer-events: none; }
-        .card-exit-right { animation: yeetRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; pointer-events: none; }
-        .card-exit-fast-right { animation: yeetFastRight 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards; pointer-events: none; }
-        .card-enter { animation: bouncyIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-        @keyframes yeetLeft { 0% { transform: translateX(0) rotate(0); } 100% { transform: translateX(-200%) translateY(100px) rotate(-45deg); opacity: 0; } }
-        @keyframes yeetRight { 0% { transform: translateX(0) rotate(0); } 100% { transform: translateX(200%) translateY(-30px) rotate(15deg); opacity: 0; } }
-        @keyframes yeetFastRight { 0% { transform: translateX(0) scale(1); } 100% { transform: translateX(250%) scale(0.95); opacity: 0; } }
-        @keyframes bouncyIn { 0% { transform: scale(0.9) translateY(40px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
 
         .card-face {
           position: absolute; width: 100%; height: 100%;
@@ -96,15 +74,8 @@
         .card-face-front { background: #fffdf5; }
         .card-face-back { transform: rotateY(180deg); background-color: #fffdf5; }
 
-        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
         @keyframes float-small { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-4px); } }
-        @keyframes sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
-        @keyframes glow { 0%, 100% { box-shadow: 0 0 10px rgba(255, 166, 0, 0.3); } 50% { box-shadow: 0 0 25px rgba(255, 166, 0, 0.6); } }
-        
-        .animate-glow { animation: glow 2s ease-in-out infinite; }
-        .animate-float { animation: float 4s ease-in-out infinite; }
         .animate-float-small { animation: float-small 3s ease-in-out infinite; }
-        .animate-sway { animation: sway 7s ease-in-out infinite; transform-origin: bottom center; }
 
         .bubble-button {
           transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -114,7 +85,6 @@
           box-shadow: 0 0 0 transparent !important; 
         }
 
-        .is-transitioning { pointer-events: none !important; }
         ::-webkit-scrollbar { display: none; }
     </style>
 <script type="importmap">
@@ -135,7 +105,8 @@
     "zustand/middleware": "https://esm.sh/zustand@^5.0.0/middleware",
     "zod": "https://esm.sh/zod@^3.22.4",
     "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
-    "crypto": "https://esm.sh/crypto@^1.0.1"
+    "crypto": "https://esm.sh/crypto@^1.0.1",
+    "buffer": "https://esm.sh/buffer@^6.0.3"
   }
 }
 </script>
@@ -143,12 +114,6 @@
 </head>
 <body>
     <div id="root"></div>
-    <noscript>
-      <div style="padding: 20px; text-align: center; font-family: sans-serif;">
-        <h1>Shelly Spanish Island</h1>
-        <p>Master Spanish with AI Mnemonics. Please enable JavaScript to access the full tropical experience.</p>
-      </div>
-    </noscript>
     <script type="module" src="/index.tsx"></script>
 </body>
 </html>

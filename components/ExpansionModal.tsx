@@ -3,12 +3,13 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Word } from '../types';
 import { 
   X, Check, ArrowRight, PackagePlus, Clock, Scroll, Key, MapPin,
-  Search, Wand2, PlusCircle, PackageOpen, Box, Star, Leaf, Sparkles
+  Search, Wand2, PlusCircle, PackageOpen, Box, Star, Leaf, Sparkles, Lock, Crown, ChevronRight, BookOpen, MessageCircle, Zap
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playClick, playSparkle, playSwish } from '../utils/sfx';
 import { useTranslation } from 'react-i18next';
 import { getTypeTheme, getPosLabel } from '../utils/theme';
+import { useIslandStore } from '../store/useIslandStore';
 
 interface ExpansionModalProps {
   availableWords: Word[];
@@ -18,28 +19,38 @@ interface ExpansionModalProps {
 }
 
 const RAW_CATEGORIES = [
-  { id: 'all', icon: PackagePlus },
-  { id: 'loot', icon: Box }, 
-  { id: 'connector', icon: Scroll }, 
-  { id: 'preposition', icon: MapPin }, 
-  { id: 'interrogative', icon: Key }, 
-  { id: 'adverb', icon: Clock }, 
+  { id: 'all', icon: PackagePlus, label: 'All' },
+  { id: 'storyteller', icon: BookOpen, label: 'Storyteller' },
+  { id: 'debater', icon: MessageCircle, label: 'Debater' },
+  { id: 'cognates', icon: Zap, label: 'Speed Boost' },
+  { id: 'loot', icon: Box, label: 'Survival Loot' }, 
+  { id: 'connector', icon: Scroll, label: 'Connectors' }, 
+  { id: 'preposition', icon: MapPin, label: 'Prepositions' }, 
 ];
 
 const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose, onAddWords, onStudyNow }) => {
   const { t } = useTranslation();
+  const { profile, openModal } = useIslandStore();
+  const isPremium = profile?.is_premium;
+  const MAX_SELECTION = isPremium ? 10 : 3;
+
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  
   const [displayPool, setDisplayPool] = useState<Word[]>([]);
   const [plantedWords, setPlantedWords] = useState<Word[] | null>(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const MAX_SELECTION = 10;
-  const POOL_SIZE = 100;
+  const POOL_SIZE = 150; // Increased pool size for larger libraries
 
   useEffect(() => {
     document.body.classList.add('modal-open');
-    const shuffled = [...availableWords].sort(() => 0.5 - Math.random());
+    // Sort logic: Prioritize new packs if they exist
+    const shuffled = [...availableWords].sort((a, b) => {
+       const priority = ['storyteller', 'debater', 'cognates'];
+       const aP = priority.includes(a.category || '') ? 1 : 0;
+       const bP = priority.includes(b.category || '') ? 1 : 0;
+       if (aP !== bP) return bP - aP;
+       return 0.5 - Math.random();
+    });
     setDisplayPool(shuffled.slice(0, Math.min(availableWords.length, POOL_SIZE)));
     return () => {
       document.body.classList.remove('modal-open');
@@ -63,13 +74,15 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
       return (categoryCounts[cat.id] || 0) > 0;
     }).map(c => ({
       ...c,
-      label: t(`ui.expansion.cats.${c.id}`, { defaultValue: c.id.toUpperCase() })
+      // Fallback label if translation missing
+      label: t(`ui.expansion.cats.${c.id}`, { defaultValue: c.label })
     }));
   }, [categoryCounts, t]);
 
   const filteredWords = useMemo(() => {
     const result = displayPool.filter(w => {
-      const matchesCat = activeCategory === 'all' || (w.category || 'loot') === activeCategory;
+      const wCat = w.category || 'loot';
+      const matchesCat = activeCategory === 'all' || wCat === activeCategory;
       const matchesSearch = w.s.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             t(`vocab.${w.id}.t`, { defaultValue: w.t }).toLowerCase().includes(searchTerm.toLowerCase());
       return matchesCat && matchesSearch;
@@ -85,8 +98,17 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
   const handleToggle = (wordId: string) => {
     playClick();
     const newSelected = new Set(selected);
-    if (newSelected.has(wordId)) newSelected.delete(wordId);
-    else if (newSelected.size < MAX_SELECTION) newSelected.add(wordId);
+    if (newSelected.has(wordId)) {
+      newSelected.delete(wordId);
+    } else {
+      if (newSelected.size < MAX_SELECTION) {
+        newSelected.add(wordId);
+      } else if (!isPremium) {
+        // Trigger paywall if free user tries to exceed limit
+        openModal('SUBSCRIPTION');
+        return;
+      }
+    }
     setSelected(newSelected);
   };
 
@@ -131,7 +153,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
         <div className="flex-1 flex items-center justify-center p-6 md:p-12">
           <div className="relative w-full max-w-lg md:max-w-4xl bg-[#fffdf5] rounded-[3.5rem] md:rounded-[5rem] border-[10px] md:border-[12px] border-white shadow-[0_60px_120px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col md:flex-row animate-zoomIn max-h-[90vh]">
              
-             {/* Left Column: Trophy Area (35%) */}
+             {/* Left Column */}
              <div className="md:w-[35%] bg-[#8bc34a] p-8 md:p-12 flex flex-col items-center justify-center text-center relative overflow-hidden shrink-0 border-b-8 md:border-b-0 md:border-r-8 border-white/20">
                 <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }} />
                 <div className="bg-white/20 p-6 md:p-8 rounded-[3.5rem] border-4 border-white/40 mb-8 shadow-inner animate-bounce relative z-10">
@@ -145,7 +167,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
                 <Leaf className="absolute bottom-[-10px] right-[-10px] text-white/5 -rotate-45" size={160} />
              </div>
 
-             {/* Right Column: Inventory List (65%) */}
+             {/* Right Column */}
              <div className="flex-1 p-8 md:p-12 flex flex-col bg-white/40 overflow-hidden">
                 <div className="flex-1 overflow-y-auto no-scrollbar pr-1 mb-8">
                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
@@ -163,7 +185,6 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
                    </div>
                 </div>
 
-                {/* Confirm Buttons - Refined Sizes */}
                 <div className="flex flex-col md:flex-row gap-4 items-center shrink-0">
                     <button onClick={() => onStudyNow(plantedWords!)} className="w-full md:flex-[1.5] bg-[#ffa600] text-white py-5 rounded-[2.5rem] font-black text-lg md:text-xl shadow-[0_8px_0_#e65100] border-4 border-white bubble-button flex items-center justify-center gap-3 hover:bg-[#ffb74d] transition-all"><ArrowRight size={24} strokeWidth={3} /> {t('ui.actions.use_items')}</button>
                     <button onClick={onClose} className="w-full md:flex-1 bg-white text-[#8d99ae] py-5 rounded-[2.5rem] font-black text-sm md:text-base border-4 border-[#f7f9e4] shadow-[0_6px_0_#e0d9b4] bubble-button hover:text-[#4b7d78] transition-all uppercase tracking-widest">{t('ui.actions.stash')}</button>
@@ -179,7 +200,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
     <div className="fixed inset-0 h-[100dvh] z-[100] flex flex-col md:pl-72 bg-black/30 backdrop-blur-sm animate-fadeIn">
       <div className="relative w-full bg-[#fffdf5] shadow-2xl overflow-hidden flex flex-col h-full md:h-[95vh] md:max-w-4xl md:mx-auto md:my-auto md:rounded-[4.5rem] md:border-[12px] md:border-white">
         
-        {/* Header Region */}
+        {/* Header */}
         <div className="shrink-0 bg-white/80 backdrop-blur-md relative z-20 border-b-4 border-[#f7f9e4] pb-6">
           <div className="flex items-center justify-between p-6 md:p-10 pb-4">
             <div>
@@ -190,6 +211,16 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
           </div>
 
           <div className="px-6 md:px-10 space-y-5">
+            {!isPremium && (
+                <div className="bg-[#fff9c4] p-3 rounded-2xl border-2 border-[#fbc02d] flex items-center justify-between group cursor-pointer" onClick={() => openModal('SUBSCRIPTION')}>
+                    <div className="flex items-center gap-3">
+                        <div className="bg-[#fbc02d] p-1.5 rounded-lg text-white"><Lock size={14} /></div>
+                        <p className="text-[10px] font-black text-[#8e6b23] uppercase leading-tight">Free Limit: 3 Seeds per crate. Upgrade for 10!</p>
+                    </div>
+                    <ChevronRight size={14} className="text-[#8e6b23]" />
+                </div>
+            )}
+
             <div className="relative group">
               <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#8d99ae]/50 group-focus-within:text-[#8bc34a] transition-colors" size={20} strokeWidth={3} />
               <input 
@@ -218,7 +249,7 @@ const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose
                >
                   <PlusCircle size={24} />
                   <span>{t('ui.expansion.get_supplies')}</span>
-                  <div className="bg-black/15 px-3 py-1 rounded-full text-xs font-black min-w-[50px]">
+                  <div className={`bg-black/15 px-3 py-1 rounded-full text-xs font-black min-w-[50px] ${!isPremium && selected.size >= 3 ? 'text-amber-300' : ''}`}>
                     {selected.size} / {MAX_SELECTION}
                   </div>
                </button>

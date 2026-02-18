@@ -1,9 +1,10 @@
+
 import React, { useState, useMemo } from 'react';
 import { Word, ProgressMap, WordLevel, WordTopic } from '../types';
-import { Search, ShoppingBag, CircleDot, Sprout, Flower2, TreeDeciduous, Filter, Plane, Apple, Briefcase, Leaf, Home, Heart, Users, Brain, Cpu, Palette, PenTool, Sparkles, Clock, User, Calculator, FlaskConical, Cloud, TreePalm } from 'lucide-react';
+import { Search, ShoppingBag, CircleDot, Sprout, Flower2, TreeDeciduous, Filter, Plane, Apple, Briefcase, Leaf, Home, Heart, Users, Brain, Cpu, Palette, PenTool, Sparkles, Clock, User, Calculator, FlaskConical, Cloud, TreePalm, Lock, Crown } from 'lucide-react';
 import WordExpansionPack from './WordExpansionPack';
 import ExpansionModal from './ExpansionModal';
-import { EXTRA_CANDIDATES } from '../constants';
+import { EXTRA_CANDIDATES, VOCABULARY_DATA } from '../constants';
 import { playClick, playSwish } from '../utils/sfx';
 import { useTranslation } from 'react-i18next';
 import { getTypeTheme, getPosLabel } from '../utils/theme';
@@ -19,16 +20,11 @@ interface VocabularyViewProps {
   onStartExtraStudy: (words: Word[]) => void;
 }
 
-const TOPIC_ICONS: Record<WordTopic, React.ElementType> = {
-  travel: Plane, food: Apple, work: Briefcase, nature: Leaf, daily: Home,
-  feelings: Heart, society: Users, abstract: Brain, tech: Cpu, art: Palette,
-  grammar: PenTool, time: Clock, social: Users, body: User, life: Sparkles,
-  quantity: Calculator, science: FlaskConical
-};
-
 const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWordClick, onAddExtraWords, onStartExtraStudy }) => {
   const { t } = useTranslation();
-  const { allWords, wordsByTopic, wordsByLevel } = useIslandStore();
+  const { allWords, wordsByTopic, wordsByLevel, profile, openModal } = useIslandStore();
+  const isPremium = profile?.is_premium;
+
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<WordLevel | 'ALL'>('ALL');
@@ -48,11 +44,20 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
     }
 
     return baseList.filter(w => {
-      if (!progress[w.id]) return false;
-      if (!searchTerm) return true;
-      const lowerSearch = searchTerm.toLowerCase();
-      return w.s.toLowerCase().includes(lowerSearch) || 
-             t(`vocab.${w.id}.t`, { defaultValue: w.t }).toLowerCase().includes(lowerSearch);
+      // Logic: If it's already learned, always show it.
+      // If NOT learned, show only if premium OR search matches.
+      // BUT we want to show 'Locked' items to non-premium users for Upsell.
+      const hasProgress = !!progress[w.id];
+      
+      // If searching, show any match
+      if (searchTerm) {
+        const lowerSearch = searchTerm.toLowerCase();
+        return w.s.toLowerCase().includes(lowerSearch) || 
+               t(`vocab.${w.id}.t`, { defaultValue: w.t }).toLowerCase().includes(lowerSearch);
+      }
+
+      // If not searching, only show what the user "owns" (progress exists)
+      return hasProgress;
     });
   }, [allWords, progress, searchTerm, selectedLevel, selectedTopic, t, wordsByTopic, wordsByLevel]);
 
@@ -64,6 +69,23 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
     if (level <= 3) return { icon: Sprout, color: 'text-emerald-500', bg: 'bg-emerald-50' };
     if (level <= 5) return { icon: Flower2, color: 'text-orange-400', bg: 'bg-orange-50' };
     return { icon: TreeDeciduous, color: 'text-green-700', bg: 'bg-green-50' };
+  };
+
+  const handleItemClick = (word: Word) => {
+    const hasProgress = !!progress[word.id];
+    
+    // Check if word belongs to a premium pack
+    const parentPack = VOCABULARY_DATA.find(p => p.words.some(w => w.id === word.id));
+    const isPremiumWord = parentPack && parentPack.id !== 'day1';
+
+    if (!hasProgress && !isPremium && isPremiumWord) {
+      playClick();
+      openModal('SUBSCRIPTION');
+      return;
+    }
+
+    playClick();
+    onWordClick(word);
   };
 
   return (
@@ -115,34 +137,61 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
       <section className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10" aria-label="Vocabulary results list">
         {filteredWords.map((word) => {
           const srs = progress[word.id];
+          const hasProgress = !!srs;
           const level = srs?.level || 0;
           const { icon: StageIcon, color, bg } = getGrowthIcon(level);
           const theme = getTypeTheme(word);
+
+          // Paywall logic check
+          const parentPack = VOCABULARY_DATA.find(p => p.words.some(w => w.id === word.id));
+          const isPremiumWord = parentPack && parentPack.id !== 'day1';
+          const isLocked = !hasProgress && !isPremium && isPremiumWord;
           
           return (
             <LazyCard key={word.id}>
               <article 
-                className="island-card-3d bg-white p-6 rounded-[3rem] border-4 border-transparent shadow-[0_15px_30px_-5px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(139,195,74,0.3)] transition-all flex flex-col justify-between group active:translate-y-2 active:shadow-none text-left relative overflow-hidden h-full min-h-[180px] bubble-button w-full"
+                className={`island-card-3d bg-white p-6 rounded-[3rem] border-4 border-transparent shadow-[0_15px_30px_-5px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(139,195,74,0.3)] transition-all flex flex-col justify-between group active:translate-y-2 active:shadow-none text-left relative overflow-hidden h-full min-h-[180px] bubble-button w-full ${isLocked ? 'grayscale-[0.8] opacity-80' : ''}`}
               >
                 <button 
-                  onClick={() => { playClick(); onWordClick(word); }}
+                  onClick={() => handleItemClick(word)}
                   className="absolute inset-0 z-10"
-                  aria-label={`View details for word ${word.s}`}
+                  aria-label={isLocked ? `Unlock premium word ${word.s}` : `View details for word ${word.s}`}
                 />
+                
                 <div className="flex flex-wrap gap-2 mb-3 relative z-10">
                     <span style={{ backgroundColor: theme.main }} className="px-2.5 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-sm">{getPosLabel(word)}</span>
-                    <span style={{ backgroundColor: theme.main }} className="px-2.5 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-sm">{word.level}</span>
+                    {!isLocked && <span style={{ backgroundColor: theme.main }} className="px-2.5 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-sm">{word.level}</span>}
                 </div>
 
                 <div className="relative z-10 flex items-end justify-between mt-1">
                   <div className="space-y-1">
-                    <h3 className="text-4xl font-black text-[#2e4d4a] tracking-tighter">{word.s}</h3>
-                    <p className="text-slate-400 font-bold text-lg">{t(`vocab.${word.id}.t`, { defaultValue: word.t })}</p>
+                    <h3 className={`text-4xl font-black text-[#2e4d4a] tracking-tighter ${isLocked ? 'blur-[3px]' : ''}`}>{word.s}</h3>
+                    <p className={`text-slate-400 font-bold text-lg ${isLocked ? 'blur-[2px]' : ''}`}>{t(`vocab.${word.id}.t`, { defaultValue: word.t })}</p>
                   </div>
-                  <div className={`flex flex-col items-center gap-1 p-2 rounded-2xl ${bg}`} aria-label={`Mastery Level ${level}`}>
-                    <StageIcon size={20} className={color} aria-hidden="true" />
-                  </div>
+                  
+                  {isLocked ? (
+                    <div className="bg-[#ffa600]/10 p-3 rounded-2xl border-2 border-[#ffa600]/20 flex flex-col items-center">
+                       <Lock size={20} className="text-[#ffa600]" />
+                       <span className="text-[7px] font-black text-[#ffa600] uppercase mt-1">Supporter</span>
+                    </div>
+                  ) : (
+                    <div className={`flex flex-col items-center gap-1 p-2 rounded-2xl ${bg}`} aria-label={`Mastery Level ${level}`}>
+                      <StageIcon size={20} className={color} aria-hidden="true" />
+                    </div>
+                  )}
                 </div>
+
+                {isLocked && (
+                    <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px] pointer-events-none flex items-center justify-center">
+                       <div className="bg-white/90 p-4 rounded-3xl shadow-xl flex items-center gap-3 border-2 border-[#ffa600]/30 transform -rotate-2">
+                          <Crown size={24} className="text-[#ffa600]" />
+                          <div className="text-left">
+                             <p className="text-[9px] font-black text-[#4b7d78] uppercase leading-none">Premium Content</p>
+                             <p className="text-[8px] font-bold text-[#8d99ae] uppercase tracking-widest">Tap to Unlock</p>
+                          </div>
+                       </div>
+                    </div>
+                )}
               </article>
             </LazyCard>
           );

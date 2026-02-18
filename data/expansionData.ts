@@ -1,10 +1,59 @@
 
 import { Word } from '../types';
-// Add 'a' to imports to fix errors on lines 197-206
-import { n, m, a } from '../utils/wordRegistry';
+import { n, m, a, v } from '../utils/wordRegistry';
 
 export const EXTRA_CANDIDATES: Word[] = [
-  // --- SURVIVAL ESSENTIALS (Day 1-3 Loot) ---
+  // ==============================================
+  // 📦 PACK A: THE STORYTELLER (Narrative & Time)
+  // Category: 'storyteller'
+  // ==============================================
+  m('de_repente', 'de repente', 'Suddenly', 'time', 'Plot twist.', 'De repente, gritó.', 'Suddenly, he shouted.', 'Sequence', 'Sudden action.', 'storyteller', 'Story connector.'),
+  m('habia_una_vez', 'había una vez', 'Once upon a time', 'time', 'Story start.', 'Había una vez un rey.', 'Once upon a time there was a king.', 'Opening', 'Classic fairy tale start.', 'storyteller', 'Story opener.'),
+  m('al_final', 'al final', 'In the end', 'time', 'Conclusion.', 'Al final, ganó.', 'In the end, he won.', 'Ending', 'Summary.', 'storyteller', 'Story closer.'),
+  m('mientras', 'mientras', 'While/Meanwhile', 'time', 'Simultaneity.', 'Yo leía mientras él comía.', 'I read while he ate.', 'Time', 'Two actions at once.', 'storyteller', 'Simultaneity.'),
+  m('ayer_noche', 'anoche', 'Last night', 'time', 'Past.', 'Anoche salí.', 'Last night I went out.', 'Time', 'Specific past time.', 'storyteller', 'Past anchor.'),
+  m('antetier', 'anteayer', 'Day before yesterday', 'time', 'Past.', 'Fue anteayer.', 'It was the day before yesterday.', 'Time', '2 days ago.', 'storyteller', 'Past anchor.'),
+  v('contar', 'contar', 'To tell (story)/count', 'social', 'Narrating.', 'Te cuento un secreto.', 'I tell you a secret.', 'Cuenta conmigo.', 'Count on me.', 'Secreto: Secret.', 'cuento, cuentas, cuenta, contamos, contáis, cuentan', true, undefined),
+  v('pasar_v', 'pasar', 'To happen/pass', 'abstract', 'Event.', '¿Qué pasó?', 'What happened?', 'El tiempo pasa.', 'Time passes.', 'Tiempo: Time.', undefined, true, undefined),
+  v('ocurrir', 'ocurrir', 'To occur', 'abstract', 'Event.', 'Algo extraño ocurrió.', 'Something strange occurred.', 'No se me ocurre nada.', 'Nothing comes to mind.', 'Extraño: Strange.', undefined, true, undefined),
+  a('emocionante', 'emocionante', 'Exciting', 'feelings', 'aburrido', 'Boring', 'Feeling.', 'Fue emocionante.', 'It was exciting.', 'Película emocionante.', 'Exciting movie.', 'Película: Movie.', undefined),
+
+  // ==============================================
+  // 📦 PACK B: THE DEBATER (Opinion & Logic)
+  // Category: 'debater'
+  // ==============================================
+  m('por_eso', 'por eso', "That's why", 'grammar', 'Result.', 'Estaba cansado, por eso dormí.', 'I was tired, that is why I slept.', 'Logic', 'Cause and effect.', 'debater', 'Logic bridge.'),
+  m('sin_embargo', 'sin embargo', 'However', 'grammar', 'Contrast.', 'Es caro, sin embargo lo compro.', 'It is expensive, however I buy it.', 'Contrast', 'Formal "but".', 'debater', 'Contrast tool.'),
+  m('en_mi_opinion', 'en mi opinión', 'In my opinion', 'abstract', 'Viewpoint.', 'En mi opinión, es falso.', 'In my opinion, it is false.', 'Viewpoint', 'Softens statements.', 'debater', 'Opener.'),
+  m('claro_que_si', 'claro que sí', 'Of course', 'social', 'Agreement.', '¿Vas a ir? ¡Claro que sí!', 'Are you going? Of course!', 'Agreement', 'Strong yes.', 'debater', 'Agreement.'),
+  v('acordar', 'estar de acuerdo', 'To agree', 'social', 'Consensus.', 'Estoy de acuerdo contigo.', 'I agree with you.', 'No estamos de acuerdo.', 'We do not agree.', 'Contigo: With you.', undefined, true, undefined),
+  v('tener_razon', 'tener razón', 'To be right', 'abstract', 'Correctness.', 'Tienes razón.', 'You are right.', 'No tengo razón.', 'I am not right.', 'Note: Uses "Tener" (to have reason).', undefined, true, undefined),
+  v('parecer_op', 'me parece que', 'It seems to me', 'abstract', 'Opinion.', 'Me parece que es bueno.', 'It seems to me it is good.', '¿Qué te parece?', 'What do you think?', 'Bueno: Good.', undefined, true, undefined),
+  v('discutir', 'discutir', 'To argue/discuss', 'social', 'Conflict.', 'No quiero discutir.', 'I do not want to argue.', 'Discuten mucho.', 'They argue a lot.', 'Mucho: A lot.', undefined, true, undefined),
+  n('tema', 'tema', 'Topic/Subject', 'abstract', 'm', 'Discussion.', 'Cambiemos de tema.', "Let's change the subject.", 'Tema interesante.', 'Interesting topic.', 'Note: Greek origin (ends in -a but Masculine).'),
+  n('opinion', 'opinión', 'Opinion', 'abstract', 'f', 'Thought.', 'Es mi opinión.', 'It is my opinion.', 'Buena opinión.', 'Good opinion.', 'Note: Abstract noun.'),
+
+  // ==============================================
+  // 📦 PACK C: COGNATE BOOST (Quick Fluency)
+  // Category: 'cognates'
+  // ==============================================
+  n('problema', 'problema', 'Problem', 'abstract', 'm', 'Difficulty.', 'No hay problema.', 'No problem.', 'Problema grande.', 'Big problem.', 'Note: Masculine! El problema.'),
+  n('sistema', 'sistema', 'System', 'tech', 'm', 'Structure.', 'El sistema solar.', 'The solar system.', 'Sistema nuevo.', 'New system.', 'Note: Masculine! El sistema.'),
+  n('programa', 'programa', 'Program', 'tech', 'm', 'Plan/Software.', 'Programa de TV.', 'TV program.', 'Programa útil.', 'Useful program.', 'Note: Masculine! El programa.'),
+  n('posibilidad', 'posibilidad', 'Possibility', 'abstract', 'f', 'Chance.', 'Hay una posibilidad.', 'There is a possibility.', 'Posibilidad real.', 'Real possibility.', 'Suffix: -ty -> -dad.'),
+  n('realidad', 'realidad', 'Reality', 'abstract', 'f', 'Fact.', 'Es la realidad.', 'It is reality.', 'Realidad virtual.', 'Virtual reality.', 'Suffix: -ty -> -dad.'),
+  n('actividad', 'actividad', 'Activity', 'daily', 'f', 'Action.', 'Actividad física.', 'Physical activity.', 'Muchas actividades.', 'Many activities.', 'Suffix: -ty -> -dad.'),
+  n('accion', 'acción', 'Action', 'abstract', 'f', 'Movement.', 'Película de acción.', 'Action movie.', 'Tomar acción.', 'Take action.', 'Suffix: -tion -> -ción.'),
+  n('solucion', 'solución', 'Solution', 'abstract', 'f', 'Answer.', 'Tengo la solución.', 'I have the solution.', 'Solución fácil.', 'Easy solution.', 'Suffix: -tion -> -ción.'),
+  n('decision', 'decisión', 'Decision', 'abstract', 'f', 'Choice.', 'Buena decisión.', 'Good decision.', 'Tomar una decisión.', 'Make a decision.', 'Suffix: -sion -> -sión.'),
+  a('diferente', 'diferente', 'Different', 'abstract', 'igual', 'Same', 'Comparison.', 'Es muy diferente.', 'It is very different.', 'Opinión diferente.', 'Different opinion.', 'Cognate.'),
+  a('excelente', 'excelente', 'Excellent', 'abstract', 'terrible', 'Terrible', 'Quality.', 'Trabajo excelente.', 'Excellent work.', 'Idea excelente.', 'Excellent idea.', 'Cognate.'),
+  a('posible', 'posible', 'Possible', 'abstract', 'imposible', 'Impossible', 'Chance.', 'Es posible.', 'It is possible.', 'Misión posible.', 'Mission possible.', 'Cognate.'),
+
+  // ==============================================
+  // 🏝️ LEGACY SURVIVAL LOOT (The Originals)
+  // Category: 'loot' (Restored for compatibility)
+  // ==============================================
   n('amigo', 'amigo', 'Friend', 'social', 'm', 'Companion.', 'Es mi amigo.', 'He is my friend.', 'Buen amigo.', 'Good friend.', 'Note: Feminine is Amiga.'),
   n('casa', 'casa', 'House/Home', 'daily', 'f', 'Living place.', 'Estoy en casa.', 'I am at home.', 'Casa grande.', 'Big house.', 'Note: "En casa" means at home.'),
   n('libro', 'libro', 'Book', 'work', 'm', 'Reading.', 'Leo un libro.', 'I read a book.', 'Libro viejo.', 'Old book.', 'Note: Verb Leer.'),
@@ -19,8 +68,6 @@ export const EXTRA_CANDIDATES: Word[] = [
   n('movil', 'móvil', 'Mobile Phone', 'tech', 'm', 'Device.', 'Uso mi móvil.', 'I use my mobile.', 'Móvil nuevo.', 'New phone.', 'Note: Celular in LatAm.'),
   n('ropa', 'ropa', 'Clothes', 'daily', 'f', 'Apparel.', 'Llevo ropa roja.', 'I wear red clothes.', 'Ropa limpia.', 'Clean clothes.', 'Note: Usually singular for "clothes".'),
   n('bolso', 'bolso', 'Bag', 'daily', 'm', 'Carrier.', 'Llevo mi bolso.', 'I carry my bag.', 'Bolso negro.', 'Black bag.', 'Note: Smaller than Maleta.'),
-  
-  // --- ANATOMY & FAMILY (Loot) ---
   n('familia', 'familia', 'Family', 'social', 'f', 'Relatives.', 'Mi familia.', 'My family.', 'Familia grande.', 'Large family.', 'Note: Singular in Spanish.'),
   n('madre', 'madre', 'Mother', 'social', 'f', 'Parent.', 'Mi madre es Ana.', 'My mother is Ana.', 'Madre joven.', 'Young mother.', 'Note: Mom is Mamá.'),
   n('padre', 'padre', 'Father', 'social', 'm', 'Parent.', 'Mi padre trabaja.', 'My father works.', 'Padre bueno.', 'Good father.', 'Note: Dad is Papá.'),
@@ -28,62 +75,14 @@ export const EXTRA_CANDIDATES: Word[] = [
   n('hijo', 'hijo', 'Son', 'social', 'm', 'Child.', 'Es mi hijo.', 'He is my son.', 'Hijo pequeño.', 'Small son.', 'Note: Daughter is Hija.'),
   n('gente', 'gente', 'People', 'social', 'f', 'Humans.', 'Hay mucha gente.', 'There are many people.', 'Gente feliz.', 'Happy people.', 'Note: Always singular (La gente).'),
   n('persona', 'persona', 'Person', 'social', 'f', 'Individual.', 'Una persona.', 'One person.', 'Buena persona.', 'Good person.', 'Note: Always feminine gender.'),
-  n('cabeza', 'cabeza', 'Head', 'body', 'f', 'Top part.', 'Me duele la cabeza.', 'My head hurts.', 'Cabeza alta.', 'Head high.', 'Note: Body parts often use "La".'),
-  n('mano', 'mano', 'Hand', 'body', 'f', 'Body part.', 'Lávate las manos.', 'Wash your hands.', 'Mano derecha.', 'Right hand.', 'Note: Feminine despite ending in -o.'),
-  n('ojo', 'ojo', 'Eye', 'body', 'm', 'Organ.', 'Ojos azules.', 'Blue eyes.', 'Abre los ojos.', 'Open your eyes.', 'Note: Plural is Ojos.'),
-  n('boca', 'boca', 'Mouth', 'body', 'f', 'Organ.', 'Cierra la boca.', 'Close your mouth.', 'Boca grande.', 'Big mouth.', 'Note: Important for eating.'),
-  n('corazon', 'corazón', 'Heart', 'body', 'm', 'Vital organ.', 'Mi corazón.', 'My heart.', 'Buen corazón.', 'Good heart.', 'Note: Symbol of love.'),
-
-  // --- FOOD & DINING (Loot) ---
-  n('leche', 'leche', 'Milk', 'food', 'f', 'Liquid.', 'Café con leche.', 'Coffee with milk.', 'Leche fría.', 'Cold milk.', 'Note: Essential for breakfast.'),
-  n('te', 'té', 'Tea', 'food', 'm', 'Drink.', 'Quiero un té.', 'I want a tea.', 'Té verde.', 'Green tea.', 'Note: Accent on "té" distinguishes it.'),
-  n('vino', 'vino', 'Wine', 'food', 'm', 'Drink.', 'Vino tinto.', 'Red wine.', 'Bebo vino.', 'I drink wine.', 'Note: Popular in Spain.'),
-  n('fruta', 'fruta', 'Fruit', 'food', 'f', 'Food.', 'Como mucha fruta.', 'I eat a lot of fruit.', 'Fruta dulce.', 'Sweet fruit.', 'Note: General term.'),
-  n('arroz', 'arroz', 'Rice', 'food', 'm', 'Grain.', 'Como arroz.', 'I eat rice.', 'Arroz blanco.', 'White rice.', 'Note: Common side dish.'),
-  n('azucar', 'azúcar', 'Sugar', 'food', 'm', 'Sweetener.', 'Sin azúcar.', 'Without sugar.', 'Azúcar dulce.', 'Sweet sugar.', 'Note: Can be m or f, usually m.'),
-  n('sal', 'sal', 'Salt', 'food', 'f', 'Seasoning.', 'Pásame la sal.', 'Pass me the salt.', 'Sal fina.', 'Fine salt.', 'Note: Opposite of Sugar.'),
-
-  // --- URBAN & HOME (Loot) ---
-  n('ciudad', 'ciudad', 'City', 'travel', 'f', 'Metropolis.', 'Ciudad grande.', 'Large city.', 'Vivo en la ciudad.', 'I live in the city.', 'Note: Nouns in -dad are feminine.'),
-  n('pueblo', 'pueblo', 'Town/People', 'travel', 'm', 'Village.', 'Pueblo pequeño.', 'Small town.', 'Mi pueblo.', 'My town.', 'Note: Also means "the people/nation".'),
-  n('calle', 'calle', 'Street', 'travel', 'f', 'Road.', 'Calle ancha.', 'Wide street.', 'Cruza la calle.', 'Cross the street.', 'Note: Used in addresses.'),
-  n('tienda', 'tienda', 'Shop/Store', 'society', 'f', 'Commerce.', 'Voy a la tienda.', 'I go to the shop.', 'Tienda de ropa.', 'Clothing store.', 'Note: Verb is Comprar.'),
-  n('mercado', 'mercado', 'Market', 'society', 'm', 'Trade.', 'Mercado libre.', 'Free market.', 'Fruta del market.', 'Fruit from the market.', 'Note: Typical for food.'),
-  n('oficina', 'oficina', 'Office', 'work', 'f', 'Workplace.', 'Estoy en la oficina.', 'I am in the office.', 'Oficina nueva.', 'New office.', 'Note: Pair with Trabajar.'),
-  n('mesa', 'mesa', 'Table', 'daily', 'f', 'Furniture.', 'Mesa de madera.', 'Wooden table.', 'En la mesa.', 'On the table.', 'Note: Essential for dining.'),
-  n('silla', 'silla', 'Chair', 'daily', 'f', 'Furniture.', 'Silla cómoda.', 'Comfortable chair.', 'Siéntate en la silla.', 'Sit on the chair.', 'Note: Pair with Sentarse.'),
-  n('cama', 'cama', 'Bed', 'daily', 'f', 'Furniture.', 'Voy a la cama.', 'I go to bed.', 'Cama grande.', 'Large bed.', 'Note: Pair with Dormir.'),
-  n('ventana', 'ventana', 'Window', 'daily', 'f', 'Opening.', 'Abre la ventana.', 'Open the window.', 'Ventana sucia.', 'Dirty window.', 'Note: Pair with Mirar.'),
-  n('puerta', 'puerta', 'Door', 'daily', 'f', 'Opening.', 'Cierra la puerta.', 'Close the door.', 'Puerta abierta.', 'Open door.', 'Note: Pair with Salir.'),
-
-  // --- NATURE & EARTH (Loot) ---
-  n('mar', 'mar', 'Sea', 'nature', 'm', 'Ocean.', 'El mar is azul.', 'The sea is blue.', 'Nado en the sea.', 'I swim in the sea.', 'Note: Usually masculine.'),
-  n('rio', 'río', 'River', 'nature', 'm', 'Waterway.', 'Río largo.', 'Long river.', 'Agua del río.', 'River water.', 'Note: Accent on i.'),
-  n('montaña', 'montaña', 'Mountain', 'nature', 'f', 'Peak.', 'Montaña alta.', 'High mountain.', 'Subo la montaña.', 'I climb the mountain.', 'Note: Contains ñ.'),
-  n('bosque', 'bosque', 'Forest', 'nature', 'm', 'Woods.', 'Bosque oscuro.', 'Dark forest.', 'Árboles del bosque.', 'Forest trees.', 'Note: Quiet place.'),
-  n('arbol', 'árbol', 'Tree', 'nature', 'm', 'Plant.', 'Árbol verde.', 'Green tree.', 'Bajo el árbol.', 'Under the tree.', 'Note: Plural is Árboles.'),
-  n('flor', 'flor', 'Flower', 'nature', 'f', 'Plant part.', 'Flor hermosa.', 'Beautiful flower.', 'Doy una flor.', 'I give a flower.', 'Note: Feminine despite ending.'),
-  n('tierra', 'tierra', 'Earth/Soil', 'nature', 'f', 'Ground.', 'Tierra fértil.', 'Fertile soil.', 'Toda la tierra.', 'All the earth.', 'Note: Also planet Earth.'),
-  n('cielo', 'cielo', 'Sky/Heaven', 'nature', 'm', 'Above.', 'Cielo despejado.', 'Clear sky.', 'Miro al cielo.', 'I look at the sky.', 'Note: Beautiful color.'),
-  n('sol', 'sol', 'Sun', 'nature', 'm', 'Star.', 'Hace sol.', 'It is sunny.', 'El sol brilla.', 'The sun shines.', 'Note: Pair with Brillar.'),
-  n('luna', 'luna', 'Moon', 'nature', 'f', 'Satellite.', 'Luna llena.', 'Full moon.', 'Veo la luna.', 'I see the moon.', 'Note: At night.'),
-  n('estrella', 'estrella', 'Star', 'nature', 'f', 'Celestial.', 'Estrella fugaz.', 'Shooting star.', 'Mil estrellas.', 'A thousand stars.', 'Note: Brightness.'),
-
-  // --- TIME & ABSTRACT (Loot) ---
-  n('semana', 'semana', 'Week', 'time', 'f', '7 days.', 'Esta semana.', 'This week.', 'Semana santa.', 'Holy week.', 'Note: Lunes to Domingo.'),
-  n('mes', 'mes', 'Month', 'time', 'm', '30 days.', 'El mes próximo.', 'Next month.', 'Mes de mayo.', 'Month of May.', 'Note: Plural is Meses.'),
-  n('año', 'año', 'Year', 'time', 'm', '365 days.', 'Año nuevo.', 'New year.', 'Tengo 20 años.', 'I am 20 years old.', 'Note: Use "Tener" for age.'),
-  n('verdad', 'verdad', 'Truth', 'abstract', 'f', 'Fact.', 'Digo la verdad.', 'I say the truth.', 'Es verdad.', 'It is true.', 'Note: Opposite of Mentira.'),
-  n('mentira', 'mentira', 'Lie', 'abstract', 'f', 'Falsehood.', 'Es una mentira.', 'It is a lie.', 'No digas mentiras.', "Don't tell lies.", 'Note: Avoid these!'),
-
-  // --- PURPLE TOOLS (Connectors & Interrogatives) ---
+  
+  // --- PURPLE TOOLS (Existing) ---
   m('y_tool', 'y', 'And', 'grammar', 'Addition.', 'Juan y Ana.', 'Juan and Ana.', 'Addition', 'Becomes "e" before i/hi.', 'connector', 'Essential Bridge.'),
   m('o_tool', 'o', 'Or', 'grammar', 'Choice.', '¿Té o café?', 'Tea or coffee?', 'Choice', 'Becomes "u" before o/ho.', 'connector', 'Decision Key.'),
   m('pero_tool', 'pero', 'But', 'grammar', 'Contrast.', 'Es caro, pero bueno.', 'Expensive but good.', 'Contrast', 'Connects opposite ideas.', 'connector', 'Logic Bridge.'),
   m('porque_tool', 'porque', 'Because', 'grammar', 'Reason.', 'Como porque tengo hambre.', 'I eat because I am hungry.', 'Reason', 'Explains the why.', 'connector', 'The Explainer.'),
   m('aunque_tool', 'aunque', 'Although', 'grammar', 'Concession.', 'Aunque llueva, voy.', 'Although it rains, I go.', 'Concession', 'Higher A1 level tool.', 'connector', 'Advanced Bridge.'),
   m('si_tool', 'si', 'If', 'grammar', 'Condition.', 'Si quieres, vamos.', 'If you want, we go.', 'Condition', 'No accent (unlike Sí=Yes).', 'connector', 'Condition Key.'),
-  
   m('que_q', '¿qué?', 'What?', 'grammar', 'Inquiry.', '¿Qué is esto?', 'What is this?', 'Question', 'Identifies objects.', 'interrogative', 'Universal Key.'),
   m('quien_q', '¿quién?', 'Who?', 'grammar', 'Inquiry.', '¿Quién is él?', 'Who is he?', 'Question', 'Identifies people.', 'interrogative', 'Person Key.'),
   m('donde_q', '¿dónde?', 'Where?', 'grammar', 'Inquiry.', '¿Dónde estás?', 'Where are you?', 'Question', 'Identifies location.', 'interrogative', 'Map Key.'),
@@ -91,165 +90,4 @@ export const EXTRA_CANDIDATES: Word[] = [
   m('como_q', '¿cómo?', 'How?', 'grammar', 'Inquiry.', '¿Cómo estás?', 'How are you?', 'Question', 'Identifies manner.', 'interrogative', 'State Key.'),
   m('por_que_q', '¿por qué?', 'Why?', 'grammar', 'Inquiry.', '¿Por qué ríes?', 'Why do you laugh?', 'Question', 'Asks for reason (two words).', 'interrogative', 'Reason Key.'),
   m('cuanto_q', '¿cuánto?', 'How much?', 'grammar', 'Inquiry.', '¿Cuánto cuesta?', 'How much does it cost?', 'Question', 'Asks for quantity.', 'interrogative', 'Price Key.'),
-
-  // --- PURPLE TOOLS (Adverbs & Time) ---
-  m('hoy_tool', 'hoy', 'Today', 'time', 'Present.', 'Hoy is lunes.', 'Today is Monday.', 'Present', 'Current day.', 'adverb', 'Time Tool.'),
-  m('mañana_tool', 'mañana', 'Tomorrow', 'time', 'Future.', 'Mañana voy.', 'I go tomorrow.', 'Future', 'Next day.', 'adverb', 'Time Tool.'),
-  m('ayer_tool', 'ayer', 'Yesterday', 'time', 'Past.', 'Ayer comí.', 'I ate yesterday.', 'Past', 'Previous day.', 'adverb', 'Time Tool.'),
-  m('ahora_tool', 'ahora', 'Now', 'time', 'Immediate.', 'Hazlo ahora.', 'Do it now.', 'Immediate', 'The present moment.', 'adverb', 'Action Tool.'),
-  m('luego_tool', 'luego', 'Later', 'time', 'Sequence.', 'Hasta luego.', 'See you later.', 'Sequence', 'In the near future.', 'adverb', 'Time Tool.'),
-  m('antes_tool', 'antes', 'Before', 'time', 'Sequence.', 'Antes de comer.', 'Before eating.', 'Sequence', 'Earlier than.', 'adverb', 'Logic Tool.'),
-  m('despues_tool', 'después', 'After', 'time', 'Sequence.', 'Después de ir.', 'After going.', 'Sequence', 'Later than.', 'adverb', 'Logic Tool.'),
-  m('siempre_tool', 'siempre', 'Always', 'time', 'Frequency.', 'Siempre te amo.', 'I always love you.', 'Frequency', '100% of the time.', 'adverb', 'Frequency Tool.'),
-  m('nunca_tool', 'nunca', 'Never', 'time', 'Frequency.', 'Nunca fumo.', 'I never smoke.', 'Frequency', '0% of the time.', 'adverb', 'Frequency Tool.'),
-  
-  m('aqui_tool', 'aquí', 'Here', 'travel', 'Place.', 'Estoy aquí.', 'I am here.', 'Place', 'This location.', 'adverb', 'Locative.'),
-  m('alli_tool', 'allí', 'There', 'travel', 'Place.', 'Está allí.', 'It is there.', 'Place', 'That location.', 'adverb', 'Locative.'),
-  m('muy_tool', 'muy', 'Very', 'grammar', 'Degree.', 'Muy bien.', 'Very well.', 'Degree', 'Intensifier.', 'adverb', 'Degree Tool.'),
-  m('mas_tool', 'más', 'More', 'grammar', 'Degree.', 'Más café.', 'More coffee.', 'Degree', 'Additional.', 'adverb', 'Degree Tool.'),
-  m('menos_tool', 'menos', 'Less', 'grammar', 'Degree.', 'Menos azúcar.', 'Less sugar.', 'Degree', 'Reduction.', 'adverb', 'Degree Tool.'),
-  
-  // --- PURPLE TOOLS (Quantifiers & Logic) ---
-  m('todo_tool', 'todo', 'All/Everything', 'grammar', 'Total.', 'Todo está listo.', 'Everything is ready.', 'Total', 'Universal quantifier.', 'misc', 'Logic Key.'),
-  m('nada_tool', 'nada', 'Nothing', 'grammar', 'Zero.', 'No tengo nada.', 'I have nothing.', 'Zero', 'The void.', 'misc', 'Logic Key.'),
-  m('algo_tool', 'algo', 'Something', 'grammar', 'Indefinite.', 'Quiero algo.', 'I want something.', 'Indefinite', 'A thing.', 'misc', 'Logic Key.'),
-  m('alguien_tool', 'alguien', 'Someone', 'social', 'Indefinite.', '¿Hay alguien?', 'Is someone there?', 'Indefinite', 'A person.', 'misc', 'Logic Key.'),
-  m('nadie_tool', 'nadie', 'No one', 'social', 'Zero.', 'Nadie sabe.', 'No one knows.', 'Zero', 'Zero people.', 'misc', 'Logic Key.'),
-  
-  // --- PURPLE TOOLS (Prepositions) ---
-  m('con_tool', 'con', 'With', 'grammar', 'Company.', 'Voy con él.', 'I go with him.', 'Company', 'Connection.', 'preposition', 'Bridge Tool.'),
-  m('sin_tool', 'sin', 'Without', 'grammar', 'Lack.', 'Sin miedo.', 'Without fear.', 'Lack', 'Disconnection.', 'preposition', 'Bridge Tool.'),
-  m('para_tool', 'para', 'For/To', 'grammar', 'Purpose.', 'Es para ti.', 'It is for you.', 'Purpose', 'The goal.', 'preposition', 'Purpose Key.'),
-  m('por_tool', 'por', 'By/For/Through', 'grammar', 'Cause.', 'Por la mañana.', 'In the morning.', 'Cause/Path', 'Broad usage.', 'preposition', 'Universal Bridge.'),
-
-  // --- ADVANCED BODY PARTS (Loot) ---
-  n('espalda', 'espalda', 'Back', 'body', 'f', 'Body part.', 'Me duele la espalda.', 'My back hurts.', 'Espalda recta.', 'Straight back.', 'Note: Important for posture.'),
-  n('pierna', 'pierna', 'Leg', 'body', 'f', 'Body part.', 'Piernas largas.', 'Long legs.', 'Me duele la pierna.', 'My leg hurts.', 'Note: Plural is Piernas.'),
-  n('brazo', 'brazo', 'Arm', 'body', 'm', 'Body part.', 'Brazo fuerte.', 'Strong arm.', 'Levanta el brazo.', 'Lift your arm.', 'Note: Plural is Brazos.'),
-  n('hombro', 'hombro', 'Shoulder', 'body', 'm', 'Body part.', 'Hombros anchos.', 'Wide shoulders.', 'Me duele el hombro.', 'My shoulder hurts.', 'Note: Plural is Hombros.'),
-  n('oreja', 'oreja', 'Ear', 'body', 'f', 'Outer ear.', 'Orejas pequeñas.', 'Small ears.', 'Tengo dos orejas.', 'I have two ears.', 'Note: Inner ear is Oído.'),
-  n('nariz', 'nariz', 'Nose', 'body', 'f', 'Face part.', 'Nariz fría.', 'Cold nose.', 'Respiro por la nariz.', 'I breathe through my nose.', 'Note: Plural is Narices.'),
-  n('cuello', 'cuello', 'Neck', 'body', 'm', 'Body part.', 'Cuello largo.', 'Long neck.', 'Llevo un collar.', 'I wear a necklace.', 'Note: Connects head to body.'),
-  n('rodilla', 'rodilla', 'Knee', 'body', 'f', 'Joint.', 'Me duele la rodilla.', 'My knee hurts.', 'Dobla la rodilla.', 'Bend the knee.', 'Note: Plural is Rodillas.'),
-  n('pie', 'pie', 'Foot', 'body', 'm', 'Lower limb.', 'Pies grandes.', 'Big feet.', 'Voy a pie.', 'I go on foot.', 'Note: "A pie" means walking.'),
-  n('dedo', 'dedo', 'Finger/Toe', 'body', 'm', 'Digit.', 'Diez dedos.', 'Ten fingers.', 'Dedo largo.', 'Long finger.', 'Note: Use for hand or foot.'),
-
-  // --- CLOTHING & ACCESSORIES (Loot) ---
-  n('camisa', 'camisa', 'Shirt', 'daily', 'f', 'Apparel.', 'Camisa blanca.', 'White shirt.', 'Llevo una camisa.', 'I wear a shirt.', 'Note: Usually buttoned.'),
-  n('pantalon', 'pantalón', 'Pants', 'daily', 'm', 'Apparel.', 'Pantalón azul.', 'Blue pants.', 'Pantalón corto.', 'Shorts.', 'Note: Often plural "pantalones".'),
-  n('zapato', 'zapato', 'Shoe', 'daily', 'm', 'Footwear.', 'Zapato nuevo.', 'New shoe.', 'Me quito los zapatos.', 'I take off my shoes.', 'Note: Plural is Zapatos.'),
-  n('sombrero', 'sombrero', 'Hat', 'daily', 'm', 'Headwear.', 'Sombrero grande.', 'Big hat.', 'Lleva sombrero.', 'He wears a hat.', 'Note: Iconic in culture.'),
-  n('falda', 'falda', 'Skirt', 'daily', 'f', 'Apparel.', 'Falda corta.', 'Short skirt.', 'Ella lleva falda.', 'She wears a skirt.', 'Note: Plural is Faldas.'),
-  n('vestido', 'vestido', 'Dress', 'daily', 'm', 'Apparel.', 'Vestido hermoso.', 'Beautiful dress.', 'Quiero ese vestido.', 'I want that dress.', 'Note: Also past participle of vestir.'),
-  n('calcetin', 'calcetín', 'Sock', 'daily', 'm', 'Footwear.', 'Calcetín rojo.', 'Red sock.', 'Busco mi calcetín.', 'I look for my sock.', 'Note: Plural is Calcetines.'),
-  n('abrigo', 'abrigo', 'Coat', 'daily', 'm', 'Outerwear.', 'Abrigo negro.', 'Black coat.', 'Tengo frío, uso abrigo.', 'I am cold, I use a coat.', 'Note: For winter.'),
-  n('gafas', 'gafas', 'Glasses', 'daily', 'f', 'Eyewear.', 'Gafas de sol.', 'Sunglasses.', 'Uso gafas.', 'I use glasses.', 'Note: Always plural (Las gafas).'),
-  n('chaqueta', 'chaqueta', 'Jacket', 'daily', 'f', 'Outerwear.', 'Chaqueta ligera.', 'Light jacket.', 'Dame la chaqueta.', 'Give me the jacket.', 'Note: Shorter than abrigo.'),
-
-  // --- ANIMAL KINGDOM (Loot) ---
-  n('leon', 'león', 'Lion', 'nature', 'm', 'Wild animal.', 'León fuerte.', 'Strong lion.', 'El rey león.', 'The lion king.', 'Note: Plural is Leones.'),
-  n('elefante', 'elefante', 'Elephant', 'nature', 'm', 'Wild animal.', 'Elefante grande.', 'Big elephant.', 'Veo un elefante.', 'I see an elephant.', 'Note: Known for memory.'),
-  n('serpiente', 'serpiente', 'Snake', 'nature', 'f', 'Reptile.', 'Serpiente larga.', 'Long snake.', 'Cuidado, una serpiente.', 'Careful, a snake.', 'Note: Dangerous animals.'),
-  n('pajaro', 'pájaro', 'Bird', 'nature', 'm', 'Avian.', 'Pájaro azul.', 'Blue bird.', 'El pájaro vuela.', 'The bird flies.', 'Note: General term.'),
-  n('pez', 'pez', 'Fish', 'nature', 'm', 'Aquatic.', 'Pez de colores.', 'Goldfish.', 'El pez nada.', 'The fish swims.', 'Note: Pescado when cooked.'),
-  n('caballo', 'caballo', 'Horse', 'nature', 'm', 'Mammal.', 'Caballo rápido.', 'Fast horse.', 'Monto a caballo.', 'I ride a horse.', 'Note: "A caballo" = riding.'),
-  n('vaca', 'vaca', 'Cow', 'nature', 'f', 'Farm animal.', 'Vaca gorda.', 'Fat cow.', 'La vaca da leche.', 'The cow gives milk.', 'Note: Important for food.'),
-  n('oveja', 'oveja', 'Sheep', 'nature', 'f', 'Farm animal.', 'Oveja blanca.', 'White sheep.', 'Cuento ovejas.', 'I count sheep.', 'Note: Known for wool.'),
-  n('cerdo', 'cerdo', 'Pig', 'nature', 'm', 'Farm animal.', 'Cerdo rosa.', 'Pink pig.', 'El cerdo come mucho.', 'The pig eats a lot.', 'Note: Also means "dirty".'),
-  n('conejo', 'conejo', 'Rabbit', 'nature', 'm', 'Mammal.', 'Conejo pequeño.', 'Small rabbit.', 'El conejo salta.', 'The rabbit jumps.', 'Note: Long ears.'),
-
-  // --- JOBS & IDENTITY (Loot) ---
-  n('medico', 'médico', 'Doctor', 'work', 'm', 'Profession.', 'Soy médico.', 'I am a doctor.', 'Médico bueno.', 'Good doctor.', 'Note: Fem is Médica.'),
-  n('profesor', 'profesor', 'Teacher', 'work', 'm', 'Profession.', 'Mi profesor.', 'My teacher.', 'Profesor serio.', 'Serious teacher.', 'Note: Fem is Profesora.'),
-  n('estudiante', 'estudiante', 'Student', 'work', 'm', 'Role.', 'Soy estudiante.', 'I am a student.', 'Estudiante aplicado.', 'Diligent student.', 'Note: Same for m/f.'),
-  n('policia', 'policía', 'Police', 'society', 'm', 'Force.', 'Llama a la policía.', 'Call the police.', 'Policía local.', 'Local police.', 'Note: Same for m/f.'),
-  n('cocinero', 'cocinero', 'Cook/Chef', 'work', 'm', 'Profession.', 'Buen cocinero.', 'Good cook.', 'El cocinero trabaja.', 'The chef works.', 'Note: Verb is Cocinar.'),
-  n('camarero', 'camarero', 'Waiter', 'work', 'm', 'Profession.', 'Camarero, la cuenta.', 'Waiter, the bill.', 'Él es camarero.', 'He is a waiter.', 'Note: In a restaurant.'),
-  n('ingeniero', 'ingeniero', 'Engineer', 'work', 'm', 'Profession.', 'Ingeniero civil.', 'Civil engineer.', 'Soy ingeniero.', 'I am an engineer.', 'Note: Professional role.'),
-  n('arquitecto', 'arquitecto', 'Architect', 'work', 'm', 'Profession.', 'Arquitecto famoso.', 'Famous architect.', 'Ella es arquitecta.', 'She is an architect.', 'Note: Designs buildings.'),
-  n('dentista', 'dentista', 'Dentist', 'work', 'm', 'Profession.', 'Voy al dentista.', 'I go to the dentist.', 'Buen dentista.', 'Good dentist.', 'Note: Same for m/f.'),
-  n('bombero', 'bombero', 'Firefighter', 'society', 'm', 'Profession.', 'Bombero valiente.', 'Brave firefighter.', 'Viene el bombero.', 'The firefighter comes.', 'Note: Extinguishes fire.'),
-
-  // --- ESSENTIAL LOCATIONS (Loot) ---
-  n('playa', 'playa', 'Beach', 'travel', 'f', 'Location.', 'Voy a la playa.', 'I go to the beach.', 'Playa hermosa.', 'Beautiful beach.', 'Note: For summer.'),
-  n('hospital', 'hospital', 'Hospital', 'society', 'm', 'Location.', 'Estoy en el hospital.', 'I am in the hospital.', 'Hospital grande.', 'Big hospital.', 'Note: Starts with silent h.'),
-  n('escuela', 'escuela', 'School', 'work', 'f', 'Location.', 'Voy a la escuela.', 'I go to school.', 'Escuela nueva.', 'New school.', 'Note: Pair with Estudiar.'),
-  n('restaurante', 'restaurante', 'Restaurant', 'food', 'm', 'Location.', 'Ceno en el restaurante.', 'I dine at the restaurant.', 'Buen restaurante.', 'Good restaurant.', 'Note: Pair with Comer.'),
-  n('parque', 'parque', 'Park', 'nature', 'm', 'Location.', 'Juego en el parque.', 'I play in the park.', 'Parque verde.', 'Green park.', 'Note: For walking.'),
-  n('hotel', 'hotel', 'Hotel', 'travel', 'm', 'Location.', 'Busco un hotel.', 'I look for a hotel.', 'Hotel caro.', 'Expensive hotel.', 'Note: For travelers.'),
-  n('aeropuerto', 'aeropuerto', 'Airport', 'travel', 'm', 'Location.', 'Voy al aeropuerto.', 'I go to the airport.', 'Aeropuerto grande.', 'Big airport.', 'Note: For flying.'),
-  n('estacion', 'estación', 'Station', 'travel', 'f', 'Location.', 'Estación de tren.', 'Train station.', '¿Dónde está la estación?', 'Where is the station?', 'Note: End in -ción = Fem.'),
-
-  // --- ADVANCED PURPLE TOOLS (Adverbs & Logic) ---
-  m('casi_tool', 'casi', 'Almost', 'grammar', 'Logic.', 'Casi termino.', 'I almost finish.', 'Logic', 'Approximation.', 'adverb', 'The Nudger.'),
-  m('apenas_tool', 'apenas', 'Hardly', 'grammar', 'Logic.', 'Apenas como.', 'I hardly eat.', 'Logic', 'Scarcity.', 'adverb', 'The Minimalist.'),
-  m('demasiado_tool', 'demasiado', 'Too much', 'grammar', 'Degree.', 'Es demasiado caro.', 'It is too expensive.', 'Degree', 'Excess.', 'adverb', 'The Maximizer.'),
-  m('todavia_tool', 'todavía', 'Still', 'time', 'Continuity.', 'Todavía estoy aquí.', 'I am still here.', 'Continuity', 'Persistent state.', 'adverb', 'The Anchored.'),
-  m('ya_tool', 'ya', 'Already', 'time', 'Completion.', 'Ya comí.', 'I already ate.', 'Time', 'Indicates past action.', 'adverb', 'The Done Key.'),
-  m('pronto_tool', 'pronto', 'Soon', 'time', 'Future.', 'Vengo pronto.', 'I come soon.', 'Time', 'In a short time.', 'adverb', 'The Impatient.'),
-  m('despacio_tool', 'despacio', 'Slowly', 'grammar', 'Manner.', 'Habla despacio.', 'Speak slowly.', 'Manner', 'Low speed.', 'adverb', 'The Calm Tool.'),
-  m('tambien_tool', 'también', 'Also', 'grammar', 'Addition.', 'Yo también.', 'Me too.', 'Addition', 'Agreement.', 'misc', 'The Joiner.'),
-  m('tampoco_tool', 'tampoco', 'Neither', 'grammar', 'Negation.', 'Yo tampoco.', 'Me neither.', 'Negation', 'Disagreement.', 'misc', 'The Excluder.'),
-  m('entonces_tool', 'entonces', 'Then', 'time', 'Sequence.', 'Entonces, vamos.', 'Then, let us go.', 'Sequence', 'Result of logic.', 'adverb', 'The Weaver.'),
-  m('ademas_tool', 'además', 'Besides/Also', 'grammar', 'Addition.', 'Además, es bueno.', 'Besides, it is good.', 'Addition', 'Extra info.', 'adverb', 'The Stacker.'),
-  m('quizas_tool', 'quizás', 'Maybe', 'abstract', 'Doubt.', 'Quizás voy.', 'Maybe I go.', 'Doubt', 'Uncertainty.', 'adverb', 'The Dreamer.'),
-  
-  // --- THE RAINBOW (Colors - Adjectives) ---
-  a('rojo', 'rojo', 'Red', 'nature', 'azul', 'Blue', 'Primary color.', 'Coche rojo.', 'Red car.', 'Flor roja.', 'Red flower.', 'Note: Fem is Roja.'),
-  a('azul', 'azul', 'Blue', 'nature', 'rojo', 'Red', 'Primary color.', 'Cielo azul.', 'Blue sky.', 'Mar azul.', 'Blue sea.', 'Note: Same for m/f.'),
-  a('verde', 'verde', 'Green', 'nature', 'marrón', 'Brown', 'Nature color.', 'Árbol verde.', 'Green tree.', 'Hierba verde.', 'Green grass.', 'Note: Same for m/f.'),
-  a('amarillo', 'amarillo', 'Yellow', 'nature', 'morado', 'Purple', 'Sun color.', 'Sol amarillo.', 'Yellow sun.', 'Flor amarilla.', 'Yellow flower.', 'Note: Fem is Amarilla.'),
-  a('blanco', 'blanco', 'White', 'nature', 'negro', 'Black', 'Bright color.', 'Nieve blanca.', 'White snow.', 'Papel blanco.', 'White paper.', 'Note: Fem is Blanca.'),
-  a('negro', 'negro', 'Black', 'nature', 'blanco', 'White', 'Dark color.', 'Gato negro.', 'Black cat.', 'Noche negra.', 'Black night.', 'Note: Fem is Negra.'),
-  a('gris', 'gris', 'Grey', 'nature', 'blanco', 'White', 'Neutral color.', 'Día gris.', 'Grey day.', 'Pelo gris.', 'Grey hair.', 'Note: Same for m/f.'),
-  a('rosa', 'rosa', 'Pink', 'nature', 'rojo', 'Red', 'Soft color.', 'Flor rosa.', 'Pink flower.', 'Vestido rosa.', 'Pink dress.', 'Note: Often stays "rosa" for f.'),
-  a('naranja_adj', 'naranja', 'Orange', 'nature', 'azul', 'Blue', 'Fruit color.', 'Coche naranja.', 'Orange car.', 'Fruta naranja.', 'Orange fruit.', 'Note: Same for m/f.'),
-  a('morado', 'morado', 'Purple', 'nature', 'amarillo', 'Yellow', 'Royal color.', 'Flor morada.', 'Purple flower.', 'Uvas moradas.', 'Purple grapes.', 'Note: Fem is Morada.'),
-
-  // --- THE CALENDAR (Days of the Week - Misc/Time) ---
-  m('lunes', 'lunes', 'Monday', 'time', '1st day.', 'Hoy es lunes.', 'Today is Monday.', 'Time', 'Starts with L.', 'time', 'The Starter.'),
-  m('martes', 'martes', 'Tuesday', 'time', '2nd day.', 'Mañana es martes.', 'Tomorrow is Tuesday.', 'Time', 'Day of Mars.', 'time', 'The Follower.'),
-  m('miercoles', 'miércoles', 'Wednesday', 'time', '3rd day.', 'Es miércoles.', 'It is Wednesday.', 'Time', 'Hump day.', 'time', 'The Peak.'),
-  m('jueves', 'jueves', 'Thursday', 'time', '4th day.', 'Casi es viernes.', 'It is almost Friday.', 'Time', 'Day of Jupiter.', 'time', 'The Near.'),
-  m('viernes', 'viernes', 'Friday', 'time', '5th day.', '¡Por fin es viernes!', 'Finally it is Friday!', 'Time', 'Party starts.', 'time', 'The Celebration.'),
-  m('sabado', 'sábado', 'Saturday', 'time', 'Weekend.', 'Sábado libre.', 'Free Saturday.', 'Time', 'Rest day.', 'time', 'The Rest.'),
-  m('domingo', 'domingo', 'Sunday', 'time', 'Weekend.', 'Domingo de sol.', 'Sunny Sunday.', 'Time', 'Family day.', 'time', 'The Peace.'),
-
-  // --- THE CALENDAR (Months of the Year - Misc/Time) ---
-  m('enero', 'enero', 'January', 'time', '1st month.', 'Enero es frío.', 'January is cold.', 'Time', 'New Year.', 'time', 'Beginning.'),
-  m('febrero', 'febrero', 'February', 'time', 'Short month.', 'Mes de febrero.', 'Month of February.', 'Time', 'Love month.', 'time', 'Shorty.'),
-  m('marzo', 'marzo', 'March', 'time', 'Spring.', 'Marzo viene.', 'March comes.', 'Time', 'Windy month.', 'time', 'Breeze.'),
-  m('abril', 'abril', 'April', 'time', 'Rainy.', 'Abril lluvioso.', 'Rainy April.', 'Time', 'Showers.', 'time', 'Growth.'),
-  m('mayo', 'mayo', 'May', 'time', 'Flowers.', 'Flores de mayo.', 'May flowers.', 'Time', 'Mother day.', 'time', 'Bloom.'),
-  m('junio', 'junio', 'June', 'time', 'Summer.', 'Junio es calor.', 'June is heat.', 'Time', 'Vacation start.', 'time', 'Solstice.'),
-  m('julio', 'julio', 'July', 'time', 'Hot.', 'Mes de julio.', 'Month of July.', 'Time', 'Beach time.', 'time', 'Heat.'),
-  m('agosto', 'agosto', 'August', 'time', 'Holiday.', 'Agosto en la playa.', 'August at the beach.', 'Time', 'Vacation peak.', 'time', 'Relax.'),
-  m('septiembre', 'septiembre', 'September', 'time', 'Autumn.', 'Septiembre llega.', 'September arrives.', 'Time', 'Back to school.', 'time', 'Return.'),
-  m('octubre', 'octubre', 'October', 'time', 'Fall.', 'Mes de octubre.', 'Month of October.', 'Time', 'Leaves fall.', 'time', 'Amber.'),
-  m('noviembre', 'noviembre', 'November', 'time', 'Cold.', 'Noviembre gris.', 'Grey November.', 'Time', 'Remembering.', 'time', 'Fading.'),
-  m('diciembre', 'diciembre', 'December', 'time', 'Last month.', 'Feliz diciembre.', 'Happy December.', 'Time', 'Celebration.', 'time', 'Closure.'),
-
-  // --- THE NUMBERS (1-10 - Misc/Quantity) ---
-  m('uno', 'uno', 'One', 'quantity', 'Number 1.', 'Tengo uno.', 'I have one.', 'Quantity', 'Becomes "un" before nouns.', 'misc', 'The Unit.'),
-  m('dos', 'dos', 'Two', 'quantity', 'Number 2.', 'Dos cafés.', 'Two coffees.', 'Quantity', 'Dual.', 'misc', 'The Pair.'),
-  m('tres', 'tres', 'Three', 'quantity', 'Number 3.', 'Tres libros.', 'Three books.', 'Quantity', 'Trio.', 'misc', 'The Triangle.'),
-  m('cuatro', 'cuatro', 'Four', 'quantity', 'Number 4.', 'Cuatro patas.', 'Four legs.', 'Quantity', 'Square.', 'misc', 'The Base.'),
-  m('cinco', 'cinco', 'Five', 'quantity', 'Number 5.', 'Cinco dedos.', 'Five fingers.', 'Quantity', 'Hand count.', 'misc', 'The Hand.'),
-  m('seis', 'seis', 'Six', 'quantity', 'Number 6.', 'Seis meses.', 'Six months.', 'Quantity', 'Half dozen.', 'misc', 'The Half.'),
-  m('siete', 'siete', 'Seven', 'quantity', 'Number 7.', 'Siete días.', 'Seven days.', 'Quantity', 'Week count.', 'misc', 'The Week.'),
-  m('ocho', 'ocho', 'Eight', 'quantity', 'Number 8.', 'Ocho horas.', 'Eight hours.', 'Quantity', 'Octopus.', 'misc', 'The Octo.'),
-  m('nueve', 'nueve', 'Nine', 'quantity', 'Number 9.', 'Nueve vidas.', 'Nine lives.', 'Quantity', 'Cat myth.', 'misc', 'The Near.'),
-  m('diez', 'diez', 'Ten', 'quantity', 'Number 10.', 'Diez euros.', 'Ten euros.', 'Quantity', 'Base ten.', 'misc', 'The Decade.'),
-
-  // --- THE NUMBERS (11-20 - Misc/Quantity) ---
-  m('once', 'once', 'Eleven', 'quantity', 'Number 11.', 'Once jugadores.', 'Eleven players.', 'Quantity', 'Soccer team.', 'misc', 'The Team.'),
-  m('doce', 'doce', 'Twelve', 'quantity', 'Number 12.', 'Doce uvas.', 'Twelve grapes.', 'Quantity', 'The Dozen.', 'misc', 'The Dozen.'),
-  m('trece', 'trece', 'Thirteen', 'quantity', 'Number 13.', 'Trece personas.', 'Thirteen people.', 'Quantity', 'Unlucky for some.', 'misc', 'The Odd.'),
-  m('catorce', 'catorce', 'Fourteen', 'quantity', 'Number 14.', 'Catorce días.', 'Fourteen days.', 'Quantity', 'Fortnight.', 'misc', 'The Fortnight.'),
-  m('quince', 'quince', 'Fifteen', 'quantity', 'Number 15.', 'Quince años.', 'Fifteen years.', 'Quantity', 'Quinceañera.', 'misc', 'The Quince.'),
-  m('dieciseis', 'dieciséis', 'Sixteen', 'quantity', 'Number 16.', 'Dieciséis hoy.', 'Sixteen today.', 'Quantity', '10+6.', 'misc', 'The Teen.'),
-  m('diecisiete', 'diecisiete', 'Seventeen', 'quantity', 'Number 17.', 'Diecisiete más.', 'Seventeen more.', 'Quantity', '10+7.', 'misc', 'The Teen.'),
-  m('dieciocho', 'dieciocho', 'Eighteen', 'quantity', 'Number 18.', 'Dieciocho años.', 'Eighteen years.', 'Quantity', 'Adult age.', 'misc', 'The Adult.'),
-  m('diecinueve', 'diecinueve', 'Nineteen', 'quantity', 'Number 19.', 'Diecinueve mil.', 'Nineteen thousand.', 'Quantity', '10+9.', 'misc', 'The Last Teen.'),
-  m('veinte', 'veinte', 'Twenty', 'quantity', 'Number 20.', 'Veinte minutos.', 'Twenty minutes.', 'Quantity', 'The Score.', 'misc', 'The Score.'),
 ];

@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 
 export const config = {
@@ -26,19 +27,16 @@ export default async function handler(req: Request) {
 
   try {
     const { action, payload } = await req.json() as RequestBody;
-    const apiKey = process.env.GEMINI_API_KEY; // Rename your env var in Vercel to this
 
-    if (!apiKey) {
-      return new Response(JSON.stringify({ error: 'Server configuration error: Missing API Key' }), { status: 500 });
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
+    // Guideline: Always initialize with process.env.API_KEY named parameter
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     // --- Action: Generate Mnemonic Hint ---
     if (action === 'hint') {
       const { word, translation } = payload;
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash', // Upgraded to faster, cheaper model
+        // Guideline: Use gemini-3-flash-preview for basic text tasks
+        model: 'gemini-3-flash-preview',
         contents: `Provide a short smart grammar hint and a funny mnemonic for the Spanish word "${word}" (English: "${translation}"). Concise JSON only.`,
         config: {
           responseMimeType: "application/json",
@@ -52,6 +50,7 @@ export default async function handler(req: Request) {
           },
         },
       });
+      // Guideline: Access generated text via .text property
       return new Response(response.text || '{}', { 
         headers: { 'Content-Type': 'application/json' } 
       });
@@ -61,7 +60,7 @@ export default async function handler(req: Request) {
     if (action === 'challenge') {
       const { word, sentence } = payload;
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3-flash-preview',
         contents: `I am trying to learn the Spanish word "${word}". My sentence is: "${sentence}". 
         Be a friendly Islander tutor. 
         1. If the sentence has errors, respond starting with "I hear you! Did you mean..." and provide a corrected version. 
@@ -76,7 +75,7 @@ export default async function handler(req: Request) {
     // --- Action: Connection Test ---
     if (action === 'test') {
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3-flash-preview',
         contents: "Say 'Success' in Spanish.",
       });
       return new Response(JSON.stringify({ text: response.text }), { 

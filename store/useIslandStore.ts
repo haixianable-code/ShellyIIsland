@@ -1,373 +1,318 @@
 
 import { create } from 'zustand';
-import { AppView, Word, FeedbackQuality, ProgressMap, UserStats, UserProfile, SRSData } from '../types';
+import { Word, UserStats, ProgressMap, UserProfile, FeedbackQuality, Blueprint } from '../types';
+import { BLUEPRINTS } from '../data/blueprints';
+import { supabase } from '../services/supabaseClient';
 import { storageService } from '../services/storageService';
-import { TODAY_SIMULATED, VOCABULARY_DATA, EXTRA_CANDIDATES } from '../constants';
 import { calculateNextProgress } from '../utils/srsCore';
-import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
-import { User } from '@supabase/supabase-js';
 import { ProgressMapSchema, UserStatsSchema } from '../schemas/islandSchema';
-import { getAISmartHint, AIWordInfo } from '../services/geminiService';
+import { AIWordInfo } from '../services/geminiService';
+import { vocabService } from '../services/vocabService';
 
-const PROGRESS_KEY = 'hola_word_srs_v4_offline'; 
-const STATS_KEY = 'hola_user_stats_v1_offline';
-const AI_CACHE_KEY = 'ssi_ai_content_v1';
-const AI_USAGE_KEY = 'ssi_ai_usage_v1';
-const MNEMONIC_USAGE_KEY = 'ssi_mnemonic_usage_v1';
-const DAILY_GOAL_VALUE = 20;
-const DAILY_AI_LIMIT = 3;
-const DAILY_MNEMONIC_LIMIT = 5;
+const LEMON_VARIANT_ID = '384976';
 
-// Replace this with your actual Variant ID from Lemon Squeezy Dashboard
-const LEMON_VARIANT_ID = '828679'; 
+// Persistence Keys
+const KEY_PROGRESS = 'hola_word_srs_v4_offline';
+const KEY_STATS = 'hola_user_stats_v1_offline';
+const KEY_AI_CACHE = 'ssi_ai_content_v1';
 
-const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
-
-export type ModalType = 'WORD_DETAIL' | 'STREAK' | 'DAILY_HARVEST' | 'SYNC_COMPLETE' | 'PROFILE_ENTRY' | 'RETURNING_WELCOME' | 'ACHIEVEMENT' | 'SUBSCRIPTION' | 'FEEDBACK';
+interface AIUsage {
+  date: string;
+  count: number;
+}
 
 interface IslandState {
-  view: AppView;
-  activeModal: ModalType | null;
-  modalData: any;
   isMuted: boolean;
+  loading: boolean;
+  syncStatus: 'idle' | 'syncing' | 'synced' | 'error';
+  activeModal: string | null;
+  modalData: any;
+
+  user: any;
+  profile: UserProfile | null;
   progress: ProgressMap;
   stats: UserStats;
-  profile: UserProfile | null;
   aiCache: Record<string, AIWordInfo>;
-  aiUsage: { date: string; count: number }; // Track challenge usage
-  mnemonicUsage: { date: string; count: number }; // Track mnemonic reveals
-  isAIAvailable: boolean; 
-  user: User | null;
-  syncStatus: 'idle' | 'syncing' | 'synced' | 'error';
-  loading: boolean;
-  dailyGoal: number;
   
   wordMap: Map<string, Word>;
   allWords: Word[];
+  
+  // Helpers for filtering (Computed)
   wordsByTopic: Record<string, string[]>;
   wordsByLevel: Record<string, string[]>;
-  
-  setView: (view: AppView) => void;
-  openModal: (type: ModalType, data?: any) => void;
-  closeModal: () => void;
+
+  blueprints: Blueprint[];
+  activeBlueprintId: string;
+
+  // Trial Logic
+  trialStatus: 'none' | 'active' | 'expired';
+  trialEndsAt: number | null;
+
+  aiUsage: AIUsage;
+  mnemonicUsage: AIUsage;
+
   setMuted: (muted: boolean) => void;
-  initialize: (user: User | null) => Promise<void>;
-  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
-  syncLocalToCloud: () => Promise<void>;
-  updateProgress: (wordId: string, quality: FeedbackQuality) => Promise<boolean>;
-  addExtraWords: (words: Word[]) => Promise<void>;
-  warmupAI: (words: Word[], isBackground?: boolean) => Promise<void>;
-  consumeAIToken: () => boolean; // Returns true if allowed
-  consumeMnemonicToken: () => boolean; // Returns true if allowed
+  openModal: (modal: string, data?: any) => void;
+  closeModal: () => void;
+  initialize: (user: any) => Promise<void>;
   resetIsland: () => void;
+  
+  updateProgress: (wordId: string, quality: FeedbackQuality) => Promise<boolean>;
+  setActiveBlueprint: (id: string) => void;
+  addExtraWords: (words: Word[]) => void;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  
+  consumeAIToken: () => boolean;
+  consumeMnemonicToken: () => boolean;
   startSubscriptionCheckout: () => Promise<void>;
+  
+  activateTrial: () => void;
+  checkTrialStatus: () => void;
+  
+  // Admin Action
+  uploadVocabulary: () => Promise<string>;
 }
 
-export const useIslandStore = create<IslandState>((set, get) => {
-  const wordMap = new Map<string, Word>();
-  const allWords: Word[] = [];
-  const wordsByTopic: Record<string, string[]> = {};
-  const wordsByLevel: Record<string, string[]> = {};
+export const useIslandStore = create<IslandState>((set, get) => ({
+  isMuted: false,
+  loading: true,
+  syncStatus: 'idle',
+  activeModal: null,
+  modalData: null,
+  
+  user: null,
+  profile: null,
+  progress: {},
+  stats: { current_streak: 0, last_activity_date: new Date().toISOString(), total_words_learned: 0 },
+  aiCache: {},
+  
+  wordMap: new Map(),
+  allWords: [],
+  wordsByTopic: {},
+  wordsByLevel: {},
 
-  const processWord = (w: Word) => {
-    wordMap.set(w.id, w);
-    allWords.push(w);
-    if (!wordsByTopic[w.topic]) wordsByTopic[w.topic] = [];
-    wordsByTopic[w.topic].push(w.id);
-    if (!wordsByLevel[w.level]) wordsByLevel[w.level] = [];
-    wordsByLevel[w.level].push(w.id);
-  };
+  blueprints: BLUEPRINTS,
+  activeBlueprintId: 'vital_existence',
 
-  VOCABULARY_DATA.forEach(day => day.words.forEach(processWord));
-  EXTRA_CANDIDATES.forEach(processWord);
+  trialStatus: 'none',
+  trialEndsAt: null,
 
-  const DEFAULT_SRS: SRSData = { level: 1, nextReviewDate: TODAY_SIMULATED, easeFactor: 2.5, failureCount: 0 };
+  aiUsage: { date: new Date().toISOString().split('T')[0], count: 0 },
+  mnemonicUsage: { date: new Date().toISOString().split('T')[0], count: 0 },
 
-  return {
-    view: AppView.DASHBOARD,
-    activeModal: null,
-    modalData: null,
-    isMuted: false,
-    progress: {},
-    stats: { current_streak: 0, last_activity_date: TODAY_SIMULATED, total_words_learned: 0 },
-    profile: null,
-    aiCache: {},
-    aiUsage: { date: TODAY_SIMULATED, count: 0 },
-    mnemonicUsage: { date: TODAY_SIMULATED, count: 0 },
-    isAIAvailable: false, 
-    user: null,
-    syncStatus: 'idle',
-    loading: true,
-    dailyGoal: DAILY_GOAL_VALUE,
-    wordMap,
-    allWords,
-    wordsByTopic,
-    wordsByLevel,
+  setMuted: (muted) => {
+    set({ isMuted: muted });
+    localStorage.setItem('ssi_muted', String(muted));
+  },
+  
+  openModal: (modal, data = null) => set({ activeModal: modal, modalData: data }),
+  closeModal: () => set({ activeModal: null, modalData: null }),
 
-    setView: (view) => set({ view }),
-    openModal: (type, data = null) => set({ activeModal: type, modalData: data }),
-    closeModal: () => set({ activeModal: null, modalData: null }),
-    setMuted: (isMuted) => {
-      storageService.setItem('ssi_muted', isMuted);
-      set({ isMuted });
-    },
+  setActiveBlueprint: (id) => {
+    set({ activeBlueprintId: id });
+    localStorage.setItem('ssi_active_blueprint', id);
+  },
 
-    initialize: async (user) => {
-      set({ user, loading: true });
-      try {
-        storageService.initialize();
-        const savedAI = storageService.getItem<Record<string, AIWordInfo>>(AI_CACHE_KEY, {});
-        
-        // Initialize Usage tracking
-        let localAiUsage = storageService.getItem(AI_USAGE_KEY, { date: TODAY_SIMULATED, count: 0 });
-        if (localAiUsage.date !== TODAY_SIMULATED) {
-            localAiUsage = { date: TODAY_SIMULATED, count: 0 };
-            storageService.setItem(AI_USAGE_KEY, localAiUsage);
-        }
+  initialize: async (user) => {
+    set({ loading: true, user });
+    
+    // 1. Sync Load (Settings)
+    const isMuted = localStorage.getItem('ssi_muted') === 'true';
+    const activeBlueprintId = localStorage.getItem('ssi_active_blueprint') || 'vital_existence';
+    
+    // Trial Logic
+    const storedTrialStatus = localStorage.getItem('ssi_trial_status') as 'none'|'active'|'expired' || 'none';
+    const storedTrialEnd = localStorage.getItem('ssi_trial_end');
+    let trialEndsAt = storedTrialEnd ? parseInt(storedTrialEnd) : null;
+    let trialStatus = storedTrialStatus;
 
-        let localMnemonicUsage = storageService.getItem(MNEMONIC_USAGE_KEY, { date: TODAY_SIMULATED, count: 0 });
-        if (localMnemonicUsage.date !== TODAY_SIMULATED) {
-            localMnemonicUsage = { date: TODAY_SIMULATED, count: 0 };
-            storageService.setItem(MNEMONIC_USAGE_KEY, localMnemonicUsage);
-        }
+    if (trialStatus === 'active' && trialEndsAt && Date.now() > trialEndsAt) {
+      trialStatus = 'expired';
+      localStorage.setItem('ssi_trial_status', 'expired');
+    }
 
-        let localProgress = storageService.getItem<ProgressMap>(PROGRESS_KEY, {}, ProgressMapSchema);
-        let localStats = storageService.getItem<UserStats>(STATS_KEY, {
-          current_streak: 0, last_activity_date: TODAY_SIMULATED, total_words_learned: 0
-        }, UserStatsSchema);
+    const today = new Date().toISOString().split('T')[0];
+    let aiUsage = storageService.getItem('ssi_ai_usage', { date: today, count: 0 });
+    let mnemonicUsage = storageService.getItem('ssi_mnemonic_usage', { date: today, count: 0 });
 
+    if (aiUsage.date !== today) aiUsage = { date: today, count: 0 };
+    if (mnemonicUsage.date !== today) mnemonicUsage = { date: today, count: 0 };
+
+    set({ isMuted, aiUsage, mnemonicUsage, activeBlueprintId, trialStatus, trialEndsAt });
+
+    try {
+        // 2. Fetch Vocabulary (Cloud First, Local Fallback)
+        const words = await vocabService.getAllWords();
+        const wordMap = new Map<string, Word>();
+        const wordsByTopic: Record<string, string[]> = {};
+        const wordsByLevel: Record<string, string[]> = {};
+
+        words.forEach(w => {
+            wordMap.set(w.id, w);
+            
+            if (!wordsByTopic[w.topic]) wordsByTopic[w.topic] = [];
+            wordsByTopic[w.topic].push(w.id);
+
+            if (!wordsByLevel[w.level]) wordsByLevel[w.level] = [];
+            wordsByLevel[w.level].push(w.id);
+        });
+
+        set({ allWords: words, wordMap, wordsByTopic, wordsByLevel });
+
+        // 3. Async Load (Heavy Data) from IndexedDB
+        const [progress, stats, aiCache] = await Promise.all([
+            storageService.getItemAsync(KEY_PROGRESS, {}, ProgressMapSchema),
+            storageService.getItemAsync(KEY_STATS, { current_streak: 0, last_activity_date: new Date().toISOString(), total_words_learned: 0 }, UserStatsSchema),
+            storageService.getItemAsync(KEY_AI_CACHE, {})
+        ]);
+
+        set({ progress, stats, aiCache });
+
+        // 4. Supabase Sync (if user)
         if (user && supabase) {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .maybeSingle();
-          
-          if (profileData) {
-            set({ profile: profileData });
-            if (!profileData.traveler_name || profileData.traveler_name.includes('@')) {
-               get().openModal('PROFILE_ENTRY');
+            set({ syncStatus: 'syncing' });
+            try {
+                let { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                if (!profile) {
+                    const { data: newProfile, error } = await supabase.from('profiles').upsert({ id: user.id }).select().single();
+                    if (!error) profile = newProfile;
+                }
+                
+                if (profile && trialStatus === 'active') {
+                  profile.is_premium = true;
+                }
+
+                set({ profile });
+                const { data: cloudProgress } = await supabase.from('user_word_choices').select('*').eq('user_id', user.id);
+                if (cloudProgress && cloudProgress.length > 0) {
+                    const cloudMap: ProgressMap = {};
+                    cloudProgress.forEach((row: any) => {
+                        cloudMap[row.word_id] = { level: row.level, nextReviewDate: row.next_review_date, easeFactor: row.ease_factor, failureCount: row.failure_count };
+                    });
+                    const mergedProgress = { ...progress, ...cloudMap };
+                    const mergedStats = { ...stats, total_words_learned: Object.keys(mergedProgress).length };
+                    
+                    set({ progress: mergedProgress, stats: mergedStats });
+                    
+                    storageService.setItemAsync(KEY_PROGRESS, mergedProgress);
+                    storageService.setItemAsync(KEY_STATS, mergedStats);
+                }
+                set({ syncStatus: 'synced' });
+            } catch (e) {
+                console.error("Sync error", e);
+                set({ syncStatus: 'error' });
             }
-          } else {
-            set({ profile: null });
-            get().openModal('PROFILE_ENTRY');
-          }
-
-          const { data: cloudData, error } = await supabase
-            .from('user_word_choices')
-            .select('word_id, srs_level, next_review, ease_factor, failure_count')
-            .eq('user_id', user.id);
-
-          if (!error && cloudData) {
-            const cloudProgress: ProgressMap = {};
-            cloudData.forEach((row: any) => {
-              cloudProgress[row.word_id] = {
-                level: row.srs_level,
-                nextReviewDate: row.next_review.split('T')[0],
-                easeFactor: row.ease_factor ?? 2.5,
-                failureCount: row.failure_count ?? 0
-              };
-            });
-            localProgress = { ...localProgress, ...cloudProgress };
-            storageService.setItem(PROGRESS_KEY, localProgress);
-          }
+        } else {
+            if (trialStatus === 'active') {
+               set({ profile: { is_premium: true } as any });
+            }
         }
+    } catch (error) {
+        console.error("Initialization Failed:", error);
+    } finally {
+        set({ loading: false });
+    }
+  },
 
-        set({ 
-          progress: localProgress, 
-          stats: localStats, 
-          aiCache: savedAI,
-          aiUsage: localAiUsage,
-          mnemonicUsage: localMnemonicUsage,
-          loading: false,
-          isAIAvailable: !!process.env.API_KEY,
-          syncStatus: user ? 'synced' : 'idle'
-        });
-      } catch (err) {
-        set({ loading: false, syncStatus: 'error' });
-      }
-    },
+  resetIsland: () => { 
+      localStorage.clear(); 
+      window.location.reload(); 
+  },
 
-    updateProfile: async (updates) => {
-      const { user } = get();
-      if (!user || !supabase) return;
-      const { data, error } = await supabase
-        .from('profiles')
-        .upsert({ id: user.id, ...updates, updated_at: new Date().toISOString() })
-        .select().single();
-      if (!error && data) set({ profile: data });
-    },
+  activateTrial: () => {
+    const duration = 3 * 24 * 60 * 60 * 1000;
+    const endsAt = Date.now() + duration;
+    localStorage.setItem('ssi_trial_status', 'active');
+    localStorage.setItem('ssi_trial_end', endsAt.toString());
+    const { profile } = get();
+    const updatedProfile = profile ? { ...profile, is_premium: true } : { is_premium: true } as any;
+    set({ trialStatus: 'active', trialEndsAt: endsAt, profile: updatedProfile });
+  },
 
-    syncLocalToCloud: async () => {
-      const { user, progress } = get();
-      if (!user || !supabase) return;
-      set({ syncStatus: 'syncing' });
-      const entries = (Object.entries(progress) as [string, SRSData][]).map(([wordId, data]) => ({
-        user_id: user.id,
-        word_id: wordId,
-        srs_level: data.level,
-        next_review: new Date(data.nextReviewDate).toISOString(),
-        ease_factor: data.easeFactor,
-        failure_count: data.failureCount,
-        last_studied: new Date().toISOString()
-      }));
-      const { error } = await supabase
-        .from('user_word_choices')
-        .upsert(entries, { onConflict: 'user_id,word_id' });
-      set({ syncStatus: error ? 'error' : 'synced' });
-    },
+  checkTrialStatus: () => {
+    const { trialStatus, trialEndsAt, profile } = get();
+    if (trialStatus === 'active' && trialEndsAt && Date.now() > trialEndsAt) {
+        localStorage.setItem('ssi_trial_status', 'expired');
+        const updatedProfile = profile ? { ...profile, is_premium: false } : null;
+        set({ trialStatus: 'expired', profile: updatedProfile });
+    }
+  },
 
-    updateProgress: async (wordId, quality) => {
-      const { progress, stats, user } = get();
-      const current = progress[wordId] || DEFAULT_SRS;
-      const next = calculateNextProgress(current, quality);
-      const newProgress = { ...progress, [wordId]: next };
-      const newStats = { ...stats, total_words_learned: Object.keys(newProgress).length };
-      
-      set({ progress: newProgress, stats: newStats });
-      storageService.setItem(PROGRESS_KEY, newProgress);
-      storageService.setItem(STATS_KEY, newStats);
+  updateProgress: async (wordId, quality) => {
+    const { progress, stats, user } = get();
+    const currentData = progress[wordId] || { level: 0, nextReviewDate: new Date().toISOString(), easeFactor: 2.5, failureCount: 0 };
+    const nextData = calculateNextProgress(currentData, quality);
+    const newProgress = { ...progress, [wordId]: nextData };
+    let newStats = { ...stats };
+    if (currentData.level === 0 && nextData.level > 0) newStats.total_words_learned += 1;
+    newStats.last_activity_date = new Date().toISOString();
 
-      if (user && supabase) {
-        set({ syncStatus: 'syncing' });
-        supabase.from('user_word_choices').upsert({
-          user_id: user.id,
-          word_id: wordId,
-          srs_level: next.level,
-          next_review: new Date(next.nextReviewDate).toISOString(),
-          ease_factor: next.easeFactor,
-          failure_count: next.failureCount,
-          last_studied: new Date().toISOString()
-        }, { onConflict: 'user_id,word_id' }).then(({ error }) => {
-          set({ syncStatus: error ? 'error' : 'synced' });
-        });
-      }
-      return quality === 'forgot' || quality === 'hard';
-    },
+    set({ progress: newProgress, stats: newStats });
+    
+    storageService.setItemAsync(KEY_PROGRESS, newProgress);
+    storageService.setItemAsync(KEY_STATS, newStats);
 
-    consumeAIToken: () => {
-        const { aiUsage, profile } = get();
-        if (profile?.is_premium) return true;
+    if (user && supabase) {
+        supabase.from('user_word_choices').upsert({ user_id: user.id, word_id: wordId, level: nextData.level, next_review_date: nextData.nextReviewDate, ease_factor: nextData.easeFactor, failure_count: nextData.failureCount, updated_at: new Date().toISOString() });
+    }
+    return quality === 'forgot' || quality === 'hard';
+  },
 
-        if (aiUsage.date !== TODAY_SIMULATED) {
-            const newUsage = { date: TODAY_SIMULATED, count: 1 };
-            set({ aiUsage: newUsage });
-            storageService.setItem(AI_USAGE_KEY, newUsage);
-            return true;
-        }
-
-        if (aiUsage.count >= DAILY_AI_LIMIT) return false;
-
-        const newUsage = { ...aiUsage, count: aiUsage.count + 1 };
-        set({ aiUsage: newUsage });
-        storageService.setItem(AI_USAGE_KEY, newUsage);
-        return true;
-    },
-
-    consumeMnemonicToken: () => {
-        const { mnemonicUsage, profile } = get();
-        if (profile?.is_premium) return true;
-
-        if (mnemonicUsage.date !== TODAY_SIMULATED) {
-            const newUsage = { date: TODAY_SIMULATED, count: 1 };
-            set({ mnemonicUsage: newUsage });
-            storageService.setItem(MNEMONIC_USAGE_KEY, newUsage);
-            return true;
-        }
-
-        if (mnemonicUsage.count >= DAILY_MNEMONIC_LIMIT) return false;
-
-        const newUsage = { ...mnemonicUsage, count: mnemonicUsage.count + 1 };
-        set({ mnemonicUsage: newUsage });
-        storageService.setItem(MNEMONIC_USAGE_KEY, newUsage);
-        return true;
-    },
-
-    warmupAI: async (words, isBackground = false) => {
-        const apiKey = process.env.API_KEY;
-        const { profile } = get();
-        
-        // 1. If background warmup, ONLY do it for Premium users to save costs.
-        // Free users must manually trigger "Reveal" to fetch.
-        if (isBackground && !profile?.is_premium) return;
-
-        if (!apiKey || words.length === 0) return;
-        const targets = words.filter(w => !get().aiCache[w.id]);
-        if (targets.length === 0) return;
-        const batch = isBackground ? targets.slice(0, 5) : targets;
-        for (const word of batch) {
-          if (get().aiCache[word.id]) continue;
-          const info = await getAISmartHint(word.s, word.t);
-          if (info) {
-            set((state) => {
-              const updated = { ...state.aiCache, [word.id]: info };
-              storageService.setItem(AI_CACHE_KEY, updated);
-              return { aiCache: updated };
-            });
-            await sleep(8000);
-          } else {
-            await sleep(30000);
-          }
-        }
-    },
-
-    addExtraWords: async (words) => {
-      const { progress, stats, user } = get();
-      const newProgress = { ...progress };
-      const updates: any[] = [];
-      words.forEach(w => { 
+  addExtraWords: (words) => {
+    const { progress } = get();
+    const newProgress = { ...progress };
+    words.forEach(w => {
         if (!newProgress[w.id]) {
-          newProgress[w.id] = DEFAULT_SRS;
-          if (user) {
-            updates.push({
-              user_id: user.id, word_id: w.id, srs_level: 1,
-              next_review: new Date(TODAY_SIMULATED).toISOString(),
-              ease_factor: 2.5, failure_count: 0
-            });
-          }
+            newProgress[w.id] = { level: 1, nextReviewDate: new Date().toISOString().split('T')[0], easeFactor: 2.5, failureCount: 0 };
         }
-      });
-      set({ progress: newProgress, stats: { ...stats, total_words_learned: Object.keys(newProgress).length } });
-      storageService.setItem(PROGRESS_KEY, newProgress);
-      if (user && updates.length > 0 && supabase) {
-        supabase.from('user_word_choices').upsert(updates, { onConflict: 'user_id,word_id' }).then(() => {
-          set({ syncStatus: 'synced' });
-        });
-      }
-      get().warmupAI(words, false);
-    },
+    });
+    set({ progress: newProgress });
+    storageService.setItemAsync(KEY_PROGRESS, newProgress);
+  },
 
-    resetIsland: () => {
-      storageService.clear();
-      window.location.reload();
-    },
+  updateProfile: async (updates) => {
+    const { user, profile } = get();
+    if (!user || !supabase) return;
+    const newProfile = { ...profile, ...updates } as UserProfile;
+    set({ profile: newProfile });
+    await supabase.from('profiles').update(updates).eq('id', user.id);
+  },
 
-    startSubscriptionCheckout: async () => {
+  consumeAIToken: () => {
+    const { profile, aiUsage } = get();
+    if (profile?.is_premium) return true;
+    if (aiUsage.count >= 3) return false;
+    const newUsage = { ...aiUsage, count: aiUsage.count + 1 };
+    set({ aiUsage: newUsage });
+    storageService.setItem('ssi_ai_usage', newUsage);
+    return true;
+  },
+
+  consumeMnemonicToken: () => {
+    const { profile, mnemonicUsage } = get();
+    if (profile?.is_premium) return true;
+    if (mnemonicUsage.count >= 5) return false;
+    const newUsage = { ...mnemonicUsage, count: mnemonicUsage.count + 1 };
+    set({ mnemonicUsage: newUsage });
+    storageService.setItem('ssi_mnemonic_usage', newUsage);
+    return true;
+  },
+
+  startSubscriptionCheckout: async () => {
       const { user } = get();
       if (!user) return; 
-      
       try {
-        const res = await fetch('/api/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            productId: LEMON_VARIANT_ID, 
-            userId: user.id,
-            userEmail: user.email 
-          })
-        });
-        
+        const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ productId: LEMON_VARIANT_ID, userId: user.id, userEmail: user.email }) });
         const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url; 
-        } else {
-          console.error("Checkout failed", data);
-          alert("Could not start checkout. Please try again.");
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Network error starting checkout.");
-      }
-    }
-  };
-});
+        if (data.url) window.location.href = data.url;
+      } catch (err) { alert("Checkout error"); }
+  },
+
+  // NEW: Admin Action (Updated to return result without auto-reloading)
+  uploadVocabulary: async () => {
+      const res = await vocabService.seedDatabaseFromLocal();
+      // Previously, this function reloaded the page automatically.
+      // Now we return the message so the UI component can handle the notification first.
+      return res.message;
+  }
+}));

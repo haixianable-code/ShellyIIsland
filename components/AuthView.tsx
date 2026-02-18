@@ -39,7 +39,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
     if (!supabase) return;
     setGoogleLoading(true);
     try {
-        const { error } = await supabase.auth.signInWithOAuth({
+        const { error } = await (supabase.auth as any).signInWithOAuth({
             provider: 'google',
             options: {
                 redirectTo: window.location.origin,
@@ -71,7 +71,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
     try {
       if (!supabase) throw new Error("Supabase client is not available.");
       
-      const { error: supabaseError } = await supabase.auth.signInWithOtp({
+      const { error: supabaseError } = await (supabase.auth as any).signInWithOtp({
         email: email.trim().toLowerCase(),
         options: {
           shouldCreateUser: true,
@@ -104,7 +104,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
     try {
         if (!supabase) throw new Error("Supabase client is not available.");
         
-        const { error: supabaseError } = await supabase.auth.verifyOtp({
+        const { error: supabaseError } = await (supabase.auth as any).verifyOtp({
             email: email.trim().toLowerCase(),
             token: otp,
             type: 'email',

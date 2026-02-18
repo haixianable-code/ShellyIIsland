@@ -58,7 +58,6 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
     };
   }, []);
 
-  // Auto-fetch for Premium if missing (since warmup might not have run yet)
   useEffect(() => {
     if (isPremium && !aiInfo && !isMnemonicLoading) {
        setIsMnemonicLoading(true);
@@ -145,10 +144,6 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
       setActiveTool('none');
     } else {
       setActiveTool(tool);
-      // Auto-trigger load for mnemonic if selected and premium
-      if (tool === 'mnemonic' && isPremium && !aiInfo && !isMnemonicLoading) {
-         // Logic already handled in useEffect, but good to ensure
-      }
     }
   };
 
@@ -197,7 +192,7 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border-2 transition-all active:scale-95 ${activeTool === 'mnemonic' ? 'bg-[#f3e5f5] border-[#ab47bc] text-[#6a1b9a]' : 'bg-white border-slate-100 text-slate-400 hover:border-[#ab47bc]/30'}`}
                    >
                       <BrainCircuit size={18} />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Memory Seed</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest">{t('ui.ai.tool_mnemonic')}</span>
                       {activeTool === 'mnemonic' && <ChevronDown size={14} />}
                    </button>
                    <button 
@@ -205,7 +200,7 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border-2 transition-all active:scale-95 ${activeTool === 'challenge' ? 'bg-[#e1f5fe] border-[#0288d1] text-[#0288d1]' : 'bg-white border-slate-100 text-slate-400 hover:border-[#0288d1]/30'}`}
                    >
                       <Sparkles size={18} />
-                      <span className="text-[10px] font-black uppercase tracking-widest">Challenge</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest">{t('ui.ai.tool_challenge')}</span>
                       {activeTool === 'challenge' && <ChevronDown size={14} />}
                    </button>
                 </div>
@@ -219,16 +214,16 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-2">
                                     <MessageSquareText size={16} className="text-[#0288d1]" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#4b7d78]">Island Challenge</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#4b7d78]">{t('ui.ai.challenge_title')}</span>
                                 </div>
                                 {!isPremium && (
                                     <div className="text-[9px] font-black text-[#8d99ae] bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200">
-                                        {challengeUsesLeft} Left
+                                        {challengeUsesLeft}
                                     </div>
                                 )}
                             </div>
                             
-                            <p className="text-xs font-black text-[#0288d1] uppercase tracking-widest mb-3">Goal: Use "{word.s}" in a sentence</p>
+                            <p className="text-xs font-black text-[#0288d1] uppercase tracking-widest mb-3">{t('ui.ai.goal_prefix')} "{word.s}" {t('ui.ai.goal_suffix')}</p>
                             
                             {isChallengeLocked ? (
                                 <div className="relative z-20 flex flex-col items-center justify-center py-6 space-y-4">
@@ -236,12 +231,12 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                                         <Lock size={32} className="text-slate-300" />
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-[#4b7d78] font-black text-sm uppercase">Energy Depleted</p>
+                                        <p className="text-[#4b7d78] font-black text-sm uppercase">{t('ui.ai.status_energy_low')}</p>
                                         <button 
                                             onClick={() => openModal('SUBSCRIPTION')}
                                             className="mt-3 text-[#ffa600] font-black text-[10px] uppercase tracking-widest border-b-2 border-[#ffa600] pb-0.5"
                                         >
-                                            Get Unlimited Access
+                                            {t('ui.ai.status_unlimited')}
                                         </button>
                                     </div>
                                 </div>
@@ -260,7 +255,7 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                                         disabled={!userInput.trim() || isAiProcessing}
                                         className="w-full bg-[#0288d1] text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-[0_4px_0_#01579b] hover:bg-[#03a9f4] active:translate-y-1 disabled:opacity-30 transition-all flex items-center justify-center gap-2"
                                     >
-                                        {isAiProcessing ? <Loader2 className="animate-spin" /> : <><Send size={14} /> Check</>}
+                                        {isAiProcessing ? <Loader2 className="animate-spin" /> : <><Send size={14} /> {t('ui.ai.check')}</>}
                                     </button>
                                 </form>
                             )}
@@ -269,7 +264,7 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                                 <div className="mt-6 p-5 bg-[#e8f5e9] rounded-2xl border-2 border-[#8bc34a] animate-zoomIn">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Heart size={14} className="text-[#2e7d32] fill-current" />
-                                        <span className="text-[10px] font-black text-[#2e7d32] uppercase tracking-widest">Island Feedback</span>
+                                        <span className="text-[10px] font-black text-[#2e7d32] uppercase tracking-widest">{t('ui.ai.feedback_label')}</span>
                                     </div>
                                     <p className="text-sm font-bold text-[#2e7d32] leading-relaxed italic">
                                         "{aiFeedback.recast}"
@@ -278,7 +273,7 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                                         onClick={(e) => handleSpeak(e, aiFeedback.recast!)}
                                         className="mt-3 flex items-center gap-2 text-[10px] font-black text-[#2e7d32]/60 uppercase hover:text-[#2e7d32]"
                                     >
-                                        <Volume2 size={12} /> Listen
+                                        <Volume2 size={12} /> {t('ui.ai.listen')}
                                     </button>
                                 </div>
                             )}
@@ -293,11 +288,11 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-2">
                                         <Sparkles size={16} className="text-[#ab47bc] animate-pulse" />
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#6a1b9a]">Memory Seed</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#6a1b9a]">{t('ui.ai.tool_mnemonic')}</span>
                                     </div>
                                     {!isPremium && !isMnemonicRevealed && (
                                         <div className="text-[9px] font-black text-[#8d99ae] bg-white/50 px-2 py-0.5 rounded-full border border-white">
-                                            {mnemonicUsesLeft} Left
+                                            {mnemonicUsesLeft}
                                         </div>
                                     )}
                                 </div>
@@ -305,14 +300,14 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                                 {!isMnemonicRevealed ? (
                                     <div className="flex flex-col items-center justify-center py-6 gap-3">
                                         <p className="text-center text-[#4b7d78]/60 text-xs font-bold px-4">
-                                            Unlock a powerful mnemonic to stick this word in your brain.
+                                            {t('ui.ai.unlock_mnemonic_desc')}
                                         </p>
                                         <button 
                                             onClick={handleRevealMnemonic}
                                             className="bg-white text-[#6a1b9a] px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
                                         >
                                             {isMnemonicLoading ? <Loader2 className="animate-spin" size={16} /> : <Eye size={16} />}
-                                            Reveal
+                                            {t('ui.ai.reveal')}
                                         </button>
                                     </div>
                                 ) : (
@@ -324,15 +319,15 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                                         ) : (
                                             <>
                                                 <div>
-                                                    <p className="text-[8px] font-black text-[#ab47bc] uppercase tracking-widest mb-1">Mnemonic Trick</p>
+                                                    <p className="text-[8px] font-black text-[#ab47bc] uppercase tracking-widest mb-1">{t('ui.ai.mnemonic_label')}</p>
                                                     <p className="text-[#2d4a47] font-bold text-sm leading-tight">
-                                                        "{aiInfo?.mnemonics || 'Loading...'}"
+                                                        "{aiInfo?.mnemonics || t('ui.ai.processing')}"
                                                     </p>
                                                 </div>
                                                 <div className="pt-3 border-t border-white/40">
-                                                    <p className="text-[8px] font-black text-[#0288d1] uppercase tracking-widest mb-1">Smart Hint</p>
+                                                    <p className="text-[8px] font-black text-[#0288d1] uppercase tracking-widest mb-1">{t('ui.ai.hint_label')}</p>
                                                     <p className="text-[#2d4a47] text-xs font-medium leading-relaxed">
-                                                        {aiInfo?.hint || 'Consulting the island spirits...'}
+                                                        {aiInfo?.hint || t('ui.ai.processing')}
                                                     </p>
                                                 </div>
                                             </>
@@ -350,7 +345,7 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                     <div className="bg-white/50 p-6 rounded-[2rem] border-2 border-dashed relative transform hover:rotate-0 transition-transform duration-300" style={{ borderColor: theme.main }}>   
                          <div className="absolute -top-3 left-6 bg-[#fffdf5] px-2 flex items-center gap-1">
                             <PenTool size={14} style={{ color: theme.main }} />
-                            <span style={{ color: theme.main }} className="text-[10px] font-black uppercase tracking-widest">Grammar Note</span>
+                            <span style={{ color: theme.main }} className="text-[10px] font-black uppercase tracking-widest">{t('ui.study.grammar_pocket')}</span>
                          </div>
                          {conjugationList.length > 0 ? (
                             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
@@ -369,13 +364,13 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
 
                 {/* Examples */}
                 <div className="space-y-6">
-                    <div className="flex items-center gap-2 mb-2 opacity-40 px-2"><BookOpen size={14} /><span className="text-[9px] font-black uppercase tracking-widest">Usage History</span></div>
+                    <div className="flex items-center gap-2 mb-2 opacity-40 px-2"><BookOpen size={14} /><span className="text-[9px] font-black uppercase tracking-widest">{t('ui.study.usage_examples')}</span></div>
                     {word.examples.map((ex, i) => (
                         <button key={i} onClick={(e) => handleSpeak(e, ex.txt)} className="w-full text-left bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all active:scale-[0.98] group">
-                             <p className="text-lg font-black text-[#2d4a47] italic leading-tight mb-2 flex items-start gap-1">
+                             <p className="text-lg font-black text-[#2d4a47] italic leading-tight mb-2 flex items-start gap-1 tracking-tight">
                                 <span className="text-slate-300 -ml-2">“</span>{ex.txt}
                              </p>
-                             <p className="text-xs font-bold text-slate-400 pl-3 border-l-2 border-slate-200">{ex.eng}</p>
+                             <p className="text-xs font-bold text-slate-400 pl-3 border-l-2 border-slate-200 leading-tight">{ex.eng}</p>
                         </button>
                     ))}
                 </div>

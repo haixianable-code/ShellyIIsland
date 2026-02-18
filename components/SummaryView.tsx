@@ -1,16 +1,23 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { Word } from '../types';
 import { useTranslation } from 'react-i18next';
 import { getTypeTheme } from '../utils/theme';
 import { 
-  Share2, Home, Volume2, TreePalm, Map, Leaf, ArrowRight,
-  Flame, Sprout, Loader2
+  Share2, Leaf, ArrowRight,
+  Flame, Loader2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playFanfare, playClick } from '../utils/sfx';
 import { playAudio } from '../utils/audio';
 // @ts-ignore
 import html2canvas from 'html2canvas';
+import { useIslandStore } from '../store/useIslandStore';
+
+// Sub-components (Story Interceptors)
+import GiftUnboxing from './summary/GiftUnboxing';
+import TrialCountdown from './summary/TrialCountdown';
+import CliffHanger from './summary/CliffHanger';
 
 const WordPill: React.FC<{ word: Word; index: number; forceVisible: boolean }> = ({ word, index, forceVisible }) => {
   const { t } = useTranslation();
@@ -43,12 +50,48 @@ interface SummaryViewProps {
 
 const SummaryView: React.FC<SummaryViewProps> = ({ dailyHarvest, totalLearned, streak, user, onFinish, onLoginRequest }) => {
   const { t } = useTranslation();
+  const { trialStatus, trialEndsAt, activateTrial, checkTrialStatus, profile } = useIslandStore();
+  
+  // Internal State for Narrative Flow
+  const [viewState, setViewState] = useState<'loading' | 'gift' | 'cliff' | 'summary'>('loading');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const captureRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setTimeout(() => playFanfare(), 500);
+    // 1. Check Expiration
+    checkTrialStatus();
+
+    // 2. Determine Initial View State
+    const determineState = () => {
+        // Scenario A: Day 1 (or small streak) + No Trial + No Premium -> GIFT
+        // Using streak <= 2 to be generous
+        if (streak > 0 && streak <= 2 && trialStatus === 'none' && !profile?.is_premium) {
+            return 'gift';
+        }
+        
+        // Scenario C: Expired Trial -> CLIFF
+        // Check if explicitly expired in this session
+        if (trialStatus === 'expired') {
+            return 'cliff';
+        }
+
+        // Default: Standard Summary
+        return 'summary';
+    };
+
+    const nextState = determineState();
+    setViewState(nextState);
+
+    // If standard summary, play effects immediately
+    if (nextState === 'summary') {
+        triggerSummaryEffects();
+    }
+
+  }, [streak, trialStatus, profile?.is_premium, checkTrialStatus]);
+
+  const triggerSummaryEffects = () => {
+    setTimeout(() => playFanfare(), 300);
     const duration = 2000;
     const end = Date.now() + duration;
     const frame = () => {
@@ -57,7 +100,15 @@ const SummaryView: React.FC<SummaryViewProps> = ({ dailyHarvest, totalLearned, s
       if (Date.now() < end) requestAnimationFrame(frame);
     };
     frame();
-  }, []);
+  };
+
+  const handleGiftOpened = () => {
+      activateTrial(); // Update store state
+      setTimeout(() => {
+          setViewState('summary'); // Transition to summary
+          triggerSummaryEffects(); // Play confetti
+      }, 1500); // Wait for confetti from GiftUnboxing to settle slightly
+  };
 
   const handleShare = async () => {
     playClick();
@@ -80,8 +131,35 @@ const SummaryView: React.FC<SummaryViewProps> = ({ dailyHarvest, totalLearned, s
     } catch (err) { setIsGenerating(false); setIsCapturing(false); }
   };
 
+  // --- RENDER LOGIC ---
+
+  if (viewState === 'loading') return null;
+
+  if (viewState === 'gift') {
+      return (
+          <div className="flex-1 flex flex-col items-center justify-center h-[100dvh] bg-[#f7f9e4] p-4">
+              <GiftUnboxing onOpen={handleGiftOpened} />
+          </div>
+      );
+  }
+
+  if (viewState === 'cliff') {
+      return (
+          <div className="flex-1 flex flex-col items-center justify-center h-[100dvh] bg-[#f7f9e4] p-4">
+              <CliffHanger />
+          </div>
+      );
+  }
+
+  // Standard Summary (includes Trial Countdown if active)
   return (
     <div className="flex-1 flex flex-col items-center py-6 px-4 md:py-10 md:px-12 animate-fadeIn bg-[#f7f9e4] h-[100dvh] overflow-y-auto no-scrollbar pb-32">
+      
+      {/* Scenario B: Active Trial Banner */}
+      {trialStatus === 'active' && trialEndsAt && (
+          <TrialCountdown endsAt={trialEndsAt} />
+      )}
+
       <div ref={captureRef} className="relative w-full max-w-lg flex flex-col items-center bg-[#f7f9e4] p-6 md:p-8 rounded-[2.5rem]">
         <div className="text-center mb-8 relative z-10 mt-2">
            <div className="inline-flex items-center justify-center gap-3 mb-4">

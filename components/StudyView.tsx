@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
+
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Word, FeedbackQuality } from '../types';
 import { playAudio } from '../utils/audio';
 import { getTypeTheme, getPosLabel } from '../utils/theme';
@@ -15,8 +16,8 @@ import {
 import { 
   ChevronLeft, 
   Globe, Ghost, Wind, Smile,
-  Volume2, BookOpen, PenTool, FastForward,
-  RotateCcw, ArrowRight
+  Volume2, BookOpen, FastForward,
+  RotateCcw, ArrowRight, ThumbsDown, ThumbsUp
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -111,9 +112,52 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showEnterAnim, setShowEnterAnim] = useState(true);
 
+  // Gesture State
+  const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartX = useRef<number | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
   const word = queue[currentIndex];
   const progressPercent = Math.max(5, (currentIndex / queue.length) * 100);
   const theme = word ? getTypeTheme(word) : { main: '#4b7d78', light: '#f7f9e4', text: '#2d4a47' };
+
+  // --- Gesture Handlers ---
+  const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
+    if (isFlipped || isTransitioning) return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+    dragStartX.current = clientX;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!isDragging || dragStartX.current === null || isFlipped) return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+    const delta = clientX - dragStartX.current;
+    setDragX(delta);
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging || isFlipped) return;
+    setIsDragging(false);
+    dragStartX.current = null;
+
+    const THRESHOLD = 100; // Pixels to trigger action
+    if (dragX > THRESHOLD) {
+      handleRating('good'); // Swipe Right
+    } else if (dragX < -THRESHOLD) {
+      handleRating('forgot'); // Swipe Left
+    } else {
+      setDragX(0); // Snap back
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      setIsDragging(false);
+      setDragX(0);
+    }
+  };
 
   const handleNext = useCallback(() => {
     if (currentIndex < queue.length - 1) {
@@ -121,6 +165,7 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
       setIsFlipped(false);
       setExitDirection(null);
       setCurrentRating(null);
+      setDragX(0); // Reset drag
       setShowEnterAnim(true);
       setTimeout(() => setIsTransitioning(false), 100);
     } else {
@@ -150,6 +195,7 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
     playSwish();
     setCurrentRating(quality);
     setIsFlipped(true);
+    setDragX(0); // Reset drag so back side is centered
   };
 
   const handleContinue = () => {
@@ -177,6 +223,11 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
   }
   if (!word) return null;
 
+  // Calculate rotation and opacity based on drag
+  const rotateDeg = dragX * 0.05;
+  const opacityLeft = Math.min(Math.abs(Math.min(0, dragX)) / 100, 1);
+  const opacityRight = Math.min(Math.abs(Math.max(0, dragX)) / 100, 1);
+
   return (
     <main className={`flex-1 flex flex-col max-w-2xl mx-auto w-full h-[100dvh] overflow-hidden bg-[#f7f9e4] relative ${isTransitioning ? 'is-transitioning' : ''}`} role="main" aria-label="Study Session">
       <div className="absolute inset-0 opacity-20 transition-colors duration-700" style={{ backgroundColor: theme.light }} aria-hidden="true" />
@@ -196,7 +247,20 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
 
       <div className="flex-1 px-4 py-1 card-perspective relative min-h-0 mb-4 z-10">
         <article 
-          className={`card-inner h-full 
+          ref={cardRef}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleTouchStart}
+          onMouseMove={handleTouchMove}
+          onMouseUp={handleTouchEnd}
+          onMouseLeave={handleMouseLeave}
+          style={{ 
+            transform: `translateX(${dragX}px) rotate(${rotateDeg}deg)`,
+            transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+            cursor: isFlipped ? 'default' : (isDragging ? 'grabbing' : 'grab')
+          }}
+          className={`card-inner h-full
             ${isFlipped ? 'is-flipped' : ''} 
             ${showEnterAnim && !exitDirection ? 'card-enter' : ''} 
             ${exitDirection === 'left' ? 'card-exit-left' : ''} 
@@ -206,33 +270,53 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
           aria-live="polite"
         >
           {/* Front Face */}
-          <div className="card-face card-face-front p-8 flex flex-col items-center justify-between h-full" style={{ backgroundColor: theme.light }}>
-            <div className="flex-1 flex flex-col items-center justify-center text-center w-full">
+          <div className="card-face card-face-front p-8 flex flex-col items-center justify-between h-full relative overflow-hidden" style={{ backgroundColor: theme.light }}>
+            
+            {/* Gesture Indicators Overlay */}
+            <div className="absolute top-8 left-8 border-4 border-[#ff7b72] text-[#ff7b72] rounded-xl px-4 py-2 text-2xl font-black uppercase tracking-widest opacity-0 transform -rotate-12 transition-opacity pointer-events-none z-50" style={{ opacity: opacityLeft }}>
+               <span className="flex items-center gap-2"><ThumbsDown size={32} /> FORGOT</span>
+            </div>
+            <div className="absolute top-8 right-8 border-4 border-[#8bc34a] text-[#8bc34a] rounded-xl px-4 py-2 text-2xl font-black uppercase tracking-widest opacity-0 transform rotate-12 transition-opacity pointer-events-none z-50" style={{ opacity: opacityRight }}>
+               <span className="flex items-center gap-2">GOOD <ThumbsUp size={32} /></span>
+            </div>
+
+            <div className="flex-1 flex flex-col items-center justify-center text-center w-full select-none">
               <span style={{ backgroundColor: theme.main }} className="px-3 py-1 rounded-full text-white text-[10px] font-black uppercase tracking-widest mb-6 shadow-sm">{getPosLabel(word)}</span>
               <h2 className="font-black text-[#2d4a47] leading-tight text-[clamp(2.5rem,12vw,4rem)] tracking-tighter transition-all duration-500">{isReverseMode ? t(`vocab.${word.id}.t`, { defaultValue: word.t }) : word.s}</h2>
             </div>
             
-            <nav className="w-full space-y-4 pt-6 shrink-0" aria-label="Recall evaluation">
+            {/* Standard Controls (Keep working even with swipe) */}
+            <nav className="w-full space-y-4 pt-6 shrink-0 relative z-10" aria-label="Recall evaluation">
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { id: 'forgot', label: t('ui.study.forgot'), icon: Ghost, color: '#94a3b8' },
                   { id: 'hard', label: t('ui.study.hard'), icon: Wind, color: '#f97316' },
                   { id: 'good', label: t('ui.study.good'), icon: Smile, color: theme.main },
                 ].map((btn) => (
-                  <button key={btn.id} onClick={() => handleRating(btn.id as FeedbackQuality)} className="bubble-button py-4 flex flex-col items-center gap-2 rounded-[2rem] bg-white shadow-sm hover:bg-[#fafafa] group hover:-translate-y-1" aria-label={`Rate as ${btn.label}`}>
+                  <button 
+                    key={btn.id} 
+                    onClick={(e) => { e.stopPropagation(); handleRating(btn.id as FeedbackQuality); }} 
+                    className="bubble-button py-4 flex flex-col items-center gap-2 rounded-[2rem] bg-white shadow-sm hover:bg-[#fafafa] group hover:-translate-y-1 touch-manipulation" 
+                    aria-label={`Rate as ${btn.label}`}
+                  >
                     <btn.icon size={22} className="button-icon group-hover:scale-110 transition-transform" style={{ color: btn.color }} aria-hidden="true" />
                     <span className="text-[10px] font-black uppercase text-slate-500">{btn.label}</span>
                   </button>
                 ))}
               </div>
-              <button onClick={() => handleRating('easy')} style={{ backgroundColor: theme.main }} className="bubble-button w-full py-5 rounded-[2.5rem] text-white font-black text-xl shadow-[0_8px_0_rgba(0,0,0,0.1)] flex items-center justify-center gap-3 border-4 border-white group hover:scale-[1.02]" aria-label="Rate as perfect and skip details">
+              <button 
+                onClick={(e) => { e.stopPropagation(); handleRating('easy'); }} 
+                style={{ backgroundColor: theme.main }} 
+                className="bubble-button w-full py-5 rounded-[2.5rem] text-white font-black text-xl shadow-[0_8px_0_rgba(0,0,0,0.1)] flex items-center justify-center gap-3 border-4 border-white group hover:scale-[1.02]" 
+                aria-label="Rate as perfect and skip details"
+              >
                 <FastForward size={24} className="button-icon group-hover:translate-x-1 transition-transform" aria-hidden="true" />
                 <span>{t('ui.study.perfect')}</span>
               </button>
             </nav>
           </div>
 
-          {/* Back Face */}
+          {/* Back Face (Swipe disabled logic-wise) */}
           <div className="card-face card-face-back flex flex-col h-full bg-white">
             <header className="shrink-0 p-6 px-8 border-b border-slate-50 flex items-center justify-between">
               <div className="flex-1 min-w-0">
@@ -263,9 +347,9 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
                     </button>
                   ))}
                 </div>
-                <button onClick={() => setIsFlipped(false)} className="text-[9px] font-black text-slate-300 uppercase flex items-center gap-1 hover:text-slate-400 bubble-button"><RotateCcw size={12} aria-hidden="true" /> BACK</button>
+                <button onClick={() => setIsFlipped(false)} className="text-[9px] font-black text-slate-300 uppercase flex items-center gap-1 hover:text-slate-400 bubble-button"><RotateCcw size={12} aria-hidden="true" /> {t('ui.blog.back')}</button>
               </div>
-              <button onClick={handleContinue} disabled={!currentRating} style={{ backgroundColor: theme.main }} className="bubble-button w-full py-4 rounded-[2.5rem] text-white font-black text-lg shadow-[0_6px_0_rgba(0,0,0,0.1)] flex items-center justify-center gap-2 border-2 border-white/20 disabled:opacity-50"><span>CONTINUE</span><ArrowRight size={20} aria-hidden="true" /></button>
+              <button onClick={handleContinue} disabled={!currentRating} style={{ backgroundColor: theme.main }} className="bubble-button w-full py-4 rounded-[2.5rem] text-white font-black text-lg shadow-[0_6px_0_rgba(0,0,0,0.1)] flex items-center justify-center gap-2 border-2 border-white/20 disabled:opacity-50"><span>{t('ui.actions.next_word')}</span><ArrowRight size={20} aria-hidden="true" /></button>
             </footer>
           </div>
         </article>

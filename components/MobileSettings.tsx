@@ -1,11 +1,10 @@
 
 import React, { useState, useMemo } from 'react';
-import { User } from '@supabase/supabase-js';
 import { supabase } from '../services/supabaseClient';
 import { UserStats } from '../types';
 import { 
   LogOut, Volume2, VolumeX, RotateCcw, 
-  Leaf, Settings, Heart,
+  Leaf, Settings, Heart, UploadCloud,
   Flame, Sprout, ShieldCheck, ChevronRight, Ticket, Speaker, Trash2, Trophy, ShieldAlert, Fingerprint, Cloud, TreePalm, Crown, Star, Sparkles
 } from 'lucide-react';
 import { toggleMute, getMuteState, playClick, playSparkle } from '../utils/sfx';
@@ -13,9 +12,10 @@ import { playAudio } from '../utils/audio';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useIslandStore } from '../store/useIslandStore';
+import { useNotificationStore } from '../store/useNotificationStore';
 
 interface MobileSettingsProps {
-  user: User | null;
+  user: any;
   stats: UserStats | null;
   displayName: string;
   isSupabaseConfigured: boolean;
@@ -34,8 +34,10 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
   onShareAchievement
 }) => {
   const { t } = useTranslation();
-  const { profile } = useIslandStore();
+  const { profile, uploadVocabulary } = useIslandStore();
+  const { notify } = useNotificationStore();
   const [isMuted, setIsMuted] = useState(getMuteState());
+  const [isUploading, setIsUploading] = useState(false);
   
   const handleToggleMute = () => {
     playClick();
@@ -62,17 +64,34 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
         if (user && supabase) {
              const { error } = await supabase.from('user_word_choices').delete().eq('user_id', user.id);
              if (error) {
-                 alert("Error clearing cloud progress");
+                 notify("Error clearing cloud progress", "error");
                  return;
              }
         }
         localStorage.removeItem('hola_word_srs_v3_offline');
+        localStorage.removeItem('hola_word_srs_v4_offline');
         localStorage.removeItem('hola_user_stats_v1_offline');
         window.location.reload();
     }
   };
 
+  const handleUploadDB = async () => {
+      if (!confirm("⚠️ ADMIN ACTION: Overwrite Supabase vocabulary?")) return;
+      setIsUploading(true);
+      
+      const message = await uploadVocabulary();
+      
+      if (message.includes("Success")) {
+          notify(message, "success");
+          setTimeout(() => window.location.reload(), 1500);
+      } else {
+          notify(message, "error");
+      }
+      setIsUploading(false);
+  };
+
   const isPremium = profile?.is_premium;
+  const isAdmin = profile?.role === 'admin'; // Check admin status
 
   const passportStyles = useMemo(() => {
     if (user && isPremium) {
@@ -296,23 +315,45 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
         )}
       </div>
 
-      <div className="pt-8 border-t-2 border-dashed border-[#e0d9b4]/30 z-10 relative">
-          <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.2em] pl-4 mb-3">Zone of Reset</p>
+      {/* Only show this section if user is logged in (to reduce clutter for guests) */}
+      <div className="pt-8 border-t-2 border-dashed border-[#e0d9b4]/30 z-10 relative space-y-3">
+          <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.2em] pl-4">Zone of Reset & Admin</p>
+          
           <button 
-          onClick={handleClearProgress} 
-          className="w-full bg-[#fff5f5] p-5 rounded-[2.5rem] border-4 border-[#ffebee] shadow-[0_6px_0_#ffcdd2] flex items-center justify-between group active:scale-95 transition-transform bubble-button"
+            onClick={handleClearProgress} 
+            className="w-full bg-[#fff5f5] p-5 rounded-[2.5rem] border-4 border-[#ffebee] shadow-[0_6px_0_#ffcdd2] flex items-center justify-between group active:scale-95 transition-transform bubble-button"
           >
-          <div className="flex items-center gap-4">
-              <div className="bg-[#ffcdd2] text-[#c62828] p-3 rounded-2xl shadow-sm group-hover:animate-wiggle">
-              <Trash2 size={24} />
-              </div>
-              <div className="text-left">
-              <div className="text-lg font-black text-[#c62828]">{t('ui.actions.clear_progress')}</div>
-              <div className="text-xs font-bold text-[#ef9a9a]">{t('ui.actions.wipe_data')}</div>
-              </div>
-          </div>
-          <ChevronRight className="text-[#ef9a9a]" size={20} />
+            <div className="flex items-center gap-4">
+                <div className="bg-[#ffcdd2] text-[#c62828] p-3 rounded-2xl shadow-sm group-hover:animate-wiggle">
+                <Trash2 size={24} />
+                </div>
+                <div className="text-left">
+                <div className="text-lg font-black text-[#c62828]">{t('ui.actions.clear_progress')}</div>
+                <div className="text-xs font-bold text-[#ef9a9a]">{t('ui.actions.wipe_data')}</div>
+                </div>
+            </div>
+            <ChevronRight className="text-[#ef9a9a]" size={20} />
           </button>
+
+          {/* New Admin Button to Sync Vocabulary - ONLY FOR ADMINS */}
+          {user && isAdmin && (
+            <button 
+                onClick={handleUploadDB} 
+                disabled={isUploading}
+                className="w-full bg-[#e3f2fd] p-5 rounded-[2.5rem] border-4 border-[#bbdefb] shadow-[0_6px_0_#90caf9] flex items-center justify-between group active:scale-95 transition-transform bubble-button"
+            >
+                <div className="flex items-center gap-4">
+                    <div className="bg-[#90caf9] text-[#1565c0] p-3 rounded-2xl shadow-sm">
+                    {isUploading ? <RotateCcw className="animate-spin" size={24} /> : <UploadCloud size={24} />}
+                    </div>
+                    <div className="text-left">
+                    <div className="text-lg font-black text-[#1565c0]">{isUploading ? 'Uploading...' : 'Sync Vocabulary DB'}</div>
+                    <div className="text-xs font-bold text-[#64b5f6]">Admin Upload Tool</div>
+                    </div>
+                </div>
+                <ChevronRight className="text-[#64b5f6]" size={20} />
+            </button>
+          )}
       </div>
 
       <div className="flex flex-col items-center opacity-30 gap-1 pb-4 z-10 relative">

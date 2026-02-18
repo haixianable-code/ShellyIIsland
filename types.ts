@@ -1,3 +1,4 @@
+
 export interface WordExample {
   txt: string;
   eng: string;
@@ -31,6 +32,25 @@ export interface Word {
   nuance?: WordNuance; 
   examples: WordExample[]; 
   nounNotes: string; 
+  blueprintId?: string; 
+}
+
+export interface DayPack {
+  id: string;
+  title: string;
+  words: Word[];
+}
+
+export interface Blueprint {
+  id: string;
+  phase: number; // 0: Vital, 1: Social, 2: Logic, 3: Special
+  title: { en: string; zh: string };
+  icon: string; 
+  description: { en: string; zh: string };
+  isPremium: boolean;
+  wordIds: string[];
+  coverage: number; // 贡献的语言覆盖率百分比 (0-100)
+  difficulty: 1 | 2 | 3 | 4 | 5;
 }
 
 export interface SRSData {
@@ -55,7 +75,9 @@ export interface UserProfile {
   traveler_name: string | null;
   avatar_id: string;
   is_premium: boolean;
+  role?: 'user' | 'admin'; // <--- Added role field
   updated_at: string;
+  active_blueprint_id?: string;
 }
 
 export enum AppView {
@@ -65,19 +87,4 @@ export enum AppView {
   VOCABULARY = 'VOCABULARY',
   SETTINGS = 'SETTINGS',
   BLOG = 'BLOG'
-}
-
-export interface DayPack {
-  id: string;
-  title: string;
-  words: Word[];
-}
-
-export interface BlogPost {
-  id: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  date: string;
-  tags: string[];
 }
