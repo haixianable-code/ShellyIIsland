@@ -20,7 +20,7 @@ const mapRowToWord = (row: any): Word => ({
   nounNotes: row.noun_notes,
   examples: row.examples || [],
   nuance: row.nuance || undefined,
-  tense_forms: row.tense_forms || undefined, // <--- ADDED
+  tense_forms: row.tense_forms || undefined, // Vital for Time Machine
 });
 
 // Map App Word to DB Row
@@ -38,7 +38,7 @@ const mapWordToRow = (word: Word) => ({
   noun_notes: word.nounNotes,
   examples: word.examples,
   nuance: word.nuance,
-  tense_forms: word.tense_forms, // <--- ADDED
+  tense_forms: word.tense_forms, // Vital for Time Machine
 });
 
 /**
@@ -74,7 +74,7 @@ export const vocabService = {
         return this.getLocalWords();
       }
 
-      console.log(`☁️ Loaded ${data.length} words from Supabase.`);
+      // console.log(`☁️ Loaded ${data.length} words from Supabase.`);
       return data.map(mapRowToWord);
     } catch (err) {
       console.error("☁️ Fetch Error:", err);
@@ -135,7 +135,7 @@ export const vocabService = {
       return { 
         success: true, 
         count: upsertedCount, 
-        message: `Successfully synced ${upsertedCount} words to the cloud! (${invalidCount} skipped)` 
+        message: `Successfully synced ${upsertedCount} words (with new Tense data) to the cloud!` 
       };
 
     } catch (err: any) {

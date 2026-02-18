@@ -19,7 +19,8 @@ import {
   Globe, Ghost, Wind, Smile,
   Volume2, BookOpen, FastForward,
   RotateCcw, ArrowRight,
-  History, Sun, Rocket
+  History, Sun, Rocket,
+  Clock
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -36,7 +37,7 @@ interface StudyViewProps {
 
 type TimeState = 'past' | 'present' | 'future';
 
-const GrammarPocket: React.FC<{ word: Word }> = ({ word }) => {
+const GrammarPocket: React.FC<{ word: Word, timeState: TimeState }> = ({ word, timeState }) => {
   const { t } = useTranslation();
   const theme = getTypeTheme(word);
   const conjugationList = word.forms ? word.forms.split(', ') : [];
@@ -56,6 +57,32 @@ const GrammarPocket: React.FC<{ word: Word }> = ({ word }) => {
     );
   };
 
+  // 1. Time Machine Mode (Past/Future)
+  // If we are not in present tense, we likely don't have the full grid in `word.forms`.
+  // Instead, we show the specific form we have from `tense_forms`.
+  if (timeState !== 'present' && word.tense_forms) {
+      const tenseForm = word.tense_forms[timeState];
+      const tenseLabel = timeState === 'past' ? 'Preterite / Imperfect' : 'Simple Future';
+      const tenseColor = timeState === 'past' ? '#795548' : '#2196f3';
+      const tenseBg = timeState === 'past' ? 'bg-[#d7ccc8]' : 'bg-[#bbdefb]';
+
+      if (tenseForm) {
+        return (
+            <div className={`p-5 rounded-[2rem] mb-6 border-2 border-white shadow-sm flex flex-col items-center text-center transition-all ${tenseBg}`} role="note">
+                <div className="flex items-center gap-2 mb-2 opacity-60">
+                    <Clock size={12} />
+                    <span className="text-[9px] font-black uppercase tracking-widest">{tenseLabel}</span>
+                </div>
+                <div className="bg-white/60 px-6 py-3 rounded-2xl border border-white/50 backdrop-blur-sm">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase mr-2 block mb-1">{t('ui.grammar.yo')}</span>
+                    <span className="text-2xl font-black tracking-tight" style={{ color: tenseColor }}>{tenseForm}</span>
+                </div>
+            </div>
+        );
+      }
+  }
+
+  // 2. Fallback / Standard Note
   // Robust check: If no forms data, show the tip box instead of an empty grid
   if (word.type === 'misc' || !word.forms || conjugationList.length === 0) {
     return (
@@ -68,6 +95,7 @@ const GrammarPocket: React.FC<{ word: Word }> = ({ word }) => {
     );
   }
 
+  // 3. Present Tense Grid
   const labels = word.type === 'verb' 
     ? [t('ui.grammar.yo'), t('ui.grammar.tu'), t('ui.grammar.el'), t('ui.grammar.nos'), t('ui.grammar.vos'), t('ui.grammar.ellos')] 
     : [t('ui.grammar.sing'), t('ui.grammar.plur')];
@@ -387,7 +415,7 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
             {/* Added min-h-0 to fix flex overflow on iOS/Mobile */}
             <section className="flex-1 min-h-0 overflow-y-auto p-6 md:p-8 no-scrollbar bg-white" onMouseDown={stopProp}>
               <TimeMachine state={timeState} onChange={setTimeState} available={hasTimeMachine} />
-              <GrammarPocket word={word} />
+              <GrammarPocket word={word} timeState={timeState} />
               <UsageExamples word={word} timeState={timeState} />
             </section>
 
