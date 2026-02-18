@@ -85,7 +85,6 @@ const UsageExamples: React.FC<{ word: Word, timeState: TimeState }> = ({ word, t
   const theme = getTypeTheme(word);
   
   // Filter examples based on Time Machine state
-  // If no specific tense examples found, fall back to present (or untagged)
   const filteredExamples = word.examples.filter(ex => {
       if (timeState === 'present') return !ex.tense || ex.tense === 'present';
       return ex.tense === timeState;
@@ -94,8 +93,7 @@ const UsageExamples: React.FC<{ word: Word, timeState: TimeState }> = ({ word, t
   const displayExamples = filteredExamples.length > 0 ? filteredExamples : word.examples.filter(ex => !ex.tense || ex.tense === 'present');
 
   const highlightWord = (text: string) => {
-    // Simple heuristic highlighting
-    const searchWord = word.s.split(' ')[0].toLowerCase(); // Take first word for cleaner matching
+    const searchWord = word.s.split(' ')[0].toLowerCase(); 
     const regex = new RegExp(`(${searchWord}|${searchWord.substring(0, 3)}[a-zñáéíóú]*)`, 'gi');
     const parts = text.split(regex);
     return parts.map((part, i) => 
@@ -139,6 +137,8 @@ const TimeMachine: React.FC<{
     onChange: (s: TimeState) => void,
     available: boolean
 }> = ({ state, onChange, available }) => {
+    // Show even if not available (disabled state) or just hidden? 
+    // Requirement says "missing time machine", so we ensure it renders if available.
     if (!available) return null;
 
     return (
@@ -150,7 +150,6 @@ const TimeMachine: React.FC<{
                 <History size={20} />
             </button>
             
-            {/* Track */}
             <div className="h-1.5 w-16 bg-slate-200 rounded-full relative overflow-hidden">
                 <div 
                     className={`absolute top-0 bottom-0 w-1/3 bg-slate-400 rounded-full transition-all duration-300 ${
@@ -167,7 +166,6 @@ const TimeMachine: React.FC<{
                 <Sun size={20} />
             </button>
 
-            {/* Track */}
             <div className="h-1.5 w-16 bg-slate-200 rounded-full relative overflow-hidden">
                  <div 
                     className={`absolute top-0 bottom-0 w-1/3 bg-slate-400 rounded-full transition-all duration-300 ${
@@ -199,10 +197,8 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showEnterAnim, setShowEnterAnim] = useState(true);
   
-  // Time Machine State
   const [timeState, setTimeState] = useState<TimeState>('present');
 
-  // Gesture State
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartX = useRef<number | null>(null);
@@ -212,12 +208,10 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
   const progressPercent = Math.max(5, (currentIndex / queue.length) * 100);
   const theme = word ? getTypeTheme(word) : { main: '#4b7d78', light: '#f7f9e4', text: '#2d4a47' };
 
-  // Reset Time Machine when card changes
   useEffect(() => {
       setTimeState('present');
   }, [currentIndex]);
 
-  // --- Gesture Handlers ---
   const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
     if (isFlipped || isTransitioning) return;
     const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
@@ -237,13 +231,18 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
     setIsDragging(false);
     dragStartX.current = null;
 
-    const THRESHOLD = 100; // Pixels to trigger action
+    const THRESHOLD = 100; 
     if (dragX > THRESHOLD) {
-      handleRating('good'); // Swipe Right
+      handleRating('good'); 
     } else if (dragX < -THRESHOLD) {
-      handleRating('forgot'); // Swipe Left
+      handleRating('forgot'); 
     } else {
-      setDragX(0); // Snap back
+      // Tap to Flip Logic: If negligible movement, treat as tap
+      if (Math.abs(dragX) < 5) {
+         playSwish();
+         setIsFlipped(true);
+      }
+      setDragX(0); 
     }
   };
 
@@ -260,7 +259,7 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
       setIsFlipped(false);
       setExitDirection(null);
       setCurrentRating(null);
-      setDragX(0); // Reset drag
+      setDragX(0); 
       setShowEnterAnim(true);
       setTimeout(() => setIsTransitioning(false), 100);
     } else {
@@ -287,10 +286,10 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
       return;
     }
 
-    playSwish();
+    try { playSwish(); } catch(e) {}
     setCurrentRating(quality);
     setIsFlipped(true);
-    setDragX(0); // Reset drag so back side is centered
+    setDragX(0); 
   };
 
   const handleContinue = () => {
@@ -309,7 +308,6 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
     }
   };
 
-  // Speak Logic supporting time travel
   const speakCurrent = () => {
       let textToSpeak = word.s;
       if (timeState === 'past' && word.tense_forms?.past) textToSpeak = word.tense_forms.past;
@@ -319,19 +317,20 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
 
   useEffect(() => {
     if (isFlipped && word) speakCurrent();
-  }, [isFlipped, word, timeState]); // Re-speak on tense change
+  }, [isFlipped, word, timeState]);
+
+  // Prevent button clicks from triggering card drag
+  const stopProp = (e: React.SyntheticEvent) => e.stopPropagation();
 
   if (isSummaryView) {
     return <SummaryView words={queue} dailyHarvest={dailyHarvest} totalLearned={userStats?.total_words_learned || 0} streak={userStats?.current_streak || 1} user={user} onFinish={onFinish} onLoginRequest={onLoginRequest} />;
   }
   if (!word) return null;
 
-  // Calculate rotation and opacity based on drag
   const rotateDeg = dragX * 0.05;
   const opacityLeft = Math.min(Math.abs(Math.min(0, dragX)) / 100, 1);
   const opacityRight = Math.min(Math.abs(Math.max(0, dragX)) / 100, 1);
 
-  // Time Machine Data
   const hasTimeMachine = !!word.tense_forms;
   const currentWordDisplay = timeState === 'past' ? (word.tense_forms?.past || word.s) : 
                              timeState === 'future' ? (word.tense_forms?.future || word.s) : 
@@ -369,7 +368,7 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
           onMouseUp={handleTouchEnd}
           onMouseLeave={handleMouseLeave}
           style={{ 
-            transform: `translateX(${dragX}px) rotate(${rotateDeg}deg)`,
+            transform: `translateX(${dragX}px) rotate(${rotateDeg}deg) ${isFlipped ? 'rotateY(180deg)' : ''}`,
             transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
             cursor: isFlipped ? 'default' : (isDragging ? 'grabbing' : 'grab')
           }}
@@ -385,7 +384,6 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
           {/* Front Face */}
           <div className="card-face card-face-front p-8 flex flex-col items-center justify-between h-full relative overflow-hidden transition-colors duration-500" style={bgStyle}>
             
-            {/* Gesture Indicators Overlay */}
             <div className="absolute top-8 left-8 border-4 border-[#ff7b72] text-[#ff7b72] rounded-xl px-4 py-2 text-2xl font-black uppercase tracking-widest opacity-0 transform -rotate-12 transition-opacity pointer-events-none z-50" style={{ opacity: opacityLeft }}>
                <span className="flex items-center gap-2"><ThumbsDown size={32} /> FORGOT</span>
             </div>
@@ -403,7 +401,6 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
               )}
             </div>
             
-            {/* Standard Controls (Keep working even with swipe) */}
             <nav className="w-full space-y-4 pt-6 shrink-0 relative z-10" aria-label="Recall evaluation">
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -413,6 +410,8 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
                 ].map((btn) => (
                   <button 
                     key={btn.id} 
+                    onMouseDown={stopProp}
+                    onTouchStart={stopProp}
                     onClick={(e) => { e.stopPropagation(); handleRating(btn.id as FeedbackQuality); }} 
                     className="bubble-button py-4 flex flex-col items-center gap-2 rounded-[2rem] bg-white shadow-sm hover:bg-[#fafafa] group hover:-translate-y-1 touch-manipulation" 
                     aria-label={`Rate as ${btn.label}`}
@@ -423,6 +422,8 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
                 ))}
               </div>
               <button 
+                onMouseDown={stopProp}
+                onTouchStart={stopProp}
                 onClick={(e) => { e.stopPropagation(); handleRating('easy'); }} 
                 style={{ backgroundColor: theme.main }} 
                 className="bubble-button w-full py-5 rounded-[2.5rem] text-white font-black text-xl shadow-[0_8px_0_rgba(0,0,0,0.1)] flex items-center justify-center gap-3 border-4 border-white group hover:scale-[1.02]" 
@@ -434,7 +435,7 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
             </nav>
           </div>
 
-          {/* Back Face (Swipe disabled logic-wise) */}
+          {/* Back Face */}
           <div className="card-face card-face-back flex flex-col h-full bg-white">
             <header className="shrink-0 p-6 px-8 border-b border-slate-50 flex items-center justify-between">
               <div className="flex-1 min-w-0">
@@ -442,13 +443,11 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
                 <h3 className="text-3xl font-black text-[#2d4a47] tracking-tighter leading-none truncate">{currentWordDisplay}</h3>
                 <p style={{ color: theme.main }} className="text-xl font-bold italic opacity-80 mt-1 truncate">{t(`vocab.${word.id}.t`, { defaultValue: word.t })}</p>
               </div>
-              <button onClick={() => speakCurrent()} aria-label="Listen to pronunciation" style={{ backgroundColor: theme.light, color: theme.main }} className="shrink-0 p-3 rounded-2xl shadow-sm border border-white bubble-button"><Volume2 size={24} aria-hidden="true" /></button>
+              <button onClick={() => speakCurrent()} onMouseDown={stopProp} onTouchStart={stopProp} aria-label="Listen to pronunciation" style={{ backgroundColor: theme.light, color: theme.main }} className="shrink-0 p-3 rounded-2xl shadow-sm border border-white bubble-button"><Volume2 size={24} aria-hidden="true" /></button>
             </header>
             
-            <section className="flex-1 overflow-y-auto p-8 no-scrollbar bg-white">
-              {/* Time Machine Controls */}
+            <section className="flex-1 overflow-y-auto p-8 no-scrollbar bg-white" onMouseDown={stopProp} onTouchStart={stopProp}>
               <TimeMachine state={timeState} onChange={setTimeState} available={hasTimeMachine} />
-              
               <GrammarPocket word={word} />
               <UsageExamples word={word} timeState={timeState} />
             </section>
@@ -459,6 +458,8 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
                   {['forgot', 'hard', 'good'].map(id => (
                     <button 
                       key={id} 
+                      onMouseDown={stopProp}
+                      onTouchStart={stopProp}
                       onClick={() => setCurrentRating(id as FeedbackQuality)} 
                       aria-label={`Mark as ${id}`}
                       aria-checked={currentRating === id}
@@ -468,9 +469,9 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
                     </button>
                   ))}
                 </div>
-                <button onClick={() => setIsFlipped(false)} className="text-[9px] font-black text-slate-300 uppercase flex items-center gap-1 hover:text-slate-400 bubble-button"><RotateCcw size={12} aria-hidden="true" /> {t('ui.blog.back')}</button>
+                <button onClick={() => setIsFlipped(false)} onMouseDown={stopProp} onTouchStart={stopProp} className="text-[9px] font-black text-slate-300 uppercase flex items-center gap-1 hover:text-slate-400 bubble-button"><RotateCcw size={12} aria-hidden="true" /> {t('ui.blog.back')}</button>
               </div>
-              <button onClick={handleContinue} disabled={!currentRating} style={{ backgroundColor: theme.main }} className="bubble-button w-full py-4 rounded-[2.5rem] text-white font-black text-lg shadow-[0_6px_0_rgba(0,0,0,0.1)] flex items-center justify-center gap-2 border-2 border-white/20 disabled:opacity-50"><span>{t('ui.actions.next_word')}</span><ArrowRight size={20} aria-hidden="true" /></button>
+              <button onClick={handleContinue} onMouseDown={stopProp} onTouchStart={stopProp} disabled={!currentRating} style={{ backgroundColor: theme.main }} className="bubble-button w-full py-4 rounded-[2.5rem] text-white font-black text-lg shadow-[0_6px_0_rgba(0,0,0,0.1)] flex items-center justify-center gap-2 border-2 border-white/20 disabled:opacity-50"><span>{t('ui.actions.next_word')}</span><ArrowRight size={20} aria-hidden="true" /></button>
             </footer>
           </div>
         </article>
