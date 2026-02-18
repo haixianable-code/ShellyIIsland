@@ -20,6 +20,7 @@ const mapRowToWord = (row: any): Word => ({
   nounNotes: row.noun_notes,
   examples: row.examples || [],
   nuance: row.nuance || undefined,
+  tense_forms: row.tense_forms || undefined, // <--- ADDED
 });
 
 // Map App Word to DB Row
@@ -37,6 +38,7 @@ const mapWordToRow = (word: Word) => ({
   noun_notes: word.nounNotes,
   examples: word.examples,
   nuance: word.nuance,
+  tense_forms: word.tense_forms, // <--- ADDED
 });
 
 /**

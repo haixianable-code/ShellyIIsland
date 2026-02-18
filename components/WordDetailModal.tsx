@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { Word } from '../types';
 import { playAudio } from '../utils/audio';
 import { getTypeTheme, getPosLabel } from '../utils/theme';
-import { X, Volume2, Sparkles, AudioLines, BookOpen, PenTool, BrainCircuit, Loader2, Send, MessageSquareText, Heart, Lock, Crown, Eye, ChevronDown } from 'lucide-react';
+import { X, Volume2, Sparkles, AudioLines, BookOpen, PenTool, BrainCircuit, Loader2, Send, MessageSquareText, Heart, Lock, Crown, Eye, ChevronDown, History, Sun, Rocket } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { playClick, playSparkle, playSwish } from '../utils/sfx';
+import { playClick, playSparkle, playSwish, playShaker } from '../utils/sfx';
 import { useIslandStore } from '../store/useIslandStore';
 import { getAIChallengeFeedback, getAISmartHint } from '../services/geminiService';
 import { storageService } from '../services/storageService';
@@ -18,12 +18,16 @@ interface WordDetailModalProps {
 }
 
 type ActiveTool = 'none' | 'challenge' | 'mnemonic';
+type TimeState = 'past' | 'present' | 'future';
 
 const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
   const { t } = useTranslation();
   const { aiCache, consumeAIToken, consumeMnemonicToken, aiUsage, mnemonicUsage, profile, openModal } = useIslandStore();
   const [activeText, setActiveText] = useState<string | null>(null);
   const [activeTool, setActiveTool] = useState<ActiveTool>('none');
+  
+  // Time Machine State
+  const [timeState, setTimeState] = useState<TimeState>('present');
   
   // AI Challenge State
   const [userInput, setUserInput] = useState('');
@@ -50,6 +54,16 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
     : word.type === 'noun' 
       ? [t('ui.grammar.sing'), t('ui.grammar.plur')] 
       : [t('ui.grammar.masc'), t('ui.grammar.fem'), t('ui.grammar.masc_pl'), t('ui.grammar.fem_pl')];
+
+  // Time Machine Data
+  const hasTimeMachine = !!word.tense_forms;
+  const currentWordDisplay = timeState === 'past' ? (word.tense_forms?.past || word.s) : 
+                             timeState === 'future' ? (word.tense_forms?.future || word.s) : 
+                             word.s;
+
+  const headerBgColor = timeState === 'past' ? '#795548' : 
+                        timeState === 'future' ? '#2196f3' : 
+                        theme.main;
 
   useEffect(() => {
     document.body.classList.add('modal-open');
@@ -79,6 +93,13 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
     setActiveText(text);
     playAudio(text, () => setActiveText(text), () => setActiveText(null));
     try { playClick(); } catch (err) {}
+  };
+
+  const handleTimeChange = (newState: TimeState) => {
+      if (newState === 'past') playShaker();
+      if (newState === 'present') playClick();
+      if (newState === 'future') playSwish();
+      setTimeState(newState);
   };
 
   const handleRevealMnemonic = async () => {
@@ -158,27 +179,92 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
     });
   };
 
+  // Filter examples based on Time Machine state
+  const filteredExamples = word.examples.filter(ex => {
+      if (timeState === 'present') return !ex.tense || ex.tense === 'present';
+      return ex.tense === timeState;
+  });
+  const displayExamples = filteredExamples.length > 0 ? filteredExamples : word.examples.filter(ex => !ex.tense || ex.tense === 'present');
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
       <div className="relative w-full max-w-md bg-[#fffdf5] rounded-[3rem] shadow-[0_30px_60px_-10px_rgba(0,0,0,0.3)] overflow-hidden animate-zoomIn flex flex-col max-h-[95vh]">
         <div className="overflow-y-auto no-scrollbar h-full relative">
             {/* Header */}
-            <div style={{ backgroundColor: theme.main }} className="relative pt-10 pb-20 px-6 text-center shrink-0 transition-colors duration-300">
+            <div style={{ backgroundColor: headerBgColor }} className="relative pt-10 pb-20 px-6 text-center shrink-0 transition-colors duration-500">
                 <button onClick={onClose} className="absolute top-6 right-6 z-50 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all active:scale-90 backdrop-blur-sm"><X size={20} strokeWidth={3} /></button>
                 <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
-                <div className="relative z-10 cursor-pointer active:scale-95 transition-transform" onClick={(e) => handleSpeak(e, word.s)}>
-                    <h2 className="text-6xl md:text-7xl font-black text-white tracking-tighter drop-shadow-sm mb-2 break-words">{word.s}</h2>
+                
+                {/* Main Word Display */}
+                <div className="relative z-10 cursor-pointer active:scale-95 transition-transform" onClick={(e) => handleSpeak(e, currentWordDisplay)}>
+                    <h2 className="text-6xl md:text-7xl font-black text-white tracking-tighter drop-shadow-sm mb-2 break-words transition-all duration-300">
+                        {currentWordDisplay}
+                    </h2>
                     <p className="text-white/90 text-xl font-bold tracking-wide italic">{t(`vocab.${word.id}.t`, { defaultValue: word.t })}</p>
+                    
+                    {timeState !== 'present' && (
+                        <div className="inline-block mt-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
+                            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">{timeState} Tense</span>
+                        </div>
+                    )}
                 </div>
+
                 <div className="absolute bottom-[-1px] left-0 w-full leading-[0]"><svg viewBox="0 0 1440 320" preserveAspectRatio="none" className="w-full h-[80px] fill-[#fffdf5]"><path d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg></div>
+                
+                {/* Speak Button */}
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-20">
-                    <button onClick={(e) => handleSpeak(e, word.s)} className="bg-white p-5 rounded-full shadow-[0_10px_20px_rgba(0,0,0,0.15)] hover:scale-110 active:scale-95 transition-all group">
-                        {activeText === word.s ? <AudioLines size={32} style={{ color: theme.main }} className="animate-pulse" /> : <Volume2 size={32} style={{ color: theme.main }} className="fill-current opacity-80 group-hover:opacity-100" />}
+                    <button onClick={(e) => handleSpeak(e, currentWordDisplay)} className="bg-white p-5 rounded-full shadow-[0_10px_20px_rgba(0,0,0,0.15)] hover:scale-110 active:scale-95 transition-all group">
+                        {activeText === currentWordDisplay ? <AudioLines size={32} style={{ color: headerBgColor }} className="animate-pulse" /> : <Volume2 size={32} style={{ color: headerBgColor }} className="fill-current opacity-80 group-hover:opacity-100" />}
                     </button>
                 </div>
             </div>
 
             <div className="px-6 md:px-8 pt-16 pb-12 bg-[#fffdf5] relative z-10 space-y-8">
+                
+                {/* TIME MACHINE CONTROLS */}
+                {hasTimeMachine && (
+                    <div className="flex items-center justify-center gap-2 mb-2 animate-slideUp">
+                        <button 
+                            onClick={() => handleTimeChange('past')}
+                            className={`p-3 rounded-2xl border-2 transition-all ${timeState === 'past' ? 'bg-[#795548] text-white border-[#795548] shadow-md scale-110' : 'bg-white border-[#d7ccc8] text-[#a1887f] hover:bg-[#efebe9]'}`}
+                        >
+                            <History size={20} />
+                        </button>
+                        
+                        <div className="h-1.5 w-16 bg-slate-200 rounded-full relative overflow-hidden">
+                            <div 
+                                className={`absolute top-0 bottom-0 w-1/3 rounded-full transition-all duration-300 ${
+                                    timeState === 'past' ? 'left-0 bg-[#795548]' : 
+                                    timeState === 'future' ? 'left-2/3 bg-[#2196f3]' : 'left-1/3 bg-[#ffa600]'
+                                }`} 
+                            />
+                        </div>
+
+                        <button 
+                            onClick={() => handleTimeChange('present')}
+                            className={`p-3 rounded-2xl border-2 transition-all ${timeState === 'present' ? 'bg-[#ffa600] text-white border-[#ffa600] shadow-md scale-110' : 'bg-white border-[#ffe0b2] text-[#ffcc80] hover:bg-[#fff3e0]'}`}
+                        >
+                            <Sun size={20} />
+                        </button>
+
+                        <div className="h-1.5 w-16 bg-slate-200 rounded-full relative overflow-hidden">
+                             <div 
+                                className={`absolute top-0 bottom-0 w-1/3 rounded-full transition-all duration-300 ${
+                                    timeState === 'past' ? 'left-0 bg-[#795548]' : 
+                                    timeState === 'future' ? 'left-2/3 bg-[#2196f3]' : 'left-1/3 bg-[#ffa600]'
+                                }`} 
+                            />
+                        </div>
+
+                        <button 
+                            onClick={() => handleTimeChange('future')}
+                            className={`p-3 rounded-2xl border-2 transition-all ${timeState === 'future' ? 'bg-[#2196f3] text-white border-[#2196f3] shadow-md scale-110' : 'bg-white border-[#bbdefb] text-[#90caf9] hover:bg-[#e3f2fd]'}`}
+                        >
+                            <Rocket size={20} />
+                        </button>
+                    </div>
+                )}
+
                 {/* Meta Tags */}
                 <div className="flex justify-center gap-2 opacity-60">
                     <span className="px-3 py-1 rounded-full border border-slate-300 text-[9px] font-black uppercase tracking-widest text-slate-500">{getPosLabel(word)}</span>
@@ -364,15 +450,21 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
 
                 {/* Examples */}
                 <div className="space-y-6">
-                    <div className="flex items-center gap-2 mb-2 opacity-40 px-2"><BookOpen size={14} /><span className="text-[9px] font-black uppercase tracking-widest">{t('ui.study.usage_examples')}</span></div>
-                    {word.examples.map((ex, i) => (
-                        <button key={i} onClick={(e) => handleSpeak(e, ex.txt)} className="w-full text-left bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all active:scale-[0.98] group">
+                    <div className="flex items-center gap-2 mb-2 opacity-40 px-2">
+                        <BookOpen size={14} />
+                        <span className="text-[9px] font-black uppercase tracking-widest">{t('ui.study.usage_examples')}</span>
+                        {timeState !== 'present' && <span className="ml-auto text-[8px] font-bold uppercase">{timeState}</span>}
+                    </div>
+                    {displayExamples.length > 0 ? displayExamples.map((ex, i) => (
+                        <button key={i} onClick={(e) => handleSpeak(e, ex.txt)} className="w-full text-left bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all active:scale-[0.98] group animate-fadeIn">
                              <p className="text-lg font-black text-[#2d4a47] italic leading-tight mb-2 flex items-start gap-1 tracking-tight">
                                 <span className="text-slate-300 -ml-2">“</span>{ex.txt}
                              </p>
                              <p className="text-xs font-bold text-slate-400 pl-3 border-l-2 border-slate-200 leading-tight">{ex.eng}</p>
                         </button>
-                    ))}
+                    )) : (
+                        <div className="text-center py-4 opacity-40 text-xs font-bold">No examples for this tense.</div>
+                    )}
                 </div>
 
                 <div className="pt-8 pb-2 flex justify-center opacity-10"><BookOpen size={16} fill="black" /></div>
