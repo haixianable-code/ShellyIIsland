@@ -4,6 +4,47 @@ import { n, m, a, v } from '../utils/wordRegistry';
 
 export const EXTRA_CANDIDATES: Word[] = [
   // ==============================================
+  // ⏳ PACK F: THE TIME TRAVELER (Past & Future)
+  // Category: 'time_traveler'
+  // ==============================================
+  
+  // --- TIME ANCHORS (The Map of Time) ---
+  n('pasado', 'pasado', 'The Past', 'time', 'm', 'History.', 'En el pasado.', 'In the past.', 'Olvida el pasado.', 'Forget the past.', 'Cognate.'),
+  n('futuro', 'futuro', 'The Future', 'time', 'm', 'Destiny.', 'El futuro es hoy.', 'The future is today.', 'Planes de futuro.', 'Future plans.', 'Cognate.'),
+  m('ayer', 'ayer', 'Yesterday', 'time', 'Past.', 'Ayer llovió.', 'Yesterday it rained.', 'Ayer fui al cine.', 'Yesterday I went to the cinema.', 'time_traveler', 'Key past anchor.'),
+  m('anoche', 'anoche', 'Last night', 'time', 'Past.', 'Anoche dormí mal.', 'Last night I slept badly.', 'Salí anoche.', 'I went out last night.', 'time_traveler', 'Specific past time.'),
+  m('manana_time', 'mañana', 'Tomorrow', 'time', 'Future.', 'Mañana voy.', 'Tomorrow I go.', 'Hasta mañana.', 'See you tomorrow.', 'time_traveler', 'Also means "Morning" (La mañana).'),
+  m('luego', 'luego', 'Later', 'time', 'Sequence.', 'Te veo luego.', 'See you later.', 'Primero esto, luego eso.', 'First this, then that.', 'time_traveler', 'Sequence marker.'),
+  m('entonces', 'entonces', 'Then/So', 'grammar', 'Sequence.', 'Entonces, ¿qué hacemos?', 'So, what do we do?', 'Era joven entonces.', 'I was young then.', 'time_traveler', 'Story connector.'),
+  m('antes', 'antes', 'Before', 'time', 'Sequence.', 'Antes de comer.', 'Before eating.', 'Mucho antes.', 'Much earlier.', 'time_traveler', 'Opposite: Después.'),
+  m('despues', 'después', 'After/Later', 'time', 'Sequence.', 'Después de ti.', 'After you.', 'Llámanos después.', 'Call us later.', 'time_traveler', 'Opposite: Antes.'),
+  m('nunca', 'nunca', 'Never', 'time', 'Frequency.', 'Nunca digas nunca.', 'Never say never.', 'No voy nunca.', 'I never go.', 'time_traveler', 'Absolute negative.'),
+  m('siempre', 'siempre', 'Always', 'time', 'Frequency.', 'Siempre te amaré.', 'I will always love you.', 'Como siempre.', 'Like always.', 'time_traveler', 'Absolute positive.'),
+  m('a_veces', 'a veces', 'Sometimes', 'time', 'Frequency.', 'A veces leo.', 'Sometimes I read.', 'Solo a veces.', 'Only sometimes.', 'time_traveler', 'Frequency.'),
+
+  // --- THE ESSENTIAL PAST (Preterite - Completed Actions) ---
+  v('fui_ir', 'fui', 'I went (Past)', 'travel', 'Movement.', 'Ayer fui al parque.', 'Yesterday I went to the park.', 'Fui con Ana.', 'I went with Ana.', 'Root: Ir (To go).', undefined, true),
+  v('fui_ser', 'fui', 'I was (Past)', 'grammar', 'Identity.', 'Fui profesor.', 'I was a teacher.', 'Fue divertido.', 'It was fun (3rd person).', 'Root: Ser (To be). Same as "I went"!', undefined, true),
+  v('hice', 'hice', 'I did/made', 'daily', 'Action.', 'Lo hice yo.', 'I did it myself.', 'No hice nada.', 'I did nothing.', 'Root: Hacer. The "C" becomes "Z" in "Hizo" (He did).', undefined, true),
+  v('dije', 'dije', 'I said', 'social', 'Speech.', 'Le dije que no.', 'I told him no.', '¿Qué dije?', 'What did I say?', 'Root: Decir. Irregular stem.', undefined, true),
+  v('vi', 'vi', 'I saw', 'body', 'Sight.', 'Te vi ayer.', 'I saw you yesterday.', 'Lo vi en la tele.', 'I saw it on TV.', 'Root: Ver. No accent mark!', undefined, true),
+  v('tuve', 'tuve', 'I had', 'daily', 'Possession.', 'Tuve un sueño.', 'I had a dream.', 'Tuve que ir.', 'I had to go.', 'Root: Tener. U-stem.', undefined, true),
+  v('estuve', 'estuve', 'I was (State)', 'travel', 'Location.', 'Estuve en casa.', 'I was at home.', 'Estuve enfermo.', 'I was sick.', 'Root: Estar. U-stem.', undefined, true),
+  v('pude', 'pude', 'I could', 'abstract', 'Ability.', 'No pude dormir.', 'I could not sleep.', 'Hice lo que pude.', 'I did what I could.', 'Root: Poder.', undefined, true),
+  
+  // --- THE NOSTALGIC PAST (Imperfect - Used to/Was doing) ---
+  v('era', 'era', 'I used to be/Was', 'time', 'Description.', 'Cuando era niño.', 'When I was a child.', 'Ella era guapa.', 'She was pretty.', 'Root: Ser. Describes background.', undefined, true),
+  v('tenia', 'tenía', 'I used to have', 'time', 'Description.', 'Tenía pelo largo.', 'I used to have long hair.', 'Tenía miedo.', 'I was afraid.', 'Root: Tener.', undefined, true),
+  v('estaba', 'estaba', 'I was (State)', 'time', 'Location.', 'Estaba cansado.', 'I was tired.', 'La puerta estaba abierta.', 'The door was open.', 'Root: Estar.', undefined, true),
+  v('habia', 'había', 'There was/were', 'time', 'Existence.', 'Había mucha gente.', 'There were many people.', 'No había nada.', 'There was nothing.', 'Root: Haber (Hay).', undefined, true),
+
+  // --- THE FUTURE (Simple Future) ---
+  v('ire', 'iré', 'I will go', 'time', 'Destiny.', 'Iré mañana.', 'I will go tomorrow.', 'No iré.', 'I will not go.', 'Root: Ir.', undefined, true),
+  v('hare', 'haré', 'I will do', 'time', 'Promise.', 'Lo haré luego.', 'I will do it later.', 'Haré mi tarea.', 'I will do my homework.', 'Root: Hacer.', undefined, true),
+  v('vere', 'veré', 'I will see', 'time', 'Sight.', 'Ya veré.', 'I will see (We shall see).', 'Te veré pronto.', 'I will see you soon.', 'Root: Ver.', undefined, true),
+  v('sere', 'seré', 'I will be', 'time', 'Identity.', 'Seré rico.', 'I will be rich.', 'Seré mejor.', 'I will be better.', 'Root: Ser.', undefined, true),
+
+  // ==============================================
   // 🏙️ PACK E: THE CITIZEN (House, City, Clothes)
   // Category: 'citizen'
   // ==============================================

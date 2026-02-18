@@ -2,6 +2,7 @@
 export interface WordExample {
   txt: string;
   eng: string;
+  tense?: 'past' | 'present' | 'future';
 }
 
 export type FeedbackQuality = 'forgot' | 'hard' | 'good' | 'easy';
@@ -33,6 +34,11 @@ export interface Word {
   examples: WordExample[]; 
   nounNotes: string; 
   blueprintId?: string; 
+  // Time Machine Capabilities
+  tense_forms?: {
+    past?: string;
+    future?: string;
+  };
 }
 
 export interface DayPack {
