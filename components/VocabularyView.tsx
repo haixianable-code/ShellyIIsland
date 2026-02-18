@@ -154,7 +154,7 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
               >
                 <button 
                   onClick={() => handleItemClick(word)}
-                  className="absolute inset-0 z-10"
+                  className="absolute inset-0 z-30"
                   aria-label={isLocked ? `Unlock premium word ${word.s}` : `View details for word ${word.s}`}
                 />
                 
@@ -182,7 +182,7 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
                 </div>
 
                 {isLocked && (
-                    <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px] pointer-events-none flex items-center justify-center">
+                    <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px] pointer-events-none flex items-center justify-center z-20">
                        <div className="bg-white/90 p-4 rounded-3xl shadow-xl flex items-center gap-3 border-2 border-[#ffa600]/30 transform -rotate-2">
                           <Crown size={24} className="text-[#ffa600]" />
                           <div className="text-left">
