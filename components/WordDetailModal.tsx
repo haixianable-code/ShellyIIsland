@@ -40,7 +40,6 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
   const [isMnemonicLoading, setIsMnemonicLoading] = useState(false);
 
   const theme = getTypeTheme(word);
-  const conjugationList = word.forms ? word.forms.split(', ') : [];
   const aiInfo = aiCache[word.id];
   
   // Usage tracking
@@ -55,11 +54,26 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
       ? [t('ui.grammar.sing'), t('ui.grammar.plur')] 
       : [t('ui.grammar.masc'), t('ui.grammar.fem'), t('ui.grammar.masc_pl'), t('ui.grammar.fem_pl')];
 
-  // Time Machine Data
+  // --- Time Machine Logic ---
   const hasTimeMachine = !!word.tense_forms;
-  const currentWordDisplay = timeState === 'past' ? (word.tense_forms?.past || word.s) : 
-                             timeState === 'future' ? (word.tense_forms?.future || word.s) : 
-                             word.s;
+
+  // 1. Get the correct forms string based on Time State
+  const getActiveForms = () => {
+      if (timeState === 'future') return word.tense_forms?.future;
+      if (timeState === 'past') return word.tense_forms?.past || word.tense_forms?.imperfect; // Default to snapshot for modal
+      return word.forms;
+  };
+
+  const activeFormsString = getActiveForms();
+  // Safe split that handles different spacing (comma+space or just comma)
+  const conjugationList = activeFormsString ? activeFormsString.split(/,\s*/) : [];
+
+  // 2. Header Title Logic
+  // Present: Show Infinitive (e.g., "Ser")
+  // Past/Future: Show 1st Person (e.g., "Fui", "Seré") to avoid giant text blocks
+  const currentWordDisplay = timeState === 'present' 
+      ? word.s 
+      : (conjugationList[0] || word.s);
 
   const headerBgColor = timeState === 'past' ? '#795548' : 
                         timeState === 'future' ? '#2196f3' : 
@@ -426,7 +440,7 @@ const WordDetailModal: React.FC<WordDetailModalProps> = ({ word, onClose }) => {
                   </div>
                 )}
 
-                {/* Standard Grammar Note */}
+                {/* Standard Grammar Note (Updated to sync with Time Machine) */}
                 <div className="relative group">
                     <div className="bg-white/50 p-6 rounded-[2rem] border-2 border-dashed relative transform hover:rotate-0 transition-transform duration-300" style={{ borderColor: theme.main }}>   
                          <div className="absolute -top-3 left-6 bg-[#fffdf5] px-2 flex items-center gap-1">
