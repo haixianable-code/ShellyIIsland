@@ -106,6 +106,17 @@ export default {
       "grammar": "Grammar",
       "ai_lab": "AI Lab"
     },
+    "pocket": { 
+      "expansion_pack_title": "Expansion Packs", 
+      "expansion_pack_desc": "Add high-frequency A1-B1 vocabulary.", 
+      "explore_seeds": "Unlock 100 Random Words", 
+      "all_seeds_planted": "All packs unlocked",
+      "empty_title": "Pocket is empty.",
+      "empty_subtitle": "Go to Expansion Packs to find new words.",
+      "locked_label": "PRO",
+      "premium_content": "Premium Content",
+      "tap_unlock": "Tap to Unlock"
+    },
     "passport": {
       "temp_pass": "Standard Account",
       "official_passport": "Professional Profile",
@@ -207,6 +218,24 @@ export default {
         "status_seeds": "{{count}} new terms available.",
         "status_streak": "You have been consistent for {{count}} days.",
         "enter_btn": "Start Training"
+      }
+    },
+    "expansion": {
+      "title": "Supply Depot",
+      "magic_fill": "Random Pick",
+      "get_supplies": "Add to Pocket",
+      "no_items": "No items found in this crate.",
+      "cats": {
+        "all": "All",
+        "time_traveler": "Time & Tense",
+        "citizen": "City & Home",
+        "survivor": "Health & Directions",
+        "loot": "Daily Objects",
+        "storyteller": "Storytelling",
+        "debater": "Opinions",
+        "cognates": "Easy Words",
+        "connector": "Connectors",
+        "preposition": "Position"
       }
     }
   },

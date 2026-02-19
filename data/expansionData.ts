@@ -129,14 +129,70 @@ export const EXTRA_CANDIDATES: Word[] = [
   n('avion', 'avión', 'Airplane', 'travel', 'm', 'Transport.', 'Avión rápido.', 'Fast plane.', 'Billete de avión.', 'Plane ticket.', 'Related to Aviation.'),
 
   // --- INTERACTION VERBS ---
-  v('abrir', 'abrir', 'To open', 'daily', 'Action.', 'Abro la puerta.', 'I open the door.', 'Abren la tienda.', 'They open the shop.', 'Opposite: Cerrar.', undefined, true),
-  v('cerrar', 'cerrar', 'To close', 'daily', 'Action.', 'Cierra la ventana.', 'Close the window.', 'La tienda cierra.', 'The shop closes.', 'Stem E->IE (Cierro).', 'cierro, cierras, cierra, cerramos, cerráis, cierran', false),
-  v('encender', 'encender', 'To turn on/light', 'tech', 'Power.', 'Enciende la luz.', 'Turn on the light.', 'Encender el fuego.', 'Light the fire.', 'Stem E->IE.', 'enciendo, enciendes, enciende, encendemos, encendéis, encienden', false),
-  v('apagar', 'apagar', 'To turn off', 'tech', 'Power.', 'Apaga la tele.', 'Turn off the TV.', 'Apaga la luz.', 'Turn off the light.', 'Use for electronics/fire.', undefined, true),
-  v('usar', 'usar', 'To use', 'tech', 'Utility.', 'Uso el ordenador.', 'I use the computer.', '¿Puedo usar esto?', 'Can I use this?', 'Cognate.', undefined, true),
-  v('romper', 'romper', 'To break', 'daily', 'Destruction.', 'He roto el vaso.', 'I have broken the glass.', 'Se rompió.', 'It broke.', 'Participle: Roto.', undefined, true),
-  v('arreglar', 'arreglar', 'To fix/arrange', 'daily', 'Repair.', 'Arreglo el coche.', 'I fix the car.', 'Arreglar la casa.', 'Tidy up the house.', 'Multi-use verb.', undefined, true),
-  v('limpiar', 'limpiar', 'To clean', 'daily', 'Hygiene.', 'Limpio la cocina.', 'I clean the kitchen.', 'Limpiar el suelo.', 'Clean the floor.', 'Adj: Limpio.', undefined, true),
+  {
+    ...v('abrir', 'abrir', 'To open', 'daily', 'Action.', 'Abro la puerta.', 'I open the door.', 'Abren la tienda.', 'They open the shop.', 'Opposite: Cerrar.', undefined, true),
+    tense_forms: {
+      past: "abrí, abriste, abrió, abrimos, abristeis, abrieron",
+      imperfect: "abría, abrías, abría, abríamos, abríais, abrían",
+      future: "abriré, abrirás, abrirá, abriremos, abriréis, abrirán"
+    }
+  },
+  {
+    ...v('cerrar', 'cerrar', 'To close', 'daily', 'Action.', 'Cierra la ventana.', 'Close the window.', 'La tienda cierra.', 'The shop closes.', 'Stem E->IE (Cierro).', 'cierro, cierras, cierra, cerramos, cerráis, cierran', false),
+    tense_forms: {
+      past: "cerré, cerraste, cerró, cerramos, cerrasteis, cerraron",
+      imperfect: "cerraba, cerrabas, cerraba, cerrábamos, cerrabais, cerraban",
+      future: "cerraré, cerrarás, cerrará, cerraremos, cerraréis, cerrarán"
+    }
+  },
+  {
+    ...v('encender', 'encender', 'To turn on/light', 'tech', 'Power.', 'Enciende la luz.', 'Turn on the light.', 'Encender el fuego.', 'Light the fire.', 'Stem E->IE.', 'enciendo, enciendes, enciende, encendemos, encendéis, encienden', false),
+    tense_forms: {
+      past: "encendí, encendiste, encendió, encendimos, encendisteis, encendieron",
+      imperfect: "encendía, encendías, encendía, encendíamos, encendíais, encendían",
+      future: "encenderé, encenderás, encenderá, encenderemos, encenderéis, encenderán"
+    }
+  },
+  {
+    ...v('apagar', 'apagar', 'To turn off', 'tech', 'Power.', 'Apaga la tele.', 'Turn off the TV.', 'Apaga la luz.', 'Turn off the light.', 'Use for electronics/fire.', undefined, true),
+    tense_forms: {
+      past: "apagué, apagaste, apagó, apagamos, apagasteis, apagaron",
+      imperfect: "apagaba, apagabas, apagaba, apagábamos, apagabais, apagaban",
+      future: "apagaré, apagarás, apagará, apagaremos, apagaréis, apagarán"
+    }
+  },
+  {
+    ...v('usar', 'usar', 'To use', 'tech', 'Utility.', 'Uso el ordenador.', 'I use the computer.', '¿Puedo usar esto?', 'Can I use this?', 'Cognate.', undefined, true),
+    tense_forms: {
+      past: "usé, usaste, usó, usamos, usasteis, usaron",
+      imperfect: "usaba, usabas, usaba, usábamos, usabais, usaban",
+      future: "usaré, usarás, usará, usaremos, usaréis, usarán"
+    }
+  },
+  {
+    ...v('romper', 'romper', 'To break', 'daily', 'Destruction.', 'He roto el vaso.', 'I have broken the glass.', 'Se rompió.', 'It broke.', 'Participle: Roto.', undefined, true),
+    tense_forms: {
+      past: "rompí, rompiste, rompió, rompimos, rompisteis, rompieron",
+      imperfect: "rompía, rompías, rompía, rompíamos, rompíais, rompían",
+      future: "romperé, romperás, romperá, romperemos, romperéis, romperán"
+    }
+  },
+  {
+    ...v('arreglar', 'arreglar', 'To fix/arrange', 'daily', 'Repair.', 'Arreglo el coche.', 'I fix the car.', 'Arreglar la casa.', 'Tidy up the house.', 'Multi-use verb.', undefined, true),
+    tense_forms: {
+      past: "arreglé, arreglaste, arregló, arreglamos, arreglasteis, arreglaron",
+      imperfect: "arreglaba, arreglabas, arreglaba, arreglábamos, arreglabais, arreglaban",
+      future: "arreglaré, arreglarás, arreglará, arreglaremos, arreglaréis, arreglarán"
+    }
+  },
+  {
+    ...v('limpiar', 'limpiar', 'To clean', 'daily', 'Hygiene.', 'Limpio la cocina.', 'I clean the kitchen.', 'Limpiar el suelo.', 'Clean the floor.', 'Adj: Limpio.', undefined, true),
+    tense_forms: {
+      past: "limpié, limpiaste, limpió, limpiamos, limpiasteis, limpiaron",
+      imperfect: "limpiaba, limpiabas, limpiaba, limpiábamos, limpiabais, limpiaban",
+      future: "limpiaré, limpiarás, limpiará, limpiaremos, limpiaréis, limpiarán"
+    }
+  },
 
   // --- DEMONSTRATIVES (Pointing Tools) ---
   m('este_dem', 'este', 'This (Masc)', 'grammar', 'Near.', 'Este libro.', 'This book.', 'Este es mi amigo.', 'This is my friend.', 'citizen', 'For masculine nouns nearby.'),
@@ -159,8 +215,22 @@ export const EXTRA_CANDIDATES: Word[] = [
   n('medicina', 'medicina', 'Medicine', 'body', 'f', 'Health.', 'Toma la medicina.', 'Take the medicine.', 'Medicina fuerte.', 'Strong medicine.', 'Cognate.'),
   n('medico', 'médico', 'Doctor', 'body', 'm', 'Profession.', 'Voy al médico.', 'I go to the doctor.', 'Médico bueno.', 'Good doctor.', 'Synonym: Doctor.'),
   n('hospital', 'hospital', 'Hospital', 'body', 'm', 'Place.', '¿Dónde está el hospital?', 'Where is the hospital?', 'Hospital central.', 'Central hospital.', 'H is silent.'),
-  v('doler', 'doler', 'To hurt', 'body', 'Sensation.', 'Me duele aquí.', 'It hurts here.', 'Me duelen los pies.', 'My feet hurt.', 'Note: Works like Gustar (Me duele). Stem O->UE.', 'duele, duelen (usually)', false),
-  v('curar', 'curar', 'To cure/heal', 'body', 'Health.', 'El tiempo cura.', 'Time heals.', 'Curar la herida.', 'To heal the wound.', 'Tiempo: Time.', undefined, true),
+  {
+    ...v('doler', 'doler', 'To hurt', 'body', 'Sensation.', 'Me duele aquí.', 'It hurts here.', 'Me duelen los pies.', 'My feet hurt.', 'Note: Works like Gustar (Me duele). Stem O->UE.', 'duele, duelen (usually)', false),
+    tense_forms: {
+      past: "dolió, dolieron",
+      imperfect: "dolía, dolían",
+      future: "dolerá, dolerán"
+    }
+  },
+  {
+    ...v('curar', 'curar', 'To cure/heal', 'body', 'Health.', 'El tiempo cura.', 'Time heals.', 'Curar la herida.', 'To heal the wound.', 'Tiempo: Time.', undefined, true),
+    tense_forms: {
+      past: "curé, curaste, curó, curamos, curasteis, curaron",
+      imperfect: "curaba, curabas, curaba, curábamos, curabais, curaban",
+      future: "curaré, curarás, curará, curaremos, curaréis, curarán"
+    }
+  },
 
   // --- CITY & NAVIGATION ---
   n('calle', 'calle', 'Street', 'travel', 'f', 'Location.', 'En la calle.', 'In the street.', 'Calle mayor.', 'Main street.', 'Double L sounds like Y.'),
@@ -175,7 +245,14 @@ export const EXTRA_CANDIDATES: Word[] = [
   m('abajo_dir', 'abajo', 'Down/Below', 'travel', 'Direction.', 'Mira abajo.', 'Look down.', 'Está abajo.', 'It is downstairs.', 'survivor', 'Direction.'),
 
   // --- TRANSACTIONS & NUMBERS ---
-  v('costar', 'costar', 'To cost', 'society', 'Value.', '¿Cuánto cuesta?', 'How much does it cost?', 'Cuesta mucho.', 'It costs a lot.', 'Note: Stem O->UE.', 'cuesta, cuestan (usually)', false),
+  {
+    ...v('costar', 'costar', 'To cost', 'society', 'Value.', '¿Cuánto cuesta?', 'How much does it cost?', 'Cuesta mucho.', 'It costs a lot.', 'Note: Stem O->UE.', 'cuesta, cuestan (usually)', false),
+    tense_forms: {
+      past: "costó, costaron",
+      imperfect: "costaba, costaban",
+      future: "costará, costarán"
+    }
+  },
   n('precio', 'precio', 'Price', 'society', 'm', 'Value.', 'Buen precio.', 'Good price.', '¿Qué precio tiene?', 'What price does it have?', 'Cognate.'),
   n('cuenta', 'cuenta', 'Bill/Account', 'society', 'f', 'Payment.', 'La cuenta, por favor.', 'The check, please.', 'Cuenta bancaria.', 'Bank account.', 'Essential for restaurants.'),
   n('tarjeta', 'tarjeta', 'Card', 'society', 'f', 'Payment.', 'Pago con tarjeta.', 'I pay with card.', 'Tarjeta de crédito.', 'Credit card.', 'Pair with Pagar.'),
@@ -193,9 +270,30 @@ export const EXTRA_CANDIDATES: Word[] = [
   m('mientras', 'mientras', 'While/Meanwhile', 'time', 'Simultaneity.', 'Yo leía mientras él comía.', 'I read while he ate.', 'Time', 'Two actions at once.', 'storyteller', 'Simultaneity.'),
   m('ayer_noche', 'anoche', 'Last night', 'time', 'Past.', 'Anoche salí.', 'Last night I went out.', 'Time', 'Specific past time.', 'storyteller', 'Past anchor.'),
   m('antetier', 'anteayer', 'Day before yesterday', 'time', 'Past.', 'Fue anteayer.', 'It was the day before yesterday.', 'Time', '2 days ago.', 'storyteller', 'Past anchor.'),
-  v('contar', 'contar', 'To tell (story)/count', 'social', 'Narrating.', 'Te cuento un secreto.', 'I tell you a secret.', 'Cuenta conmigo.', 'Count on me.', 'Secreto: Secret.', 'cuento, cuentas, cuenta, contamos, contáis, cuentan', true, undefined),
-  v('pasar_v', 'pasar', 'To happen/pass', 'abstract', 'Event.', '¿Qué pasó?', 'What happened?', 'El tiempo pasa.', 'Time passes.', 'Tiempo: Time.', undefined, true, undefined),
-  v('ocurrir', 'ocurrir', 'To occur', 'abstract', 'Event.', 'Algo extraño ocurrió.', 'Something strange occurred.', 'No se me ocurre nada.', 'Nothing comes to mind.', 'Extraño: Strange.', undefined, true, undefined),
+  {
+    ...v('contar', 'contar', 'To tell (story)/count', 'social', 'Narrating.', 'Te cuento un secreto.', 'I tell you a secret.', 'Cuenta conmigo.', 'Count on me.', 'Secreto: Secret.', 'cuento, cuentas, cuenta, contamos, contáis, cuentan', true, undefined),
+    tense_forms: {
+      past: "conté, contaste, contó, contamos, contasteis, contaron",
+      imperfect: "contaba, contabas, contaba, contábamos, contabais, contaban",
+      future: "contaré, contarás, contará, contaremos, contaréis, contarán"
+    }
+  },
+  {
+    ...v('pasar_v', 'pasar', 'To happen/pass', 'abstract', 'Event.', '¿Qué pasó?', 'What happened?', 'El tiempo pasa.', 'Time passes.', 'Tiempo: Time.', undefined, true, undefined),
+    tense_forms: {
+      past: "pasé, pasaste, pasó, pasamos, pasasteis, pasaron",
+      imperfect: "pasaba, pasabas, pasaba, pasábamos, pasabais, pasaban",
+      future: "pasaré, pasarás, pasará, pasaremos, pasaréis, pasarán"
+    }
+  },
+  {
+    ...v('ocurrir', 'ocurrir', 'To occur', 'abstract', 'Event.', 'Algo extraño ocurrió.', 'Something strange occurred.', 'No se me ocurre nada.', 'Nothing comes to mind.', 'Extraño: Strange.', undefined, true, undefined),
+    tense_forms: {
+      past: "ocurrí, ocurriste, ocurrió, ocurrimos, ocurristeis, ocurrieron",
+      imperfect: "ocurría, ocurrías, ocurría, ocurríamos, ocurríais, ocurrían",
+      future: "ocurriré, ocurrirás, ocurrirá, ocurriremos, ocurriréis, ocurrirán"
+    }
+  },
   a('emocionante', 'emocionante', 'Exciting', 'feelings', 'aburrido', 'Boring', 'Feeling.', 'Fue emocionante.', 'It was exciting.', 'Película emocionante.', 'Exciting movie.', 'Película: Movie.', undefined),
 
   // ==============================================
@@ -206,10 +304,38 @@ export const EXTRA_CANDIDATES: Word[] = [
   m('sin_embargo', 'sin embargo', 'However', 'grammar', 'Contrast.', 'Es caro, sin embargo lo compro.', 'It is expensive, however I buy it.', 'Contrast', 'Formal "but".', 'debater', 'Contrast tool.'),
   m('en_mi_opinion', 'en mi opinión', 'In my opinion', 'abstract', 'Viewpoint.', 'En mi opinión, es falso.', 'In my opinion, it is false.', 'Viewpoint', 'Softens statements.', 'debater', 'Opener.'),
   m('claro_que_si', 'claro que sí', 'Of course', 'social', 'Agreement.', '¿Vas a ir? ¡Claro que sí!', 'Are you going? Of course!', 'Agreement', 'Strong yes.', 'debater', 'Agreement.'),
-  v('acordar', 'estar de acuerdo', 'To agree', 'social', 'Consensus.', 'Estoy de acuerdo contigo.', 'I agree with you.', 'No estamos de acuerdo.', 'We do not agree.', 'Contigo: With you.', undefined, true, undefined),
-  v('tener_razon', 'tener razón', 'To be right', 'abstract', 'Correctness.', 'Tienes razón.', 'You are right.', 'No tengo razón.', 'I am not right.', 'Note: Uses "Tener" (to have reason).', undefined, true, undefined),
-  v('parecer_op', 'me parece que', 'It seems to me', 'abstract', 'Opinion.', 'Me parece que es bueno.', 'It seems to me it is good.', '¿Qué te parece?', 'What do you think?', 'Bueno: Good.', undefined, true, undefined),
-  v('discutir', 'discutir', 'To argue/discuss', 'social', 'Conflict.', 'No quiero discutir.', 'I do not want to argue.', 'Discuten mucho.', 'They argue a lot.', 'Mucho: A lot.', undefined, true, undefined),
+  {
+    ...v('acordar', 'estar de acuerdo', 'To agree', 'social', 'Consensus.', 'Estoy de acuerdo contigo.', 'I agree with you.', 'No estamos de acuerdo.', 'We do not agree.', 'Contigo: With you.', undefined, true, undefined),
+    tense_forms: {
+      past: "estuve de acuerdo, estuviste de acuerdo, estuvo de acuerdo...",
+      imperfect: "estaba de acuerdo, estabas de acuerdo, estaba de acuerdo...",
+      future: "estaré de acuerdo, estarás de acuerdo, estará de acuerdo..."
+    }
+  },
+  {
+    ...v('tener_razon', 'tener razón', 'To be right', 'abstract', 'Correctness.', 'Tienes razón.', 'You are right.', 'No tengo razón.', 'I am not right.', 'Note: Uses "Tener" (to have reason).', undefined, true, undefined),
+    tense_forms: {
+      past: "tuve razón, tuviste razón, tuvo razón...",
+      imperfect: "tenía razón, tenías razón, tenía razón...",
+      future: "tendré razón, tendrás razón, tendrá razón..."
+    }
+  },
+  {
+    ...v('parecer_op', 'me parece que', 'It seems to me', 'abstract', 'Opinion.', 'Me parece que es bueno.', 'It seems to me it is good.', '¿Qué te parece?', 'What do you think?', 'Bueno: Good.', undefined, true, undefined),
+    tense_forms: {
+      past: "me pareció que, te pareció que, le pareció que...",
+      imperfect: "me parecía que, te parecía que, le parecía que...",
+      future: "me parecerá que, te parecerá que, le parecerá que..."
+    }
+  },
+  {
+    ...v('discutir', 'discutir', 'To argue/discuss', 'social', 'Conflict.', 'No quiero discutir.', 'I do not want to argue.', 'Discuten mucho.', 'They argue a lot.', 'Mucho: A lot.', undefined, true, undefined),
+    tense_forms: {
+      past: "discutí, discutiste, discutió, discutimos, discutisteis, discutieron",
+      imperfect: "discutía, discutías, discutía, discutíamos, discutíais, discutían",
+      future: "discutiré, discutirás, discutirá, discutiremos, discutiréis, discutirán"
+    }
+  },
   n('tema', 'tema', 'Topic/Subject', 'abstract', 'm', 'Discussion.', 'Cambiemos de tema.', "Let's change the subject.", 'Tema interesante.', 'Interesting topic.', 'Note: Greek origin (ends in -a but Masculine).'),
   n('opinion', 'opinión', 'Opinion', 'abstract', 'f', 'Thought.', 'Es mi opinión.', 'It is my opinion.', 'Buena opinión.', 'Good opinion.', 'Note: Abstract noun.'),
 

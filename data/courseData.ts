@@ -12,72 +12,145 @@ export const VOCABULARY_DATA: DayPack[] = [
         ...v('ser', 'ser', 'To be (Identity)', 'grammar', 'Permanent traits.', 'Yo soy Juan.', 'I am Juan.', 'Ella es alta.', 'She is tall.', 'Juan: Name. Ella: She.', 'soy, eres, es, somos, sois, son', false, N_SER_ESTAR),
         tense_forms: { 
           past: "fui, fuiste, fue, fuimos, fuisteis, fueron", 
+          imperfect: "era, eras, era, éramos, erais, eran",
           future: "seré, serás, será, seremos, seréis, serán" 
         },
         examples: [
           { txt: 'Yo soy Juan.', eng: 'I am Juan.', tense: 'present' },
-          { txt: 'Yo era joven.', eng: 'I used to be young.', tense: 'past' },
-          { txt: 'Seré médico.', eng: 'I will be a doctor.', tense: 'future' },
-          { txt: 'Ella es alta.', eng: 'She is tall.', tense: 'present' }
+          { txt: 'La fiesta fue divertida.', eng: 'The party was fun (Event ended).', tense: 'past' },
+          { txt: 'Cuando yo era niño...', eng: 'When I was a child... (Background)', tense: 'imperfect' },
+          { txt: 'Ella era mi amiga.', eng: 'She used to be my friend.', tense: 'imperfect' },
+          { txt: 'Seré médico.', eng: 'I will be a doctor.', tense: 'future' }
         ]
       },
       {
         ...v('estar', 'estar', 'To be (State)', 'grammar', 'Temporary states/location.', 'Estoy feliz.', 'I am happy.', 'Estamos aquí.', 'We are here.', 'Feliz: Happy. Aquí: Here.', 'estoy, estás, está, estamos, estáis, están', false, N_SER_ESTAR),
         tense_forms: { 
           past: "estuve, estuviste, estuvo, estuvimos, estuvisteis, estuvieron", 
+          imperfect: "estaba, estabas, estaba, estábamos, estabais, estaban",
           future: "estaré, estarás, estará, estaremos, estaréis, estarán" 
         },
         examples: [
           { txt: 'Estoy feliz.', eng: 'I am happy.', tense: 'present' },
-          { txt: 'Ayer estuve enfermo.', eng: 'Yesterday I was sick.', tense: 'past' },
-          { txt: 'Mañana estaré en casa.', eng: 'Tomorrow I will be at home.', tense: 'future' },
-          { txt: 'Estamos aquí.', eng: 'We are here.', tense: 'present' }
+          { txt: 'Estuve en Madrid una vez.', eng: 'I was in Madrid once (Specific event).', tense: 'past' },
+          { txt: 'La puerta estaba abierta.', eng: 'The door was open (Description).', tense: 'imperfect' },
+          { txt: 'Yo estaba cansado.', eng: 'I was feeling tired.', tense: 'imperfect' },
+          { txt: 'Mañana estaré en casa.', eng: 'Tomorrow I will be at home.', tense: 'future' }
         ]
       },
       {
         ...v('tener', 'tener', 'To have', 'grammar', 'Possession/Age.', 'Tengo hambre.', 'I am hungry.', 'Tienen un coche.', 'They have a car.', 'Hambre: Hunger. Coche: Car.', 'tengo, tienes, tiene, tenemos, tenéis, tienen', false),
         tense_forms: { 
           past: "tuve, tuviste, tuvo, tuvimos, tuvisteis, tuvieron", 
+          imperfect: "tenía, tenías, tenía, teníamos, teníais, tenían",
           future: "tendré, tendrás, tendrá, tendremos, tendréis, tendrán" 
         },
         examples: [
           { txt: 'Tengo hambre.', eng: 'I am hungry.', tense: 'present' },
-          { txt: 'Tuve un perro.', eng: 'I had a dog.', tense: 'past' },
-          { txt: 'Tendré tiempo.', eng: 'I will have time.', tense: 'future' },
-          { txt: 'Tienen un coche.', eng: 'They have a car.', tense: 'present' }
+          { txt: 'Tuve un accidente.', eng: 'I had an accident (Event).', tense: 'past' },
+          { txt: 'Tenía pelo largo.', eng: 'I used to have long hair (Description).', tense: 'imperfect' },
+          { txt: 'Antes tenía miedo.', eng: 'Before, I was afraid.', tense: 'imperfect' },
+          { txt: 'Tendré tiempo.', eng: 'I will have time.', tense: 'future' }
         ]
       },
-      v('llamarse', 'llamarse', 'To be called', 'social', 'Use for names.', 'Me llamo Ana.', 'My name is Ana.', '¿Cómo te llamas?', 'What is your name?', 'Ana: Name.', 'me llamo, te llamas, se llama, nos llamamos, os llamáis, se llaman', true),
-      v('vivir', 'vivir', 'To live', 'life', 'Residence.', 'Vivo en China.', 'I live in China.', '¿Dónde vives?', 'Where do you live?', 'China: Country.', undefined, true),
-      v('estudiar', 'estudiar', 'To study', 'work', 'Learning.', 'Estudio español.', 'I study Spanish.', 'Juan estudia mucho.', 'Juan studies a lot.', 'Mucho: A lot.', undefined, true),
-      v('trabajar', 'trabajar', 'To work', 'work', 'Employment.', 'Trabajo hoy.', 'I work today.', '¿Dónde trabajas?', 'Where do you work?', 'Hoy: Today.', undefined, true),
+      {
+        ...v('llamarse', 'llamarse', 'To be called', 'social', 'Use for names.', 'Me llamo Ana.', 'My name is Ana.', '¿Cómo te llamas?', 'What is your name?', 'Ana: Name.', 'me llamo, te llamas, se llama, nos llamamos, os llamáis, se llaman', true),
+        tense_forms: { 
+          past: "me llamé, te llamaste, se llamó, nos llamamos, os llamasteis, se llamaron", 
+          imperfect: "me llamaba, te llamabas, se llamaba, nos llamábamos, os llamabais, se llamaban",
+          future: "me llamaré, te llamarás, se llamará, nos llamaremos, os llamaréis, se llamarán" 
+        },
+        examples: [
+          { txt: 'Me llamo Ana.', eng: 'My name is Ana.', tense: 'present' },
+          { txt: 'El perro se llamó Max.', eng: 'The dog was named Max (and died/changed).', tense: 'past' },
+          { txt: 'Ella se llamaba María.', eng: 'Her name was Maria (in the story).', tense: 'imperfect' },
+          { txt: 'Te llamarás "Rey".', eng: 'You will be called "King".', tense: 'future' }
+        ]
+      },
+      {
+        ...v('vivir', 'vivir', 'To live', 'life', 'Residence.', 'Vivo en China.', 'I live in China.', '¿Dónde vives?', 'Where do you live?', 'China: Country.', undefined, true),
+        tense_forms: { 
+          past: "viví, viviste, vivió, vivimos, vivisteis, vivieron", 
+          imperfect: "vivía, vivías, vivía, vivíamos, vivíais, vivían",
+          future: "viviré, vivirás, vivirá, viviremos, viviréis, vivirán" 
+        },
+        examples: [
+          { txt: 'Vivo en China.', eng: 'I live in China.', tense: 'present' },
+          { txt: 'Viví en Madrid un año.', eng: 'I lived in Madrid for one year (Completed).', tense: 'past' },
+          { txt: 'Yo vivía cerca del mar.', eng: 'I used to live near the sea.', tense: 'imperfect' },
+          { txt: 'Viviré mejor.', eng: 'I will live better.', tense: 'future' }
+        ]
+      },
+      {
+        ...v('estudiar', 'estudiar', 'To study', 'work', 'Learning.', 'Estudio español.', 'I study Spanish.', 'Juan estudia mucho.', 'Juan studies a lot.', 'Mucho: A lot.', undefined, true),
+        tense_forms: { 
+          past: "estudié, estudiaste, estudió, estudiamos, estudiasteis, estudiaron", 
+          imperfect: "estudiaba, estudiabas, estudiaba, estudiábamos, estudiabais, estudiaban",
+          future: "estudiaré, estudiarás, estudiará, estudiaremos, estudiaréis, estudiarán" 
+        },
+        examples: [
+          { txt: 'Estudio español.', eng: 'I study Spanish.', tense: 'present' },
+          { txt: 'Estudié toda la noche.', eng: 'I studied all night (Single event).', tense: 'past' },
+          { txt: 'Yo estudiaba mientras él dormía.', eng: 'I was studying while he slept.', tense: 'imperfect' },
+          { txt: 'Estudiarás en la universidad.', eng: 'You will study at the university.', tense: 'future' }
+        ]
+      },
+      {
+        ...v('trabajar', 'trabajar', 'To work', 'work', 'Employment.', 'Trabajo hoy.', 'I work today.', '¿Dónde trabajas?', 'Where do you work?', 'Hoy: Today.', undefined, true),
+        tense_forms: { 
+          past: "trabajé, trabajaste, trabajó, trabajamos, trabajasteis, trabajaron", 
+          imperfect: "trabajaba, trabajabas, trabajaba, trabajábamos, trabajabais, trabajaban",
+          future: "trabajaré, trabajarás, trabajará, trabajaremos, trabajaréis, trabajarán" 
+        },
+        examples: [
+          { txt: 'Trabajo hoy.', eng: 'I work today.', tense: 'present' },
+          { txt: 'Trabajó 10 horas.', eng: 'He worked 10 hours (Done).', tense: 'past' },
+          { txt: 'Mi padre trabajaba mucho.', eng: 'My father used to work a lot.', tense: 'imperfect' },
+          { txt: 'No trabajaré mañana.', eng: 'I will not work tomorrow.', tense: 'future' }
+        ]
+      },
       {
         ...v('haber', 'haber', 'There is/are', 'grammar', 'Existence (Hay).', 'Hay un libro.', 'There is a book.', 'No hay agua.', 'There is no water.', 'Libro: Book. Agua: Water.', 'he, has, ha (hay), hemos, habéis, han', false),
         tense_forms: { 
           past: "hubo, hubiste, hubo, hubimos, hubisteis, hubieron", 
+          imperfect: "había, habías, había, habíamos, habíais, habían",
           future: "habrá, habrás, habrá, habremos, habréis, habrán" 
         },
         examples: [
           { txt: 'Hay un libro.', eng: 'There is a book.', tense: 'present' },
-          { txt: 'Hubo una fiesta.', eng: 'There was a party.', tense: 'past' },
-          { txt: 'Habrá problemas.', eng: 'There will be problems.', tense: 'future' },
-          { txt: 'No hay agua.', eng: 'There is no water.', tense: 'present' }
+          { txt: 'Hubo una fiesta.', eng: 'There was a party (Event happened).', tense: 'past' },
+          { txt: 'Había mucha gente.', eng: 'There were many people (Description).', tense: 'imperfect' },
+          { txt: 'Habrá problemas.', eng: 'There will be problems.', tense: 'future' }
         ]
       },
       {
         ...v('comer', 'comer', 'To eat', 'food', 'Regular meals.', 'Como pan.', 'I eat bread.', '¿Qué comes?', 'What do you eat?', 'Pan: Bread.', undefined, true),
         tense_forms: { 
           past: "comí, comiste, comió, comimos, comisteis, comieron", 
+          imperfect: "comía, comías, comía, comíamos, comíais, comían",
           future: "comeré, comerás, comerá, comeremos, comeréis, comerán" 
         },
         examples: [
           { txt: 'Como pan.', eng: 'I eat bread.', tense: 'present' },
-          { txt: 'Comí una manzana.', eng: 'I ate an apple.', tense: 'past' },
-          { txt: 'Comeremos juntos.', eng: 'We will eat together.', tense: 'future' },
-          { txt: '¿Qué comes?', eng: 'What do you eat?', tense: 'present' }
+          { txt: 'Comí una manzana.', eng: 'I ate an apple (Completed).', tense: 'past' },
+          { txt: 'Siempre comía dulces.', eng: 'I always used to eat sweets.', tense: 'imperfect' },
+          { txt: 'Comeremos juntos.', eng: 'We will eat together.', tense: 'future' }
         ]
       },
-      v('beber', 'beber', 'To drink', 'food', 'Liquids.', 'Bebo agua.', 'I drink water.', 'Juan bebe café.', 'Juan drinks coffee.', 'Café: Coffee.', undefined, true),
+      {
+        ...v('beber', 'beber', 'To drink', 'food', 'Liquids.', 'Bebo agua.', 'I drink water.', 'Juan bebe café.', 'Juan drinks coffee.', 'Café: Coffee.', undefined, true),
+        tense_forms: { 
+          past: "bebí, bebiste, bebió, bebimos, bebisteis, bebieron", 
+          imperfect: "bebía, bebías, bebía, bebíamos, bebíais, bebían",
+          future: "beberé, beberás, beberá, beberemos, beberéis, beberán" 
+        },
+        examples: [
+          { txt: 'Bebo agua.', eng: 'I drink water.', tense: 'present' },
+          { txt: 'Bebió demasiado.', eng: 'He drank too much (That night).', tense: 'past' },
+          { txt: 'Él bebía café cada día.', eng: 'He drank coffee every day.', tense: 'imperfect' },
+          { txt: 'No beberé alcohol.', eng: 'I will not drink alcohol.', tense: 'future' }
+        ]
+      },
       a('grande', 'grande', 'Big', 'quantity', 'pequeño', 'Small', 'Size.', 'Casa grande.', 'Big house.', 'Perro grande.', 'Big dog.', 'Casa: House. Perro: Dog.'),
       a('pequeño', 'pequeño', 'Small', 'quantity', 'grande', 'Big', 'Size.', 'Gato pequeño.', 'Small cat.', 'Coche pequeño.', 'Small car.', 'Gato: Cat. Coche: Car.'),
       a('bueno', 'bueno', 'Good', 'feelings', 'malo', 'Bad', 'Quality.', 'Buen día.', 'Good day.', 'Es bueno.', 'It is good.', 'Día: Day.'),
@@ -98,65 +171,70 @@ export const VOCABULARY_DATA: DayPack[] = [
         ...v('querer', 'querer', 'To want', 'feelings', 'Desire/Love.', 'Quiero café.', 'I want coffee.', 'Te quiero.', 'I love you.', 'Café: Coffee.', 'quiero, quieres, quiere, queremos, queréis, quieren', false),
         tense_forms: { 
           past: "quise, quisiste, quiso, quisimos, quisisteis, quisieron", 
+          imperfect: "quería, querías, quería, queríamos, queríais, querían",
           future: "querré, querrás, querrá, querremos, querréis, querrán" 
         },
         examples: [
           { txt: 'Quiero café.', eng: 'I want coffee.', tense: 'present' },
-          { txt: 'Quise ir, pero no pude.', eng: 'I wanted to go, but couldn\'t.', tense: 'past' },
-          { txt: 'Siempre te querré.', eng: 'I will always love you.', tense: 'future' },
-          { txt: 'Te quiero.', eng: 'I love you.', tense: 'present' }
+          { txt: 'Quise ir, pero no pude.', eng: 'I tried to go (Wanted and tried), but couldn\'t.', tense: 'past' },
+          { txt: 'Yo quería ser piloto.', eng: 'I wanted to be a pilot (Desire).', tense: 'imperfect' },
+          { txt: 'Siempre te querré.', eng: 'I will always love you.', tense: 'future' }
         ]
       },
       {
         ...v('poder', 'poder', 'Can/To be able', 'grammar', 'Ability.', 'Puedo ir.', 'I can go.', '¿Puedes hablar?', 'Can you speak?', 'Ir: To go.', 'puedo, puedes, puede, podemos, podéis, pueden', false),
         tense_forms: { 
           past: "pude, pudiste, pudo, pudimos, pudisteis, pudieron", 
+          imperfect: "podía, podías, podía, podíamos, podíais, podían",
           future: "podré, podrás, podrá, podremos, podréis, podrán" 
         },
         examples: [
           { txt: 'Puedo ir.', eng: 'I can go.', tense: 'present' },
-          { txt: 'No pude dormir.', eng: 'I could not sleep.', tense: 'past' },
-          { txt: 'Podré hacerlo.', eng: 'I will be able to do it.', tense: 'future' },
-          { txt: '¿Puedes hablar?', eng: 'Can you speak?', tense: 'present' }
+          { txt: 'No pude dormir.', eng: 'I failed to sleep (Tried and failed).', tense: 'past' },
+          { txt: 'Ella podía correr muy rápido.', eng: 'She was able to run very fast (General ability).', tense: 'imperfect' },
+          { txt: 'Podré hacerlo.', eng: 'I will be able to do it.', tense: 'future' }
         ]
       },
       {
         ...v('ir', 'ir', 'To go', 'travel', 'Movement away.', 'Voy a casa.', 'I go home.', 'Vamos hoy.', 'We go today.', 'Casa: House.', 'voy, vas, va, vamos, vais, van', false),
         tense_forms: { 
           past: "fui, fuiste, fue, fuimos, fuisteis, fueron", 
+          imperfect: "iba, ibas, iba, íbamos, ibais, iban",
           future: "iré, irás, irá, iremos, iréis, irán" 
         },
         examples: [
           { txt: 'Voy a casa.', eng: 'I go home.', tense: 'present' },
-          { txt: 'Fui a Madrid ayer.', eng: 'I went to Madrid yesterday.', tense: 'past' },
-          { txt: 'Iré contigo.', eng: 'I will go with you.', tense: 'future' },
-          { txt: 'Vamos hoy.', eng: 'We go today.', tense: 'present' }
+          { txt: 'Fui a Madrid ayer.', eng: 'I went to Madrid yesterday (Trip done).', tense: 'past' },
+          { txt: 'Yo iba al parque todos los domingos.', eng: 'I used to go to the park every Sunday.', tense: 'imperfect' },
+          { txt: 'Iré contigo.', eng: 'I will go with you.', tense: 'future' }
         ]
       },
       {
         ...v('venir', 'venir', 'To come', 'travel', 'Movement toward.', 'Vengo ahora.', 'I come now.', '¿Vienes?', 'Are you coming?', 'Ahora: Now.', 'vengo, vienes, viene, venimos, venís, vienen', false),
         tense_forms: { 
           past: "vine, viniste, vino, vinimos, vinisteis, vinieron", 
+          imperfect: "venía, venías, venía, veníamos, veníais, venían",
           future: "vendré, vendrás, vendrá, vendremos, vendréis, vendrán" 
         },
         examples: [
           { txt: 'Vengo ahora.', eng: 'I come now.', tense: 'present' },
-          { txt: 'El tren vino tarde.', eng: 'The train came late.', tense: 'past' },
-          { txt: 'Vendré mañana.', eng: 'I will come tomorrow.', tense: 'future' },
-          { txt: '¿Vienes a la fiesta?', eng: 'Are you coming to the party?', tense: 'present' }
+          { txt: 'El tren vino tarde.', eng: 'The train came late (Arrival).', tense: 'past' },
+          { txt: 'Ella venía a visitarme.', eng: 'She was coming to visit me (Process).', tense: 'imperfect' },
+          { txt: 'Vendré mañana.', eng: 'I will come tomorrow.', tense: 'future' }
         ]
       },
       {
         ...v('traer', 'traer', 'To bring', 'daily', 'Bringing here.', 'Traigo la llave.', 'I bring the key.', '¿Qué traes?', 'What do you bring?', 'Llave: Key.', 'traigo, traes, trae, traemos, traéis, traen', false),
         tense_forms: { 
           past: "traje, trajiste, trajo, trajimos, trajisteis, trajeron", 
+          imperfect: "traía, traías, traía, traíamos, traíais, traían",
           future: "traeré, traerás, traerá, traeremos, traeréis, traerán" 
         },
         examples: [
           { txt: 'Traigo comida.', eng: 'I bring food.', tense: 'present' },
-          { txt: 'Traje un regalo.', eng: 'I brought a gift.', tense: 'past' },
-          { txt: 'No traeré nada.', eng: 'I will not bring anything.', tense: 'future' },
-          { txt: '¿Qué traes?', eng: 'What do you bring?', tense: 'present' }
+          { txt: 'Traje un regalo.', eng: 'I brought a gift (Completed).', tense: 'past' },
+          { txt: 'Él siempre traía flores.', eng: 'He always used to bring flowers.', tense: 'imperfect' },
+          { txt: 'No traeré nada.', eng: 'I will not bring anything.', tense: 'future' }
         ]
       },
       v('llevar', 'llevar', 'To take/wear', 'daily', 'Taking there.', 'Llevo mi bolso.', 'I carry my bag.', 'Lleva ropa azul.', 'He wears blue clothes.', 'Bolso: Bag. Ropa: Clothes.', undefined, true),
@@ -164,26 +242,28 @@ export const VOCABULARY_DATA: DayPack[] = [
         ...v('saber', 'saber', 'To know (Fact)', 'grammar', 'Information.', 'Sé tu nombre.', 'I know your name.', 'No sé nada.', 'I know nothing.', 'Nombre: Name.', 'sé, sabes, sabe, sabemos, sabéis, saben', false, N_SABER_CONOCER),
         tense_forms: { 
           past: "supe, supiste, supo, supimos, supisteis, supieron", 
+          imperfect: "sabía, sabías, sabía, sabíamos, sabíais, sabían",
           future: "sabré, sabrás, sabrá, sabremos, sabréis, sabrán" 
         },
         examples: [
           { txt: 'Sé tu nombre.', eng: 'I know your name.', tense: 'present' },
           { txt: 'Supe la verdad.', eng: 'I found out (knew) the truth.', tense: 'past' },
-          { txt: 'Nadie lo sabrá.', eng: 'No one will know it.', tense: 'future' },
-          { txt: 'No sé nada.', eng: 'I know nothing.', tense: 'present' }
+          { txt: 'Yo no sabía eso.', eng: 'I didn\'t know that (State of mind).', tense: 'imperfect' },
+          { txt: 'Nadie lo sabrá.', eng: 'No one will know it.', tense: 'future' }
         ]
       },
       {
         ...v('conocer', 'conocer', 'To know (People)', 'social', 'Familiarity.', 'Conozco a Juan.', 'I know Juan.', '¿Conoces Madrid?', 'Do you know Madrid?', 'Madrid: City.', 'conozco, conoces, conoce, conocemos, conocéis, conocen', false, N_SABER_CONOCER),
         tense_forms: { 
           past: "conocí, conociste, conoció, conocimos, conocisteis, conocieron", 
+          imperfect: "conocía, conocías, conocía, conocíamos, conocíais, conocían",
           future: "conoceré, conocerás, conocerá, conoceremos, conoceréis, conocerán" 
         },
         examples: [
           { txt: 'Conozco a Juan.', eng: 'I know Juan.', tense: 'present' },
-          { txt: 'Conocí a tu hermana.', eng: 'I met (got to know) your sister.', tense: 'past' },
-          { txt: 'Conocerás lugares nuevos.', eng: 'You will know new places.', tense: 'future' },
-          { txt: '¿Conoces Madrid?', eng: 'Do you know Madrid?', tense: 'present' }
+          { txt: 'Conocí a tu hermana.', eng: 'I met your sister (First time).', tense: 'past' },
+          { txt: 'Yo conocía bien la ciudad.', eng: 'I knew the city well (Familiarity).', tense: 'imperfect' },
+          { txt: 'Conocerás lugares nuevos.', eng: 'You will know new places.', tense: 'future' }
         ]
       },
       v('preferir', 'preferir', 'To prefer', 'feelings', 'Preference.', 'Prefiero el té.', 'I prefer tea.', '¿Qué prefieres?', 'What do you prefer?', 'Té: Tea.', 'prefiero, prefieres, prefiere, preferimos, preferís, prefieren', false),
@@ -204,16 +284,86 @@ export const VOCABULARY_DATA: DayPack[] = [
     id: 'day3',
     title: 'Routine & Habits',
     words: [
-      v('despertarse', 'despertarse', 'To wake up', 'daily', 'Ending sleep.', 'Me despierto.', 'I wake up.', '¿Te despiertas?', 'Do you wake up?', 'Note: Stem changes e-ie.', 'me despierto, te despiertas, se despierta, nos despertamos, os despertáis, se despiertan', false),
-      v('levantarse', 'levantarse', 'To get up', 'daily', 'Leaving bed.', 'Me levanto tarde.', 'I get up late.', 'Juan se levanta.', 'Juan gets up.', 'Tarde: Late.', undefined, true),
-      v('ducharse', 'ducharse', 'To shower', 'daily', 'Cleaning body.', 'Me ducho hoy.', 'I shower today.', '¿Te duchas?', 'Do you shower?', 'Hoy: Today.', undefined, true),
-      v('lavarse', 'lavarse', 'To wash', 'daily', 'Cleaning parts.', 'Me lavo las manos.', 'I wash my hands.', 'Se lava.', 'He washes.', 'Manos: Hands.', undefined, true),
-      v('vestirse', 'vestirse', 'To dress', 'daily', 'Putting on clothes.', 'Me visto ahora.', 'I dress now.', '¿Te vistes?', 'Are you dressing?', 'Note: Stem changes e-i.', 'me visto, te vistes, se viste, nos vestimos, os vestís, se visten', false),
-      v('desayunar', 'desayunar', 'To have breakfast', 'food', 'First meal.', 'Desayuno café.', 'I have coffee for breakfast.', '¿Qué desayunas?', 'What do you breakfast?', 'Café: Coffee.', undefined, true),
-      v('almorzar', 'almorzar', 'To have lunch', 'food', 'Midday meal.', 'Almuerzo arroz.', 'I lunch rice.', 'Juan almuerza.', 'Juan lunches.', 'Arroz: Rice.', 'almuerzo, almuerzas, almuerza, almorzamos, almorzáis, almuerzan', false),
-      v('cenar', 'cenar', 'To have dinner', 'food', 'Night meal.', 'Ceno sopa.', 'I dinner soup.', 'Cenamos juntos.', 'We dinner together.', 'Sopa: Soup.', undefined, true),
-      v('salir', 'salir', 'To go out', 'travel', 'Leaving a place.', 'Salgo de casa.', 'I leave the house.', 'Juan sale hoy.', 'Juan goes out today.', 'Casa: House.', 'salgo, sales, sale, salimos, salís, salen', false),
-      v('volver', 'volver', 'To return', 'travel', 'Coming back.', 'Vuelvo tarde.', 'I return late.', 'Vuelven mañana.', 'They return tomorrow.', 'Tarde: Late.', 'vuelvo, vuelves, vuelve, volvemos, volvéis, vuelven', false),
+      {
+        ...v('despertarse', 'despertarse', 'To wake up', 'daily', 'Ending sleep.', 'Me despierto.', 'I wake up.', '¿Te despiertas?', 'Do you wake up?', 'Note: Stem changes e-ie.', 'me despierto, te despiertas, se despierta, nos despertamos, os despertáis, se despiertan', false),
+        tense_forms: {
+          past: "me desperté, te despertaste, se despertó, nos despertamos, os despertasteis, se despertaron",
+          imperfect: "me despertaba, te despertabas, se despertaba, nos despertábamos, os despertabais, se despertaban",
+          future: "me despertaré, te despertarás, se despertará, nos despertaremos, os despertaréis, se despertarán"
+        }
+      },
+      {
+        ...v('levantarse', 'levantarse', 'To get up', 'daily', 'Leaving bed.', 'Me levanto tarde.', 'I get up late.', 'Juan se levanta.', 'Juan gets up.', 'Tarde: Late.', undefined, true),
+        tense_forms: {
+          past: "me levanté, te levantaste, se levantó, nos levantamos, os levantasteis, se levantaron",
+          imperfect: "me levantaba, te levantabas, se levantaba, nos levantábamos, os levantabais, se levantaban",
+          future: "me levantaré, te levantarás, se levantará, nos levantaremos, os levantaréis, se levantarán"
+        }
+      },
+      {
+        ...v('ducharse', 'ducharse', 'To shower', 'daily', 'Cleaning body.', 'Me ducho hoy.', 'I shower today.', '¿Te duchas?', 'Do you shower?', 'Hoy: Today.', undefined, true),
+        tense_forms: {
+          past: "me duché, te duchaste, se duchó, nos duchamos, os duchasteis, se ducharon",
+          imperfect: "me duchaba, te duchabas, se duchaba, nos duchábamos, os duchabais, se duchaban",
+          future: "me ducharé, te ducharás, se duchará, nos ducharemos, os ducharéis, se ducharán"
+        }
+      },
+      {
+        ...v('lavarse', 'lavarse', 'To wash', 'daily', 'Cleaning parts.', 'Me lavo las manos.', 'I wash my hands.', 'Se lava.', 'He washes.', 'Manos: Hands.', undefined, true),
+        tense_forms: {
+          past: "me lavé, te lavaste, se lavó, nos lavamos, os lavasteis, se lavaron",
+          imperfect: "me lavaba, te lavabas, se lavaba, nos lavábamos, os lavabais, se lavaban",
+          future: "me lavaré, te lavarás, se lavará, nos lavaremos, os lavaréis, se lavarán"
+        }
+      },
+      {
+        ...v('vestirse', 'vestirse', 'To dress', 'daily', 'Putting on clothes.', 'Me visto ahora.', 'I dress now.', '¿Te vistes?', 'Are you dressing?', 'Note: Stem changes e-i.', 'me visto, te vistes, se viste, nos vestimos, os vestís, se visten', false),
+        tense_forms: {
+          past: "me vestí, te vestiste, se vistió, nos vestimos, os vestisteis, se vistieron",
+          imperfect: "me vestía, te vestías, se vestía, nos vestíamos, os vestíais, se vestían",
+          future: "me vestiré, te vestirás, se vestirá, nos vestiremos, os vestiréis, se vestirán"
+        }
+      },
+      {
+        ...v('desayunar', 'desayunar', 'To have breakfast', 'food', 'First meal.', 'Desayuno café.', 'I have coffee for breakfast.', '¿Qué desayunas?', 'What do you breakfast?', 'Café: Coffee.', undefined, true),
+        tense_forms: {
+          past: "desayuné, desayunaste, desayunó, desayunamos, desayunasteis, desayunaron",
+          imperfect: "desayunaba, desayunabas, desayunaba, desayunábamos, desayunabais, desayunaban",
+          future: "desayunaré, desayunarás, desayunará, desayunaremos, desayunaréis, desayunarán"
+        }
+      },
+      {
+        ...v('almorzar', 'almorzar', 'To have lunch', 'food', 'Midday meal.', 'Almuerzo arroz.', 'I lunch rice.', 'Juan almuerza.', 'Juan lunches.', 'Arroz: Rice.', 'almuerzo, almuerzas, almuerza, almorzamos, almorzáis, almuerzan', false),
+        tense_forms: {
+          past: "almorcé, almorzaste, almorzó, almorzamos, almorzasteis, almorzaron",
+          imperfect: "almorzaba, almorzabas, almorzaba, almorzábamos, almorzabais, almorzaban",
+          future: "almorzaré, almorzarás, almorzará, almorzaremos, almorzaréis, almorzarán"
+        }
+      },
+      {
+        ...v('cenar', 'cenar', 'To have dinner', 'food', 'Night meal.', 'Ceno sopa.', 'I dinner soup.', 'Cenamos juntos.', 'We dinner together.', 'Sopa: Soup.', undefined, true),
+        tense_forms: {
+          past: "cené, cenaste, cenó, cenamos, cenasteis, cenaron",
+          imperfect: "cenaba, cenabas, cenaba, cenábamos, cenabais, cenaban",
+          future: "cenaré, cenarás, cenará, cenaremos, cenaréis, cenarán"
+        }
+      },
+      {
+        ...v('salir', 'salir', 'To go out', 'travel', 'Leaving a place.', 'Salgo de casa.', 'I leave the house.', 'Juan sale hoy.', 'Juan goes out today.', 'Casa: House.', 'salgo, sales, sale, salimos, salís, salen', false),
+        tense_forms: {
+          past: "salí, saliste, salió, salimos, salisteis, salieron",
+          imperfect: "salía, salías, salía, salíamos, salíais, salían",
+          future: "saldré, saldrás, saldrá, saldremos, saldréis, saldrán"
+        }
+      },
+      {
+        ...v('volver', 'volver', 'To return', 'travel', 'Coming back.', 'Vuelvo tarde.', 'I return late.', 'Vuelven mañana.', 'They return tomorrow.', 'Tarde: Late.', 'vuelvo, vuelves, vuelve, volvemos, volvéis, vuelven', false),
+        tense_forms: {
+          past: "volví, volviste, volvió, volvimos, volvisteis, volvieron",
+          imperfect: "volvía, volvías, volvía, volvíamos, volvíais, volvían",
+          future: "volveré, volverás, volverá, volveremos, volveréis, volverán"
+        }
+      },
       a('limpio', 'limpio', 'Clean', 'daily', 'sucio', 'Dirty', 'State.', 'Coche limpio.', 'Clean car.', 'Agua limpia.', 'Clean water.', 'Coche: Car.'),
       a('sucio', 'sucio', 'Dirty', 'daily', 'limpio', 'Clean', 'State.', 'Ropa sucia.', 'Dirty clothes.', 'Suelo sucio.', 'Dirty floor.', 'Ropa: Clothes.'),
       a('rápido', 'rápido', 'Fast', 'travel', 'lento', 'Slow', 'Speed.', 'Coche rápido.', 'Fast car.', 'Es rápido.', 'It is fast.', 'Coche: Car.'),
@@ -232,7 +382,11 @@ export const VOCABULARY_DATA: DayPack[] = [
     words: [
       {
         ...v('decir', 'decir', 'To say', 'grammar', 'Expression.', 'Digo la verdad.', 'I say the truth.', 'Él dice hola.', 'He says hello.', 'Verdad: Truth.', 'digo, dices, dice, decimos, decís, dicen', false, N_HABLAR_DECIR),
-        tense_forms: { past: 'dije', future: 'diré' },
+        tense_forms: { 
+          past: "dije, dijiste, dijo, dijimos, dijisteis, dijeron", 
+          imperfect: "decía, decías, decía, decíamos, decíais, decían",
+          future: "diré, dirás, dirá, diremos, diréis, dirán" 
+        },
         examples: [
           { txt: 'Digo la verdad.', eng: 'I say the truth.', tense: 'present' },
           { txt: 'Dije que no.', eng: 'I said no.', tense: 'past' },
@@ -240,17 +394,78 @@ export const VOCABULARY_DATA: DayPack[] = [
           { txt: 'Él dice hola.', eng: 'He says hello.', tense: 'present' }
         ]
       },
-      v('hablar', 'hablar', 'To speak', 'social', 'Conversation.', 'Hablo español.', 'I speak Spanish.', 'Ellos hablan.', 'They speak.', 'Español: Spanish.', undefined, true, N_HABLAR_DECIR),
-      v('leer', 'leer', 'To read', 'work', 'Reading.', 'Leo un libro.', 'I read a book.', '¿Qué lees?', 'What do you read?', 'Libro: Book.', 'leo, lees, lee, leemos, leéis, leen', true),
-      v('escribir', 'escribir', 'To write', 'work', 'Writing.', 'Escribo cartas.', 'I write letters.', 'Él escribe.', 'He writes.', 'Cartas: Letters.', undefined, true),
-      v('llamar_v', 'llamar', 'To call', 'social', 'Phone or shout.', 'Llamo a mamá.', 'I call mom.', '¿Me llamas?', 'Are you calling me?', 'Mamá: Mom.', undefined, true),
-      v('enviar', 'enviar', 'To send', 'work', 'Dispatch.', 'Envío un email.', 'I send an email.', 'Ellos envían.', 'They send.', 'Email: Email.', 'envío, envías, envía, enviamos, enviáis, envían', true),
-      v('recibir', 'recibir', 'To receive', 'work', 'Accepting.', 'Recibo el paquete.', 'I receive the package.', '¿Recibes esto?', 'Do you receive this?', 'Paquete: Package.', undefined, true),
-      v('preguntar', 'preguntar', 'To ask', 'social', 'Inquiry.', 'Pregunto hoy.', 'I ask today.', 'Juan pregunta.', 'Juan asks.', 'Hoy: Today.', undefined, true, N_PEDIR_PREGUNTAR),
-      v('responder', 'responder', 'To answer', 'social', 'Reply.', 'Respondo ahora.', 'I answer now.', 'Ella responde.', 'She answers.', 'Ahora: Now.', undefined, true),
+      {
+        ...v('hablar', 'hablar', 'To speak', 'social', 'Conversation.', 'Hablo español.', 'I speak Spanish.', 'Ellos hablan.', 'They speak.', 'Español: Spanish.', undefined, true, N_HABLAR_DECIR),
+        tense_forms: {
+          past: "hablé, hablaste, habló, hablamos, hablasteis, hablaron",
+          imperfect: "hablaba, hablabas, hablaba, hablábamos, hablabais, hablaban",
+          future: "hablaré, hablarás, hablará, hablaremos, hablaréis, hablarán"
+        }
+      },
+      {
+        ...v('leer', 'leer', 'To read', 'work', 'Reading.', 'Leo un libro.', 'I read a book.', '¿Qué lees?', 'What do you read?', 'Libro: Book.', 'leo, lees, lee, leemos, leéis, leen', true),
+        tense_forms: {
+          past: "leí, leíste, leyó, leímos, leísteis, leyeron",
+          imperfect: "leía, leías, leía, leíamos, leíais, leían",
+          future: "leeré, leerás, leerá, leeremos, leeréis, leerán"
+        }
+      },
+      {
+        ...v('escribir', 'escribir', 'To write', 'work', 'Writing.', 'Escribo cartas.', 'I write letters.', 'Él escribe.', 'He writes.', 'Cartas: Letters.', undefined, true),
+        tense_forms: {
+          past: "escribí, escribiste, escribió, escribimos, escribisteis, escribieron",
+          imperfect: "escribía, escribías, escribía, escribíamos, escribíais, escribían",
+          future: "escribiré, escribirás, escribirá, escribiremos, escribiréis, escribirán"
+        }
+      },
+      {
+        ...v('llamar_v', 'llamar', 'To call', 'social', 'Phone or shout.', 'Llamo a mamá.', 'I call mom.', '¿Me llamas?', 'Are you calling me?', 'Mamá: Mom.', undefined, true),
+        tense_forms: {
+          past: "llamé, llamaste, llamó, llamamos, llamasteis, llamaron",
+          imperfect: "llamaba, llamabas, llamaba, llamábamos, llamabais, llamaban",
+          future: "llamaré, llamarás, llamará, llamaremos, llamaréis, llamarán"
+        }
+      },
+      {
+        ...v('enviar', 'enviar', 'To send', 'work', 'Dispatch.', 'Envío un email.', 'I send an email.', 'Ellos envían.', 'They send.', 'Email: Email.', 'envío, envías, envía, enviamos, enviáis, envían', true),
+        tense_forms: {
+          past: "envié, enviaste, envió, enviamos, enviasteis, enviaron",
+          imperfect: "enviaba, enviabas, enviaba, enviábamos, enviabais, enviaban",
+          future: "enviaré, enviarás, enviará, enviaremos, enviaréis, enviarán"
+        }
+      },
+      {
+        ...v('recibir', 'recibir', 'To receive', 'work', 'Accepting.', 'Recibo el paquete.', 'I receive the package.', '¿Recibes esto?', 'Do you receive this?', 'Paquete: Package.', undefined, true),
+        tense_forms: {
+          past: "recibí, recibiste, recibió, recibimos, recibisteis, recibieron",
+          imperfect: "recibía, recibías, recibía, recibíamos, recibíais, recibían",
+          future: "recibiré, recibirás, recibirá, recibiremos, recibiréis, recibirán"
+        }
+      },
+      {
+        ...v('preguntar', 'preguntar', 'To ask', 'social', 'Inquiry.', 'Pregunto hoy.', 'I ask today.', 'Juan pregunta.', 'Juan asks.', 'Hoy: Today.', undefined, true, N_PEDIR_PREGUNTAR),
+        tense_forms: {
+          past: "pregunté, preguntaste, preguntó, preguntamos, preguntasteis, preguntaron",
+          imperfect: "preguntaba, preguntabas, preguntaba, preguntábamos, preguntabais, preguntaban",
+          future: "preguntaré, preguntarás, preguntará, preguntaremos, preguntaréis, preguntarán"
+        }
+      },
+      {
+        ...v('responder', 'responder', 'To answer', 'social', 'Reply.', 'Respondo ahora.', 'I answer now.', 'Ella responde.', 'She answers.', 'Ahora: Now.', undefined, true),
+        tense_forms: {
+          past: "respondí, respondiste, respondió, respondimos, respondisteis, respondieron",
+          imperfect: "respondía, respondías, respondía, respondíamos, respondíais, respondían",
+          future: "responderé, responderás, responderá, responderemos, responderéis, responderán"
+        }
+      },
       {
         ...v('escuchar', 'escuchar', 'To listen', 'social', 'Hearing intent.', 'Escucho música.', 'I listen to music.', '¿Me escuchas?', 'Do you listen to me?', 'Música: Music.', undefined, true),
-        nuance: { type: 'warning', label: 'Grammar Trap', note: 'Includes "to". Never say "Escuchar a música". Just "Escuchar música".' }
+        nuance: { type: 'warning', label: 'Grammar Trap', note: 'Includes "to". Never say "Escuchar a música". Just "Escuchar música".' },
+        tense_forms: {
+          past: "escuché, escuchaste, escuchó, escuchamos, escuchasteis, escucharon",
+          imperfect: "escuchaba, escuchabas, escuchaba, escuchábamos, escuchabais, escuchaban",
+          future: "escucharé, escucharás, escuchará, escucharemos, escucharéis, escucharán"
+        }
       },
       a('fácil', 'fácil', 'Easy', 'work', 'difícil', 'Difficult', 'Quality.', 'Tarea fácil.', 'Easy task.', 'Es fácil.', 'It is easy.', 'Tarea: Task.'),
       a('difícil', 'difícil', 'Difficult', 'work', 'fácil', 'Easy', 'Quality.', 'Examen difícil.', 'Difficult exam.', 'Muy difícil.', 'Very difficult.', 'Examen: Exam.'),
@@ -270,7 +485,11 @@ export const VOCABULARY_DATA: DayPack[] = [
     words: [
       {
         ...v('ver_v', 'ver', 'To see', 'body', 'Sight.', 'Veo el sol.', 'I see the sun.', 'Juan ve todo.', 'Juan sees everything.', 'Sol: Sun.', 'veo, ves, ve, vemos, veis, ven', false, N_VER_MIRAR),
-        tense_forms: { past: 'vi', future: 'veré' },
+        tense_forms: { 
+          past: 'vi, viste, vio, vimos, visteis, vieron', 
+          imperfect: 'veía, veías, veía, veíamos, veíais, veían',
+          future: 'veré, verás, verá, veremos, veréis, verán' 
+        },
         examples: [
           { txt: 'Veo el sol.', eng: 'I see the sun.', tense: 'present' },
           { txt: 'Te vi ayer.', eng: 'I saw you yesterday.', tense: 'past' },
@@ -278,15 +497,78 @@ export const VOCABULARY_DATA: DayPack[] = [
           { txt: 'Juan ve todo.', eng: 'Juan sees everything.', tense: 'present' }
         ]
       },
-      v('mirar', 'mirar', 'To look/watch', 'body', 'Intentional sight.', 'Miro la tele.', 'I watch TV.', '¿Qué miras?', 'What are you looking at?', 'Tele: TV.', undefined, true, N_VER_MIRAR),
-      v('oír', 'oír', 'To hear', 'body', 'Sound.', 'Oigo un ruido.', 'I hear a noise.', '¿Me oyes?', 'Do you hear me?', 'Ruido: Noise.', 'oigo, oyes, oye, oímos, oís, oyen', false),
-      v('sentir', 'sentir', 'To feel', 'feelings', 'Sensation.', 'Siento calor.', 'I feel heat.', '¿Qué sientes?', 'What do you feel?', 'Calor: Heat.', 'siento, sientes, siente, sentimos, sentís, sienten', false),
-      v('gustar', 'gustar', 'To like', 'feelings', 'Pleasure.', 'Me gusta.', 'I like it.', 'Nos gusta.', 'We like it.', 'Note: Used with indirect object pronouns.', 'gusta, gustan (usually)', false),
-      v('encantar', 'encantar', 'To love/enchant', 'feelings', 'Strong liking.', 'Me encanta.', 'I love it.', 'Te encanta.', 'You love it.', 'Note: Similar to gustar.', 'encanta, encanta (usually)', false),
-      v('amar', 'amar', 'To love', 'feelings', 'Deep love.', 'Amo a Ana.', 'I love Ana.', 'Nos amamos.', 'We love each other.', 'Ana: Name.', undefined, true),
-      v('odiar', 'odiar', 'To hate', 'feelings', 'Dislike.', 'Odio el frío.', 'I hate the cold.', 'Ellos odian.', 'They hate.', 'Frío: Cold.', undefined, true),
-      v('reír', 'reír', 'To laugh', 'feelings', 'Mirth.', 'Río mucho.', 'I laugh a lot.', 'Juan ríe.', 'Juan laughs.', 'Mucho: A lot.', 'río, ríes, ríe, reímos, reís, ríen', false),
-      v('llorar', 'llorar', 'To cry', 'feelings', 'Sadness.', 'Lloro hoy.', 'I cry today.', 'No llores.', "Don't cry.", 'Hoy: Today.', undefined, true),
+      {
+        ...v('mirar', 'mirar', 'To look/watch', 'body', 'Intentional sight.', 'Miro la tele.', 'I watch TV.', '¿Qué miras?', 'What are you looking at?', 'Tele: TV.', undefined, true, N_VER_MIRAR),
+        tense_forms: {
+          past: "miré, miraste, miró, miramos, mirasteis, miraron",
+          imperfect: "miraba, mirabas, miraba, mirábamos, mirabais, miraban",
+          future: "miraré, mirarás, mirará, miraremos, miraréis, mirarán"
+        }
+      },
+      {
+        ...v('oír', 'oír', 'To hear', 'body', 'Sound.', 'Oigo un ruido.', 'I hear a noise.', '¿Me oyes?', 'Do you hear me?', 'Ruido: Noise.', 'oigo, oyes, oye, oímos, oís, oyen', false),
+        tense_forms: {
+          past: "oí, oíste, oyó, oímos, oísteis, oyeron",
+          imperfect: "oía, oías, oía, oíamos, oíais, oían",
+          future: "oiré, oirás, oirá, oiremos, oiréis, oirán"
+        }
+      },
+      {
+        ...v('sentir', 'sentir', 'To feel', 'feelings', 'Sensation.', 'Siento calor.', 'I feel heat.', '¿Qué sientes?', 'What do you feel?', 'Calor: Heat.', 'siento, sientes, siente, sentimos, sentís, sienten', false),
+        tense_forms: {
+          past: "sentí, sentiste, sintió, sentimos, sentisteis, sintieron",
+          imperfect: "sentía, sentías, sentía, sentíamos, sentíais, sentían",
+          future: "sentiré, sentirás, sentirá, sentiremos, sentiréis, sentirán"
+        }
+      },
+      {
+        ...v('gustar', 'gustar', 'To like', 'feelings', 'Pleasure.', 'Me gusta.', 'I like it.', 'Nos gusta.', 'We like it.', 'Note: Used with indirect object pronouns.', 'gusta, gustan (usually)', false),
+        tense_forms: {
+          past: "gustó, gustaron",
+          imperfect: "gustaba, gustaban",
+          future: "gustará, gustarán"
+        }
+      },
+      {
+        ...v('encantar', 'encantar', 'To love/enchant', 'feelings', 'Strong liking.', 'Me encanta.', 'I love it.', 'Te encanta.', 'You love it.', 'Note: Similar to gustar.', 'encanta, encanta (usually)', false),
+        tense_forms: {
+          past: "encantó, encantaron",
+          imperfect: "encantaba, encantaban",
+          future: "encantará, encantarán"
+        }
+      },
+      {
+        ...v('amar', 'amar', 'To love', 'feelings', 'Deep love.', 'Amo a Ana.', 'I love Ana.', 'Nos amamos.', 'We love each other.', 'Ana: Name.', undefined, true),
+        tense_forms: {
+          past: "amé, amaste, amó, amamos, amasteis, amaron",
+          imperfect: "amaba, amabas, amaba, amábamos, amabais, amaban",
+          future: "amaré, amarás, amará, amaremos, amaréis, amarán"
+        }
+      },
+      {
+        ...v('odiar', 'odiar', 'To hate', 'feelings', 'Dislike.', 'Odio el frío.', 'I hate the cold.', 'Ellos odian.', 'They hate.', 'Frío: Cold.', undefined, true),
+        tense_forms: {
+          past: "odié, odiaste, odió, odiamos, odiasteis, odiaron",
+          imperfect: "odiaba, odiabas, odiaba, odiábamos, odiabais, odiaban",
+          future: "odiaré, odiarás, odiará, odiaremos, odiaréis, odiarán"
+        }
+      },
+      {
+        ...v('reír', 'reír', 'To laugh', 'feelings', 'Mirth.', 'Río mucho.', 'I laugh a lot.', 'Juan ríe.', 'Juan laughs.', 'Mucho: A lot.', 'río, ríes, ríe, reímos, reís, ríen', false),
+        tense_forms: {
+          past: "reí, reíste, rió, reímos, reísteis, rieron",
+          imperfect: "reía, reías, reía, reíamos, reíais, reían",
+          future: "reiré, reirás, reirá, reiremos, reiréis, reirán"
+        }
+      },
+      {
+        ...v('llorar', 'llorar', 'To cry', 'feelings', 'Sadness.', 'Lloro hoy.', 'I cry today.', 'No llores.', "Don't cry.", 'Hoy: Today.', undefined, true),
+        tense_forms: {
+          past: "lloré, lloraste, lloró, lloramos, llorasteis, lloraron",
+          imperfect: "lloraba, llorabas, lloraba, llorábamos, llorabais, lloraban",
+          future: "lloraré, llorarás, llorará, lloraremos, lloraréis, llorarán"
+        }
+      },
       a('feliz', 'feliz', 'Happy', 'feelings', 'triste', 'Sad', 'Mood.', 'Soy feliz.', 'I am happy.', 'Gente feliz.', 'Happy people.', 'Gente: People.'),
       a('triste', 'triste', 'Sad', 'feelings', 'feliz', 'Happy', 'Mood.', 'Estoy triste.', 'I am sad.', 'Día triste.', 'Sad day.', 'Día: Day.'),
       a('alegre', 'alegre', 'Cheerful', 'feelings', 'triste', 'Sad', 'Trait.', 'Hombre alegre.', 'Cheerful man.', 'Es muy alegre.', 'It is very cheerful.', 'Hombre: Man.'),
@@ -337,7 +619,10 @@ export const VOCABULARY_DATA: DayPack[] = [
     words: [
       {
         ...v('hacer_v', 'hacer', 'To do/make', 'daily', 'Action.', 'Hago la comida.', 'I make food.', '¿Qué haces?', 'What are you doing?', 'Comida: Food.', 'hago, haces, hace, hacemos, hacéis, hacen', false),
-        tense_forms: { past: 'hice', future: 'haré' },
+        tense_forms: { 
+          past: 'hice, hiciste, hizo, hicimos, hicisteis, hicieron', 
+          future: 'haré, harás, hará, haremos, haréis, harán' 
+        },
         examples: [
           { txt: 'Hago la comida.', eng: 'I make food.', tense: 'present' },
           { txt: 'Lo hice yo.', eng: 'I did it myself.', tense: 'past' },

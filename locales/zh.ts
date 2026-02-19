@@ -219,6 +219,24 @@ export default {
         "status_streak": "您已坚持练习 {{count}} 天。",
         "enter_btn": "开始训练"
       }
+    },
+    "expansion": {
+      "title": "补给站",
+      "magic_fill": "手气不错",
+      "get_supplies": "收入口袋",
+      "no_items": "箱子空空如也。",
+      "cats": {
+        "all": "全部",
+        "time_traveler": "时间与时态",
+        "citizen": "城市生活",
+        "survivor": "健康与方向",
+        "loot": "日常物品",
+        "storyteller": "讲故事",
+        "debater": "表达观点",
+        "cognates": "易混词/速记",
+        "connector": "连接词",
+        "preposition": "方位"
+      }
     }
   },
   "vocab": {

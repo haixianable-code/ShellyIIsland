@@ -1,9 +1,8 @@
 
-
 import { useMemo } from 'react';
 import { useIslandStore } from '../store/useIslandStore';
 import { Word, SRSData, Blueprint } from '../types';
-import { TODAY_SIMULATED } from '../constants';
+import { getTodayDateString } from '../constants';
 
 const DAILY_GOAL = 15;
 
@@ -12,8 +11,10 @@ export const useSRS = () => {
   const isPremium = store.profile?.is_premium;
   const activeBlueprintId = store.activeBlueprintId;
   
+  // Dynamic date calculation
+  const todayStr = getTodayDateString();
   const getNormalizedDate = (dateStr: string) => new Date(dateStr).setHours(0, 0, 0, 0);
-  const todayTimestamp = getNormalizedDate(TODAY_SIMULATED);
+  const todayTimestamp = getNormalizedDate(todayStr);
 
   const allAvailableWords = useMemo<Word[]>(() => Array.from(store.wordMap.values()), [store.wordMap]);
 

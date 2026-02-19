@@ -1,6 +1,6 @@
 
 import { FeedbackQuality, SRSData } from '../types';
-import { SRS_INTERVALS, TODAY_SIMULATED } from '../constants';
+import { SRS_INTERVALS, getTodayDateString } from '../constants';
 
 /**
  * 升级版核心 SRS 算法 (SM-2 启发式)
@@ -9,7 +9,8 @@ import { SRS_INTERVALS, TODAY_SIMULATED } from '../constants';
 export const calculateNextProgress = (
   currentData: SRSData, 
   quality: FeedbackQuality,
-  baseDate: string = TODAY_SIMULATED
+  // Use dynamic getter for default value to support cross-day usage
+  baseDate: string = getTodayDateString()
 ): SRSData => {
   // 1. 初始化默认值（防空保护）
   let { level, easeFactor = 2.5, failureCount = 0 } = currentData;

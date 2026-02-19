@@ -2,7 +2,7 @@
 export interface WordExample {
   txt: string;
   eng: string;
-  tense?: 'past' | 'present' | 'future';
+  tense?: 'past' | 'present' | 'future' | 'imperfect';
 }
 
 export type FeedbackQuality = 'forgot' | 'hard' | 'good' | 'easy';
@@ -36,7 +36,8 @@ export interface Word {
   blueprintId?: string; 
   // Time Machine Capabilities
   tense_forms?: {
-    past?: string;
+    past?: string;      // Pretérito Indefinido (Snapshot)
+    imperfect?: string; // Pretérito Imperfecto (Movie/Background)
     future?: string;
   };
 }

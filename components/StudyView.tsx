@@ -20,7 +20,7 @@ import {
   Volume2, BookOpen, FastForward,
   RotateCcw, ArrowRight,
   History, Sun, Rocket,
-  Clock
+  Clock, Camera, Film
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -36,12 +36,23 @@ interface StudyViewProps {
 }
 
 type TimeState = 'past' | 'present' | 'future';
+type PastMode = 'snapshot' | 'movie';
 
-const GrammarPocket: React.FC<{ word: Word, timeState: TimeState }> = ({ word, timeState }) => {
+const GrammarPocket: React.FC<{ word: Word, timeState: TimeState, pastMode: PastMode }> = ({ word, timeState, pastMode }) => {
   const { t } = useTranslation();
   const theme = getTypeTheme(word);
-  const conjugationList = word.forms ? word.forms.split(', ') : [];
   const displayTip = t(`vocab.${word.id}.tip`, { defaultValue: word.grammarTip });
+
+  // 1. Determine which string to parse based on Time Machine state AND Past Mode
+  let sourceForms = word.forms; // Default to present
+  if (timeState === 'future') sourceForms = word.tense_forms?.future;
+  if (timeState === 'past') {
+      if (pastMode === 'snapshot') sourceForms = word.tense_forms?.past;
+      if (pastMode === 'movie') sourceForms = word.tense_forms?.imperfect;
+  }
+
+  // 2. Parse the list
+  const conjugationList = sourceForms ? sourceForms.split(', ') : [];
 
   const renderFormText = (text: string | undefined) => {
     if (!text) return <span className="text-slate-300">-</span>;
@@ -57,34 +68,8 @@ const GrammarPocket: React.FC<{ word: Word, timeState: TimeState }> = ({ word, t
     );
   };
 
-  // 1. Time Machine Mode (Past/Future)
-  // If we are not in present tense, we likely don't have the full grid in `word.forms`.
-  // Instead, we show the specific form we have from `tense_forms`.
-  if (timeState !== 'present' && word.tense_forms) {
-      const tenseForm = word.tense_forms[timeState];
-      const tenseLabel = timeState === 'past' ? 'Preterite / Imperfect' : 'Simple Future';
-      const tenseColor = timeState === 'past' ? '#795548' : '#2196f3';
-      const tenseBg = timeState === 'past' ? 'bg-[#d7ccc8]' : 'bg-[#bbdefb]';
-
-      if (tenseForm) {
-        return (
-            <div className={`p-5 rounded-[2rem] mb-6 border-2 border-white shadow-sm flex flex-col items-center text-center transition-all ${tenseBg}`} role="note">
-                <div className="flex items-center gap-2 mb-2 opacity-60">
-                    <Clock size={12} />
-                    <span className="text-[9px] font-black uppercase tracking-widest">{tenseLabel}</span>
-                </div>
-                <div className="bg-white/60 px-6 py-3 rounded-2xl border border-white/50 backdrop-blur-sm">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase mr-2 block mb-1">{t('ui.grammar.yo')}</span>
-                    <span className="text-2xl font-black tracking-tight" style={{ color: tenseColor }}>{tenseForm}</span>
-                </div>
-            </div>
-        );
-      }
-  }
-
-  // 2. Fallback / Standard Note
-  // Robust check: If no forms data, show the tip box instead of an empty grid
-  if (word.type === 'misc' || !word.forms || conjugationList.length === 0) {
+  // 3. Fallback / Standard Note (If not a verb, or if data is missing for this tense)
+  if (word.type === 'misc' || conjugationList.length === 0) {
     return (
       <div className="p-5 rounded-[2rem] border-2 border-dashed border-slate-200 mb-6 bg-white/60" role="note">
         <div className="flex items-center gap-2 mb-2 opacity-50">
@@ -95,15 +80,20 @@ const GrammarPocket: React.FC<{ word: Word, timeState: TimeState }> = ({ word, t
     );
   }
 
-  // 3. Present Tense Grid
+  // 4. Unified Grid Layout (Used for Present, Past, and Future)
   const labels = word.type === 'verb' 
     ? [t('ui.grammar.yo'), t('ui.grammar.tu'), t('ui.grammar.el'), t('ui.grammar.nos'), t('ui.grammar.vos'), t('ui.grammar.ellos')] 
     : [t('ui.grammar.sing'), t('ui.grammar.plur')];
 
+  // Dynamic style for the cards based on time
+  const cardBg = timeState === 'past' ? 'bg-[#d7ccc8]/40 border-[#d7ccc8]' : 
+                 timeState === 'future' ? 'bg-[#bbdefb]/40 border-[#bbdefb]' : 
+                 'bg-white/80 border-slate-100';
+
   return (
     <div className="grid grid-cols-2 gap-2.5 mb-8" aria-label="Word conjugations">
       {labels.map((label, i) => (
-        <div key={label} className="bg-white/80 p-3 rounded-2xl border border-slate-100 flex flex-col items-center shadow-sm">
+        <div key={label} className={`${cardBg} p-3 rounded-2xl border flex flex-col items-center shadow-sm transition-colors duration-500`}>
           <span className="text-[7px] font-bold text-slate-400 uppercase mb-1">{label}</span>
           <span className="text-sm font-black text-[#2d4a47] text-center leading-tight">{renderFormText(conjugationList[i])}</span>
         </div>
@@ -112,17 +102,23 @@ const GrammarPocket: React.FC<{ word: Word, timeState: TimeState }> = ({ word, t
   );
 };
 
-const UsageExamples: React.FC<{ word: Word, timeState: TimeState }> = ({ word, timeState }) => {
+const UsageExamples: React.FC<{ word: Word, timeState: TimeState, pastMode: PastMode }> = ({ word, timeState, pastMode }) => {
   const { t } = useTranslation();
   const theme = getTypeTheme(word);
   
-  // Filter examples based on Time Machine state
+  // Filter examples based on Time Machine state AND Past Mode
   const filteredExamples = word.examples.filter(ex => {
       if (timeState === 'present') return !ex.tense || ex.tense === 'present';
-      return ex.tense === timeState;
+      if (timeState === 'future') return ex.tense === 'future';
+      if (timeState === 'past') {
+          if (pastMode === 'snapshot') return ex.tense === 'past';
+          if (pastMode === 'movie') return ex.tense === 'imperfect';
+      }
+      return false;
   });
 
-  const displayExamples = filteredExamples.length > 0 ? filteredExamples : word.examples.filter(ex => !ex.tense || ex.tense === 'present');
+  // Fallback if no specific tense examples found
+  const displayExamples = filteredExamples.length > 0 ? filteredExamples : [];
 
   const highlightWord = (text: string) => {
     const searchWord = word.s.split(' ')[0].toLowerCase(); 
@@ -143,7 +139,7 @@ const UsageExamples: React.FC<{ word: Word, timeState: TimeState }> = ({ word, t
           <span className="text-[9px] font-black opacity-50 uppercase tracking-widest">{t('ui.study.usage_examples')}</span>
           {timeState !== 'present' && (
               <span className="ml-auto text-[8px] font-black uppercase px-2 py-0.5 rounded-full bg-black/5">
-                  {timeState}
+                  {timeState === 'past' ? (pastMode === 'snapshot' ? 'FUI (Snapshot)' : 'ERA (Movie)') : timeState}
               </span>
           )}
       </div>
@@ -157,7 +153,7 @@ const UsageExamples: React.FC<{ word: Word, timeState: TimeState }> = ({ word, t
         ))
       ) : (
           <div className="text-center py-4 opacity-40 text-xs font-bold">
-              No data for this timeline.
+              No examples available for this specific timeline.
           </div>
       )}
     </div>
@@ -167,50 +163,75 @@ const UsageExamples: React.FC<{ word: Word, timeState: TimeState }> = ({ word, t
 const TimeMachine: React.FC<{ 
     state: TimeState, 
     onChange: (s: TimeState) => void,
-    available: boolean
-}> = ({ state, onChange, available }) => {
+    available: boolean,
+    pastMode: PastMode,
+    onTogglePast: (mode: PastMode) => void,
+    hasImperfect: boolean
+}> = ({ state, onChange, available, pastMode, onTogglePast, hasImperfect }) => {
     if (!available) return null;
 
     return (
-        <div className="flex items-center justify-center gap-2 mb-6 animate-slideUp">
-            <button 
-                onClick={(e) => { e.stopPropagation(); playShaker(); onChange('past'); }}
-                className={`p-3 rounded-2xl border-2 transition-all ${state === 'past' ? 'bg-[#795548] text-white border-[#795548] shadow-md scale-110' : 'bg-white border-[#d7ccc8] text-[#a1887f] hover:bg-[#efebe9]'}`}
-            >
-                <History size={20} />
-            </button>
-            
-            <div className="h-1.5 w-16 bg-slate-200 rounded-full relative overflow-hidden">
-                <div 
-                    className={`absolute top-0 bottom-0 w-1/3 bg-slate-400 rounded-full transition-all duration-300 ${
-                        state === 'past' ? 'left-0 bg-[#795548]' : 
-                        state === 'future' ? 'left-2/3 bg-[#2196f3]' : 'left-1/3 bg-[#ffa600]'
-                    }`} 
-                />
+        <div className="mb-6 animate-slideUp">
+            <div className="flex items-center justify-center gap-2">
+                <button 
+                    onClick={(e) => { e.stopPropagation(); playShaker(); onChange('past'); }}
+                    className={`p-3 rounded-2xl border-2 transition-all ${state === 'past' ? 'bg-[#795548] text-white border-[#795548] shadow-md scale-110' : 'bg-white border-[#d7ccc8] text-[#a1887f] hover:bg-[#efebe9]'}`}
+                >
+                    <History size={20} />
+                </button>
+                
+                <div className="h-1.5 w-16 bg-slate-200 rounded-full relative overflow-hidden">
+                    <div 
+                        className={`absolute top-0 bottom-0 w-1/3 bg-slate-400 rounded-full transition-all duration-300 ${
+                            state === 'past' ? 'left-0 bg-[#795548]' : 
+                            state === 'future' ? 'left-2/3 bg-[#2196f3]' : 'left-1/3 bg-[#ffa600]'
+                        }`} 
+                    />
+                </div>
+
+                <button 
+                    onClick={(e) => { e.stopPropagation(); playClick(); onChange('present'); }}
+                    className={`p-3 rounded-2xl border-2 transition-all ${state === 'present' ? 'bg-[#ffa600] text-white border-[#ffa600] shadow-md scale-110' : 'bg-white border-[#ffe0b2] text-[#ffcc80] hover:bg-[#fff3e0]'}`}
+                >
+                    <Sun size={20} />
+                </button>
+
+                <div className="h-1.5 w-16 bg-slate-200 rounded-full relative overflow-hidden">
+                    <div 
+                        className={`absolute top-0 bottom-0 w-1/3 bg-slate-400 rounded-full transition-all duration-300 ${
+                            state === 'past' ? 'left-0 bg-[#795548]' : 
+                            state === 'future' ? 'left-2/3 bg-[#2196f3]' : 'left-1/3 bg-[#ffa600]'
+                        }`} 
+                    />
+                </div>
+
+                <button 
+                    onClick={(e) => { e.stopPropagation(); playSwish(); onChange('future'); }}
+                    className={`p-3 rounded-2xl border-2 transition-all ${state === 'future' ? 'bg-[#2196f3] text-white border-[#2196f3] shadow-md scale-110' : 'bg-white border-[#bbdefb] text-[#90caf9] hover:bg-[#e3f2fd]'}`}
+                >
+                    <Rocket size={20} />
+                </button>
             </div>
 
-            <button 
-                onClick={(e) => { e.stopPropagation(); playClick(); onChange('present'); }}
-                className={`p-3 rounded-2xl border-2 transition-all ${state === 'present' ? 'bg-[#ffa600] text-white border-[#ffa600] shadow-md scale-110' : 'bg-white border-[#ffe0b2] text-[#ffcc80] hover:bg-[#fff3e0]'}`}
-            >
-                <Sun size={20} />
-            </button>
-
-            <div className="h-1.5 w-16 bg-slate-200 rounded-full relative overflow-hidden">
-                 <div 
-                    className={`absolute top-0 bottom-0 w-1/3 bg-slate-400 rounded-full transition-all duration-300 ${
-                        state === 'past' ? 'left-0 bg-[#795548]' : 
-                        state === 'future' ? 'left-2/3 bg-[#2196f3]' : 'left-1/3 bg-[#ffa600]'
-                    }`} 
-                />
-            </div>
-
-            <button 
-                onClick={(e) => { e.stopPropagation(); playSwish(); onChange('future'); }}
-                className={`p-3 rounded-2xl border-2 transition-all ${state === 'future' ? 'bg-[#2196f3] text-white border-[#2196f3] shadow-md scale-110' : 'bg-white border-[#bbdefb] text-[#90caf9] hover:bg-[#e3f2fd]'}`}
-            >
-                <Rocket size={20} />
-            </button>
+            {/* Sub-Toggle for Past Tense (Snapshot vs Movie) */}
+            {state === 'past' && hasImperfect && (
+                <div className="flex justify-center mt-4 animate-slideDown">
+                    <div className="bg-[#efebe9] p-1 rounded-xl flex gap-1 border border-[#d7ccc8]">
+                        <button
+                            onClick={() => onTogglePast('snapshot')}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${pastMode === 'snapshot' ? 'bg-[#795548] text-white shadow-sm' : 'text-[#8d6e63] hover:bg-[#d7ccc8]/50'}`}
+                        >
+                            <Camera size={12} /> Fui (Snapshot)
+                        </button>
+                        <button
+                            onClick={() => onTogglePast('movie')}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${pastMode === 'movie' ? 'bg-[#5d4037] text-white shadow-sm' : 'text-[#8d6e63] hover:bg-[#d7ccc8]/50'}`}
+                        >
+                            <Film size={12} /> Era (Movie)
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -228,13 +249,23 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
   const [showEnterAnim, setShowEnterAnim] = useState(true);
   
   const [timeState, setTimeState] = useState<TimeState>('present');
+  const [pastMode, setPastMode] = useState<PastMode>('snapshot');
+
+  // CRITICAL FIX: If queue is empty (e.g. reload), prevent crash and redirect
+  useEffect(() => {
+    if (!words || words.length === 0) {
+      onFinish();
+    }
+  }, [words, onFinish]);
 
   const word = queue[currentIndex];
   const progressPercent = Math.max(5, (currentIndex / queue.length) * 100);
   const theme = word ? getTypeTheme(word) : { main: '#4b7d78', light: '#f7f9e4', text: '#2d4a47' };
 
   useEffect(() => {
+      // Reset state when word changes
       setTimeState('present');
+      setPastMode('snapshot');
   }, [currentIndex]);
 
   const handleCardClick = () => {
@@ -298,27 +329,64 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
 
   const speakCurrent = () => {
       let textToSpeak = word.s;
-      if (timeState === 'past' && word.tense_forms?.past) textToSpeak = word.tense_forms.past;
-      if (timeState === 'future' && word.tense_forms?.future) textToSpeak = word.tense_forms.future;
+      
+      // Intelligent Speaking logic based on State
+      if (timeState === 'future' && word.tense_forms?.future) {
+          textToSpeak = word.tense_forms.future.split(',')[0];
+      } else if (timeState === 'past') {
+          if (pastMode === 'snapshot' && word.tense_forms?.past) {
+              textToSpeak = word.tense_forms.past.split(',')[0];
+          } else if (pastMode === 'movie' && word.tense_forms?.imperfect) {
+              textToSpeak = word.tense_forms.imperfect.split(',')[0];
+          }
+      }
+      
       playAudio(textToSpeak);
   };
 
   useEffect(() => {
     if (isFlipped && word) speakCurrent();
-  }, [isFlipped, word, timeState]);
+  }, [isFlipped, word, timeState, pastMode]);
 
   // Prevent button clicks from propagating to card click handler
   const stopProp = (e: React.SyntheticEvent) => e.stopPropagation();
 
+  const handlePastToggle = (mode: PastMode) => {
+      playClick();
+      setPastMode(mode);
+  };
+
   if (isSummaryView) {
     return <SummaryView words={queue} dailyHarvest={dailyHarvest} totalLearned={userStats?.total_words_learned || 0} streak={userStats?.current_streak || 1} user={user} onFinish={onFinish} onLoginRequest={onLoginRequest} />;
   }
-  if (!word) return null;
+  
+  if (!word) {
+      // Fallback UI while redirecting
+      return <div className="flex items-center justify-center h-full text-[#4b7d78] font-black animate-pulse">Loading Session...</div>;
+  }
 
   const hasTimeMachine = !!word.tense_forms;
-  const currentWordDisplay = timeState === 'past' ? (word.tense_forms?.past || word.s) : 
-                             timeState === 'future' ? (word.tense_forms?.future || word.s) : 
-                             word.s;
+  const hasImperfect = !!word.tense_forms?.imperfect;
+  
+  // Display Logic: 
+  // If Past/Future, show the "Yo" form as the main title on the card face
+  let currentWordDisplay = word.s;
+  let tenseLabel = '';
+
+  if (timeState !== 'present' && word.tense_forms) {
+      if (timeState === 'future' && word.tense_forms.future) {
+          currentWordDisplay = word.tense_forms.future.split(',')[0];
+          tenseLabel = 'FUTURE';
+      } else if (timeState === 'past') {
+          if (pastMode === 'snapshot' && word.tense_forms.past) {
+              currentWordDisplay = word.tense_forms.past.split(',')[0];
+              tenseLabel = 'PAST (SNAPSHOT)';
+          } else if (pastMode === 'movie' && word.tense_forms.imperfect) {
+              currentWordDisplay = word.tense_forms.imperfect.split(',')[0];
+              tenseLabel = 'PAST (MOVIE)';
+          }
+      }
+  }
 
   const bgStyle = timeState === 'past' ? { backgroundColor: '#d7ccc8' } :
                   timeState === 'future' ? { backgroundColor: '#bbdefb' } :
@@ -367,7 +435,11 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
                   {isReverseMode ? t(`vocab.${word.id}.t`, { defaultValue: word.t }) : currentWordDisplay}
               </h2>
               {hasTimeMachine && timeState !== 'present' && (
-                  <p className="text-xs font-black uppercase tracking-[0.3em] mt-4 opacity-50 animate-pulse">{timeState} Tense</p>
+                  <div className="mt-4 flex flex-col items-center gap-1 animate-pulse">
+                      {tenseLabel.includes('SNAPSHOT') ? <Camera size={16} className="text-[#5d4037]" /> : 
+                       tenseLabel.includes('MOVIE') ? <Film size={16} className="text-[#5d4037]" /> : null}
+                      <p className="text-xs font-black uppercase tracking-[0.3em] opacity-50">{tenseLabel}</p>
+                  </div>
               )}
             </div>
             
@@ -414,9 +486,16 @@ const StudyView: React.FC<StudyViewProps> = ({ words, dailyHarvest, onFinish, on
             
             {/* Added min-h-0 to fix flex overflow on iOS/Mobile */}
             <section className="flex-1 min-h-0 overflow-y-auto p-6 md:p-8 no-scrollbar bg-white" onMouseDown={stopProp}>
-              <TimeMachine state={timeState} onChange={setTimeState} available={hasTimeMachine} />
-              <GrammarPocket word={word} timeState={timeState} />
-              <UsageExamples word={word} timeState={timeState} />
+              <TimeMachine 
+                  state={timeState} 
+                  onChange={setTimeState} 
+                  available={hasTimeMachine} 
+                  pastMode={pastMode}
+                  onTogglePast={handlePastToggle}
+                  hasImperfect={hasImperfect}
+              />
+              <GrammarPocket word={word} timeState={timeState} pastMode={pastMode} />
+              <UsageExamples word={word} timeState={timeState} pastMode={pastMode} />
             </section>
 
             <footer className="shrink-0 p-6 px-6 md:px-8 bg-white border-t border-slate-50 space-y-3 z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.02)] rounded-b-[3.5rem]">

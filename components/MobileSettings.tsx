@@ -5,7 +5,7 @@ import { UserStats } from '../types';
 import { 
   LogOut, Volume2, VolumeX, RotateCcw, 
   Leaf, Settings, Heart, UploadCloud,
-  Flame, Sprout, ShieldCheck, ChevronRight, Ticket, Speaker, Trash2, Trophy, ShieldAlert, Fingerprint, Cloud, TreePalm, Crown, Star, Sparkles
+  Flame, Sprout, ShieldCheck, ChevronRight, Ticket, Speaker, Trash2, Trophy, ShieldAlert, Fingerprint, Cloud, TreePalm, Crown, Star, Sparkles, ToggleRight, Lock
 } from 'lucide-react';
 import { toggleMute, getMuteState, playClick, playSparkle } from '../utils/sfx';
 import { playAudio } from '../utils/audio';
@@ -34,7 +34,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
   onShareAchievement
 }) => {
   const { t } = useTranslation();
-  const { profile, uploadVocabulary } = useIslandStore();
+  const { profile, uploadVocabulary, updateProfile } = useIslandStore();
   const { notify } = useNotificationStore();
   const [isMuted, setIsMuted] = useState(getMuteState());
   const [isUploading, setIsUploading] = useState(false);
@@ -88,6 +88,14 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
           notify(message, "error");
       }
       setIsUploading(false);
+  };
+
+  const handleTogglePremium = async () => {
+      if (!profile) return;
+      playClick();
+      const newStatus = !profile.is_premium;
+      await updateProfile({ is_premium: newStatus });
+      notify(`Admin: Switched to ${newStatus ? 'PREMIUM' : 'FREE'} mode`, 'success');
   };
 
   const isPremium = profile?.is_premium;
@@ -151,7 +159,14 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
         <div className="bg-[#b39ddb] p-4 rounded-3xl shadow-[0_6px_0_#7e57c2] border-4 border-white">
           <Settings className="text-white fill-current" size={32} />
         </div>
-        <h2 className="text-4xl font-black text-[#4b7d78] drop-shadow-sm">{t('ui.nav.menu')}</h2>
+        <div>
+            <h2 className="text-4xl font-black text-[#4b7d78] drop-shadow-sm">{t('ui.nav.menu')}</h2>
+            {isAdmin && (
+                <div className="bg-red-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md inline-block mt-1 tracking-widest shadow-sm">
+                    Admin Access
+                </div>
+            )}
+        </div>
       </div>
 
       {/* Passport Card */}
@@ -315,9 +330,9 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
         )}
       </div>
 
-      {/* Only show this section if user is logged in (to reduce clutter for guests) */}
+      {/* Danger Zone (Visible to All) */}
       <div className="pt-8 border-t-2 border-dashed border-[#e0d9b4]/30 z-10 relative space-y-3">
-          <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.2em] pl-4">Zone of Reset & Admin</p>
+          <p className="text-[10px] font-black text-[#8d99ae] uppercase tracking-[0.2em] pl-4">Zone of Danger</p>
           
           <button 
             onClick={handleClearProgress} 
@@ -334,9 +349,16 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
             </div>
             <ChevronRight className="text-[#ef9a9a]" size={20} />
           </button>
+      </div>
 
-          {/* New Admin Button to Sync Vocabulary - ONLY FOR ADMINS */}
-          {user && isAdmin && (
+      {/* Admin Tools (Visible Only to Admins) */}
+      {user && isAdmin && (
+        <div className="pt-4 z-10 relative space-y-3 animate-slideUp">
+            <div className="flex items-center gap-2 pl-4">
+                <Lock size={12} className="text-[#6a1b9a]" />
+                <p className="text-[10px] font-black text-[#6a1b9a] uppercase tracking-[0.2em]">Authorized Personnel Only</p>
+            </div>
+
             <button 
                 onClick={handleUploadDB} 
                 disabled={isUploading}
@@ -353,10 +375,26 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
                 </div>
                 <ChevronRight className="text-[#64b5f6]" size={20} />
             </button>
-          )}
-      </div>
 
-      <div className="flex flex-col items-center opacity-30 gap-1 pb-4 z-10 relative">
+            <button 
+                onClick={handleTogglePremium} 
+                className="w-full bg-[#f3e5f5] p-5 rounded-[2.5rem] border-4 border-[#e1bee7] shadow-[0_6px_0_#ce93d8] flex items-center justify-between group active:scale-95 transition-transform bubble-button"
+            >
+                <div className="flex items-center gap-4">
+                    <div className="bg-[#ce93d8] text-[#6a1b9a] p-3 rounded-2xl shadow-sm">
+                        <ToggleRight size={24} />
+                    </div>
+                    <div className="text-left">
+                    <div className="text-lg font-black text-[#6a1b9a]">Toggle Premium</div>
+                    <div className="text-xs font-bold text-[#ab47bc]">Current: {isPremium ? 'PRO' : 'FREE'}</div>
+                    </div>
+                </div>
+                <ChevronRight className="text-[#ab47bc]" size={20} />
+            </button>
+        </div>
+      )}
+
+      <div className="flex flex-col items-center opacity-30 gap-1 pb-4 z-10 relative mt-4">
           <div className="flex items-center gap-1.5 text-[8px] font-black text-[#4b7d78] uppercase tracking-[0.4em]">
             Made By SHELLY
           </div>

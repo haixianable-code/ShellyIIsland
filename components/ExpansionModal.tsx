@@ -18,17 +18,18 @@ interface ExpansionModalProps {
   onStudyNow: (selectedWords: Word[]) => void;
 }
 
+// Updated labels to be concrete and descriptive
 const RAW_CATEGORIES = [
   { id: 'all', icon: PackagePlus, label: 'All' },
-  { id: 'time_traveler', icon: Hourglass, label: 'Time Traveler' },
-  { id: 'citizen', icon: Building2, label: 'Citizen' },
-  { id: 'survivor', icon: LifeBuoy, label: 'Survivor' },
-  { id: 'storyteller', icon: BookOpen, label: 'Storyteller' },
-  { id: 'debater', icon: MessageCircle, label: 'Debater' },
+  { id: 'time_traveler', icon: Hourglass, label: 'Time & Tense' },
+  { id: 'citizen', icon: Building2, label: 'City & Home' },
+  { id: 'survivor', icon: LifeBuoy, label: 'Health & Nav' },
+  { id: 'loot', icon: Box, label: 'Objects' }, 
+  { id: 'storyteller', icon: BookOpen, label: 'Storytelling' },
+  { id: 'debater', icon: MessageCircle, label: 'Opinions' },
   { id: 'cognates', icon: Zap, label: 'Speed Boost' },
-  { id: 'loot', icon: Box, label: 'Survival Loot' }, 
   { id: 'connector', icon: Scroll, label: 'Connectors' }, 
-  { id: 'preposition', icon: MapPin, label: 'Prepositions' }, 
+  { id: 'preposition', icon: MapPin, label: 'Positions' }, 
 ];
 
 const ExpansionModal: React.FC<ExpansionModalProps> = ({ availableWords, onClose, onAddWords, onStudyNow }) => {

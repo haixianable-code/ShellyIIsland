@@ -1,7 +1,7 @@
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { BrowserRouter, HashRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { AppView, Word, FeedbackQuality } from './types';
+import { AppView, Word } from './types';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import StudyView from './components/StudyView';
@@ -13,7 +13,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { AuthView } from './components/AuthView';
 import WelcomeView from './components/WelcomeView';
 import { useSRS } from './hooks/useSRS';
-import { Leaf, Loader2, Cloud, CloudOff, Menu, Newspaper, Home, ShoppingBag } from 'lucide-react';
+import { Leaf, Loader2, Home, ShoppingBag, Menu, Newspaper } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { isSupabaseConfigured, supabase } from './services/supabaseClient';
 import { initAudioSystem } from './utils/audio'; 
@@ -26,12 +26,12 @@ const AppContent: React.FC = () => {
   const location = useLocation();
   
   const { 
-    initialize, syncStatus, loading: islandLoading, 
-    openModal, wordMap, progress, stats, profile,
-    updateProgress, addExtraWords
+    initialize, loading: islandLoading, 
+    activeModal, closeModal, wordMap, progress, stats, profile,
+    updateProgress, addExtraWords,
+    setSessionQueue, sessionQueue // Access session queue from store
   } = useIslandStore();
 
-  const [sessionWords, setSessionWords] = useState<Word[]>([]);
   const [sessionVersion, setSessionVersion] = useState(0);
 
   const { user, authChecking } = useAuth();
@@ -58,30 +58,26 @@ const AppContent: React.FC = () => {
   
   const { reviewWords, newWordsForToday, learnedToday, allAvailableWords } = useSRS(); 
 
-  const handleStartStudy = useCallback(() => {
-    if (newWordsForToday.length === 0) return;
-    setSessionVersion(v => v + 1);
-    setSessionWords([...newWordsForToday]);
-    navigate('/study');
-  }, [newWordsForToday, navigate]);
-
-  const handleStartReview = useCallback(() => {
-    if (reviewWords.length === 0) return;
-    setSessionVersion(v => v + 1);
-    setSessionWords([...reviewWords]);
-    navigate('/review');
-  }, [reviewWords, navigate]);
-
-  // 重写 ModalManager 中的对应逻辑调用
+  // --- CRITICAL FIX: Safe Modal Navigation Logic ---
+  // Replaces the dangerous store.openModal overwrite.
+  // We listen to the activeModal state and react if it's a navigation command.
   useEffect(() => {
-    const store = useIslandStore.getState();
-    const originalOpenModal = store.openModal;
-    store.openModal = (modal: string, data?: any) => {
-      if (modal === 'STUDY_NOW') handleStartStudy();
-      else if (modal === 'REVIEW_NOW') handleStartReview();
-      else originalOpenModal(modal, data);
-    };
-  }, [handleStartStudy, handleStartReview]);
+    if (activeModal === 'STUDY_NOW') {
+       if (newWordsForToday.length > 0) {
+         setSessionQueue([...newWordsForToday]);
+         setSessionVersion(v => v + 1); // Force re-mount of StudyView
+         navigate('/study');
+       }
+       closeModal();
+    } else if (activeModal === 'REVIEW_NOW') {
+       if (reviewWords.length > 0) {
+         setSessionQueue([...reviewWords]);
+         setSessionVersion(v => v + 1);
+         navigate('/review');
+       }
+       closeModal();
+    }
+  }, [activeModal, newWordsForToday, reviewWords, navigate, closeModal, setSessionQueue]);
 
   if (authChecking || islandLoading) {
     return (
@@ -106,10 +102,9 @@ const AppContent: React.FC = () => {
       <Sidebar 
         currentView={currentView} setView={(v) => navigate(v === AppView.BLOG ? '/stories' : v === AppView.VOCABULARY ? '/pocket' : v === AppView.SETTINGS ? '/menu' : '/')} user={user} displayName={profile?.traveler_name || user?.email?.split('@')[0] || 'Learner'}
         isSupabaseConfigured={isSupabaseConfigured} onLoginRequest={() => setShowAuthView(true)}
-        onLogout={() => (supabase?.auth as any).signOut().then(() => window.location.reload())} onShareAchievement={() => openModal('ACHIEVEMENT')}
+        onLogout={() => (supabase?.auth as any).signOut().then(() => window.location.reload())} onShareAchievement={() => useIslandStore.getState().openModal('ACHIEVEMENT')}
       />
       
-      {/* 底部移动端导航栏 - 已添加 Newspaper (博客) 按钮 */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-4 border-[#e0d9b4] flex justify-around items-center p-3 pb-5 z-40">
         <button onClick={() => navigate('/')} className={`flex flex-col items-center gap-1 transition-all w-14 ${currentView === AppView.DASHBOARD ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
           <Home size={20} className={currentView === AppView.DASHBOARD ? 'fill-current' : ''} />
@@ -134,12 +129,14 @@ const AppContent: React.FC = () => {
           <ErrorBoundary>
             <Routes>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/pocket" element={<VocabularyView words={allAvailableWords} progress={progress} onWordClick={(w) => openModal('WORD_DETAIL', w)} onAddExtraWords={addExtraWords} onStartExtraStudy={(s) => { setSessionWords(s); navigate('/study'); }} />} />
+              <Route path="/pocket" element={<VocabularyView words={allAvailableWords} progress={progress} onWordClick={(w) => useIslandStore.getState().openModal('WORD_DETAIL', w)} onAddExtraWords={addExtraWords} onStartExtraStudy={(s) => { setSessionQueue(s); navigate('/study'); }} />} />
               <Route path="/stories" element={<BlogView />} />
               <Route path="/stories/:slug" element={<BlogView />} />
-              <Route path="/menu" element={<MobileSettings user={user} stats={stats} displayName={profile?.traveler_name || 'Learner'} isSupabaseConfigured={isSupabaseConfigured} onLoginRequest={() => setShowAuthView(true)} onLogout={() => (supabase?.auth as any).signOut()} onShareAchievement={() => openModal('ACHIEVEMENT')} />} />
-              <Route path="/study" element={<div className="fixed inset-0 z-50 overflow-hidden flex flex-col bg-[#f7f9e4]"><StudyView key={`session-${sessionVersion}`} user={user} words={sessionWords} dailyHarvest={learnedToday} onFinish={() => navigate('/')} onFeedback={updateProgress} userStats={stats} onLoginRequest={() => setShowAuthView(true)} /></div>} />
-              <Route path="/review" element={<div className="fixed inset-0 z-50 overflow-hidden flex flex-col bg-[#f7f9e4]"><StudyView key={`session-${sessionVersion}`} user={user} words={sessionWords} dailyHarvest={learnedToday} onFinish={() => navigate('/')} onFeedback={updateProgress} userStats={stats} onLoginRequest={() => setShowAuthView(true)} /></div>} />
+              <Route path="/menu" element={<MobileSettings user={user} stats={stats} displayName={profile?.traveler_name || 'Learner'} isSupabaseConfigured={isSupabaseConfigured} onLoginRequest={() => setShowAuthView(true)} onLogout={() => (supabase?.auth as any).signOut()} onShareAchievement={() => useIslandStore.getState().openModal('ACHIEVEMENT')} />} />
+              
+              {/* Study Views now read words directly from Store inside components or via prop pass-through */}
+              <Route path="/study" element={<div className="fixed inset-0 z-50 overflow-hidden flex flex-col bg-[#f7f9e4]"><StudyView key={`session-${sessionVersion}`} user={user} words={sessionQueue} dailyHarvest={learnedToday} onFinish={() => navigate('/')} onFeedback={updateProgress} userStats={stats} onLoginRequest={() => setShowAuthView(true)} /></div>} />
+              <Route path="/review" element={<div className="fixed inset-0 z-50 overflow-hidden flex flex-col bg-[#f7f9e4]"><StudyView key={`session-${sessionVersion}`} user={user} words={sessionQueue} dailyHarvest={learnedToday} onFinish={() => navigate('/')} onFeedback={updateProgress} userStats={stats} onLoginRequest={() => setShowAuthView(true)} /></div>} />
             </Routes>
           </ErrorBoundary>
         </div>

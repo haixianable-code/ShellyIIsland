@@ -8,6 +8,7 @@ import { calculateNextProgress } from '../utils/srsCore';
 import { ProgressMapSchema, UserStatsSchema } from '../schemas/islandSchema';
 import { AIWordInfo } from '../services/geminiService';
 import { vocabService } from '../services/vocabService';
+import { getTodayDateString } from '../constants';
 
 const LEMON_VARIANT_ID = '384976';
 
@@ -15,6 +16,7 @@ const LEMON_VARIANT_ID = '384976';
 const KEY_PROGRESS = 'hola_word_srs_v4_offline';
 const KEY_STATS = 'hola_user_stats_v1_offline';
 const KEY_AI_CACHE = 'ssi_ai_content_v1';
+const KEY_SESSION = 'ssi_session_queue';
 
 interface AIUsage {
   date: string;
@@ -40,6 +42,9 @@ interface IslandState {
   // Helpers for filtering (Computed)
   wordsByTopic: Record<string, string[]>;
   wordsByLevel: Record<string, string[]>;
+
+  // Session Data (Persisted in SessionStorage)
+  sessionQueue: Word[];
 
   blueprints: Blueprint[];
   activeBlueprintId: string;
@@ -69,6 +74,9 @@ interface IslandState {
   activateTrial: () => void;
   checkTrialStatus: () => void;
   
+  // New: Session Management
+  setSessionQueue: (words: Word[]) => void;
+
   // Admin Action
   uploadVocabulary: () => Promise<string>;
 }
@@ -90,6 +98,8 @@ export const useIslandStore = create<IslandState>((set, get) => ({
   allWords: [],
   wordsByTopic: {},
   wordsByLevel: {},
+  
+  sessionQueue: [],
 
   blueprints: BLUEPRINTS,
   activeBlueprintId: 'vital_existence',
@@ -97,8 +107,8 @@ export const useIslandStore = create<IslandState>((set, get) => ({
   trialStatus: 'none',
   trialEndsAt: null,
 
-  aiUsage: { date: new Date().toISOString().split('T')[0], count: 0 },
-  mnemonicUsage: { date: new Date().toISOString().split('T')[0], count: 0 },
+  aiUsage: { date: getTodayDateString(), count: 0 },
+  mnemonicUsage: { date: getTodayDateString(), count: 0 },
 
   setMuted: (muted) => {
     set({ isMuted: muted });
@@ -113,13 +123,27 @@ export const useIslandStore = create<IslandState>((set, get) => ({
     localStorage.setItem('ssi_active_blueprint', id);
   },
 
+  setSessionQueue: (words) => {
+    set({ sessionQueue: words });
+    sessionStorage.setItem(KEY_SESSION, JSON.stringify(words));
+  },
+
   initialize: async (user) => {
     set({ loading: true, user });
     
-    // 1. Sync Load (Settings)
+    // 1. Sync Load (Settings & Session)
     const isMuted = localStorage.getItem('ssi_muted') === 'true';
     const activeBlueprintId = localStorage.getItem('ssi_active_blueprint') || 'vital_existence';
     
+    // Restore Session Queue if page was refreshed
+    let sessionQueue: Word[] = [];
+    try {
+      const storedSession = sessionStorage.getItem(KEY_SESSION);
+      if (storedSession) sessionQueue = JSON.parse(storedSession);
+    } catch (e) {
+      console.warn("Failed to restore session queue", e);
+    }
+
     // Trial Logic
     const storedTrialStatus = localStorage.getItem('ssi_trial_status') as 'none'|'active'|'expired' || 'none';
     const storedTrialEnd = localStorage.getItem('ssi_trial_end');
@@ -131,14 +155,14 @@ export const useIslandStore = create<IslandState>((set, get) => ({
       localStorage.setItem('ssi_trial_status', 'expired');
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayDateString();
     let aiUsage = storageService.getItem('ssi_ai_usage', { date: today, count: 0 });
     let mnemonicUsage = storageService.getItem('ssi_mnemonic_usage', { date: today, count: 0 });
 
     if (aiUsage.date !== today) aiUsage = { date: today, count: 0 };
     if (mnemonicUsage.date !== today) mnemonicUsage = { date: today, count: 0 };
 
-    set({ isMuted, aiUsage, mnemonicUsage, activeBlueprintId, trialStatus, trialEndsAt });
+    set({ isMuted, aiUsage, mnemonicUsage, activeBlueprintId, trialStatus, trialEndsAt, sessionQueue });
 
     try {
         // 2. Fetch Vocabulary (Cloud First, Local Fallback)
@@ -216,6 +240,7 @@ export const useIslandStore = create<IslandState>((set, get) => ({
 
   resetIsland: () => { 
       localStorage.clear(); 
+      sessionStorage.clear();
       window.location.reload(); 
   },
 
@@ -263,7 +288,7 @@ export const useIslandStore = create<IslandState>((set, get) => ({
     const newProgress = { ...progress };
     words.forEach(w => {
         if (!newProgress[w.id]) {
-            newProgress[w.id] = { level: 1, nextReviewDate: new Date().toISOString().split('T')[0], easeFactor: 2.5, failureCount: 0 };
+            newProgress[w.id] = { level: 1, nextReviewDate: getTodayDateString(), easeFactor: 2.5, failureCount: 0 };
         }
     });
     set({ progress: newProgress });
@@ -308,11 +333,8 @@ export const useIslandStore = create<IslandState>((set, get) => ({
       } catch (err) { alert("Checkout error"); }
   },
 
-  // NEW: Admin Action (Updated to return result without auto-reloading)
   uploadVocabulary: async () => {
       const res = await vocabService.seedDatabaseFromLocal();
-      // Previously, this function reloaded the page automatically.
-      // Now we return the message so the UI component can handle the notification first.
       return res.message;
   }
 }));
