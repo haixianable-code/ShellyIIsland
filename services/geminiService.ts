@@ -1,7 +1,15 @@
+
 // AI Word Info structure for smart hints
 export interface AIWordInfo {
   hint: string;
   mnemonics: string;
+}
+
+export interface AIChallengeResult {
+  score: number;
+  correction: string;
+  explanation: string;
+  compliment: string;
 }
 
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
@@ -29,6 +37,27 @@ export const testAISpiritConnection = async (): Promise<{ success: boolean; mess
       success: false, 
       message: error.message || "Error connecting to Island Spirit API." 
     };
+  }
+};
+
+/**
+ * 获取 AI 动态生成的阶段性任务 (1-3阶)
+ */
+export const getAIMission = async (word: string, level: number, timeState: string): Promise<{ task_text: string; subtext: string } | null> => {
+  try {
+    const res = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        action: 'mission', 
+        payload: { word, level, timeState } 
+      })
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (error) {
+    console.error("Mission generation failed:", error);
+    return null;
   }
 };
 
@@ -67,20 +96,20 @@ export const getAISmartHint = async (word: string, translation: string, retries 
 /**
  * Validates a user's sentence using the word via Backend.
  */
-export const getAIChallengeFeedback = async (word: string, sentence: string): Promise<string | null> => {
+export const getAIChallengeFeedback = async (word: string, sentence: string, contextWord?: string, level?: number): Promise<AIChallengeResult | null> => {
   try {
     const res = await fetch('/api/ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         action: 'challenge', 
-        payload: { word, sentence } 
+        payload: { word, sentence, contextWord, level } 
       })
     });
 
     if (!res.ok) return null;
     const data = await res.json();
-    return data.text;
+    return data; 
   } catch (error) {
     console.error("Challenge failed:", error);
     return null;

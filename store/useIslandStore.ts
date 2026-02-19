@@ -15,7 +15,7 @@ const LEMON_VARIANT_ID = '384976';
 // Persistence Keys
 const KEY_PROGRESS = 'hola_word_srs_v4_offline';
 const KEY_STATS = 'hola_user_stats_v1_offline';
-const KEY_AI_CACHE = 'ssi_ai_content_v1';
+const KEY_AI_CACHE = 'ssi_ai_content_v2'; // Bumped to v2 for Visual Mnemonics
 const KEY_SESSION = 'ssi_session_queue';
 
 interface AIUsage {

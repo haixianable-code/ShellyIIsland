@@ -1,8 +1,13 @@
-
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Bi } from '../components/Bilingual';
-import { Microscope, BarChart3, Radio, Sparkles, Target, GraduationCap, History, Zap, Brain, Activity, Layers, Database, Timer, BookOpenCheck, Route, Construction, Compass, Map, Info, Lightbulb, MessageSquareText, Flame, Anchor, Repeat, ShieldCheck, UserPlus, Heart, Volume2, FastForward, Sprout, Sword } from 'lucide-react';
+import { 
+  Microscope, BarChart3, Radio, Sparkles, Target, GraduationCap, 
+  History, Zap, Brain, Activity, Layers, Database, Timer, 
+  BookOpenCheck, Route, Construction, Compass, Map, Info, 
+  Lightbulb, MessageSquareText, Flame, Anchor, Repeat, 
+  ShieldCheck, UserPlus, Heart, Volume2, FastForward, 
+  Sprout, Sword, Dna, Atom, Camera, Film, Eye, ArrowRight
+} from 'lucide-react';
 
 export type BlogTab = 'all' | 'strategy' | 'grammar' | 'ai';
 
@@ -10,7 +15,7 @@ export interface Post {
   id: string;
   slug: string;
   category: BlogTab;
-  isPremium?: boolean; // New field for content gating
+  isPremium?: boolean;
   title: string | { en: string; zh: string };
   excerpt: string | { en: string; zh: string };
   description: string;
@@ -44,7 +49,6 @@ export const BLOG_POSTS: Post[] = [
     tags: ['Manifesto', 'Methodology'],
     content: (
       <div className="space-y-12 pb-20 leading-relaxed text-slate-700">
-        {/* Intro */}
         <section className="space-y-6">
           <div className="flex items-center gap-2 text-[#4b7d78]">
             <Compass size={24} />
@@ -76,7 +80,6 @@ export const BLOG_POSTS: Post[] = [
           </div>
         </section>
 
-        {/* Rule 1 */}
         <section className="space-y-6">
           <h3 className="text-2xl font-black text-[#4b7d78] uppercase tracking-tight flex items-center gap-3">
             <Sword className="text-[#ff7b72]" /> 
@@ -116,7 +119,6 @@ export const BLOG_POSTS: Post[] = [
           </div>
         </section>
 
-        {/* Rule 2 */}
         <section className="space-y-6">
           <h3 className="text-2xl font-black text-[#4b7d78] uppercase tracking-tight flex items-center gap-3">
             <Sprout className="text-[#8bc34a]" /> 
@@ -132,7 +134,6 @@ export const BLOG_POSTS: Post[] = [
           </div>
         </section>
 
-        {/* Rule 3 */}
         <section className="space-y-6">
           <h3 className="text-2xl font-black text-[#4b7d78] uppercase tracking-tight flex items-center gap-3">
             <Target className="text-[#0288d1]" /> 
@@ -154,7 +155,7 @@ export const BLOG_POSTS: Post[] = [
     id: 'neuroscience-fluency',
     slug: 'stop-translating-spanish-neuroscience',
     category: 'strategy',
-    isPremium: true,
+    isPremium: false,
     title: {
       en: "The Neuroscience of Fluency: Why your brain lags and how to stop translating",
       zh: "流利度的神经科学：为什么你的大脑会有延迟？"
@@ -224,7 +225,7 @@ export const BLOG_POSTS: Post[] = [
     id: 'pareto-rae-corpus',
     slug: 'spanish-80-20-rule-rae-corpus',
     category: 'strategy',
-    isPremium: true,
+    isPremium: false,
     title: {
       en: 'Strategic Spanish: The 80/20 RAE Map to capturing 85% of conversation',
       zh: '策略性西语：利用 80/20 规律掌握 85% 的对话'
@@ -265,6 +266,205 @@ export const BLOG_POSTS: Post[] = [
              </div>
            ))}
         </div>
+      </div>
+    )
+  },
+  {
+    id: 'devlog-ai-lab-strictness',
+    slug: 'why-strictest-ai-tutor',
+    category: 'ai',
+    isPremium: false,
+    title: {
+      en: "Island Owner's Log: Why I built the world's strictest AI tutor",
+      zh: "岛主日志：为什么我为你找了个最“严厉”的 AI 助教？"
+    },
+    excerpt: {
+      en: "I received feedback that the AI is too strict with accents. Today, I'll explain why 'hablo' and 'habló' are worlds apart.",
+      zh: "我收到反馈说 AI 对重音符号太死板了。今天我想聊聊，为什么 hablo 和 habló 隔着一个时空。"
+    },
+    description: "A deep dive into the 3-Stage AI Lab logic. Why precision matters in Spanish and how Stage 3 moves from grammar to social goals.",
+    keywords: ['Spanish AI Tutor', 'Spanish Accents', 'Tildes importance', 'AI language practice'],
+    date: 'MAR 01, 2026',
+    readTime: '6 min',
+    level: 'Intermediate',
+    tags: ['Dev Log', 'AI Lab'],
+    content: (
+      <div className="space-y-10 pb-20 leading-relaxed text-slate-700">
+        <section className="space-y-6">
+          <div className="flex items-center gap-2 text-[#0288d1]">
+            <Atom size={24} />
+            <span className="text-xs font-black uppercase tracking-[0.3em] opacity-80">
+              <Bi en="Developer Journal" zh="开发者日志" />
+            </span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-black text-[#4b7d78] uppercase tracking-tight">
+            <Bi en="The Tilde is the Soul" zh="重音符号是语言的灵魂" />
+          </h2>
+          <p className="text-lg">
+            <Bi 
+              en="A user once messaged me: 'I got the word right, I just missed one little accent on the O. Why did the AI fail me?'"
+              zh="一位用户曾给我发消息：‘单词我写对了，只是 O 上面少了个小撇。为什么 AI 判定我失败了？’"
+            />
+          </p>
+          <p>
+            <Bi 
+              en="In Spanish, that 'little accent' (tilde) isn't decoration. 'Hablo' means 'I speak' (Now). 'Habló' means 'He/She spoke' (Past). If I am lenient now, I am being cruel to your future self when you're trying to order food in Madrid and end up talking about what someone else did yesterday."
+              zh="在西班牙语里，重音符号不是装饰品。‘Hablo’ 是‘我说’（现在）；‘Habló’ 是‘他/她说了’（过去）。如果我现在对你的手指仁慈，那就是对你未来的实战残忍——当你试图在马德里点餐，却意外地开始讲述别人昨天做了什么。"
+            />
+          </p>
+        </section>
+
+        <div className="bg-[#e1f5fe] p-8 rounded-[3rem] border-4 border-white shadow-md space-y-6">
+          <h3 className="text-xl font-black text-[#0288d1] uppercase flex items-center gap-3">
+            <ShieldCheck size={22} /> <Bi en="The 3-Stage Lab Protocol" zh="AI 实验室的三阶协议" />
+          </h3>
+          <div className="space-y-4">
+             <div className="flex gap-4 items-start">
+                <div className="bg-white p-2 rounded-lg text-[#0288d1] shrink-0 font-black">S1</div>
+                <p className="text-sm"><strong><Bi en="Recognition" zh="辨析训练" />:</strong> <Bi en="Identifying the target in a sea of look-alikes. We train your linguistic intuition." zh="在相似的变位中一眼认出目标。我们在训练你的视觉直觉。" /></p>
+             </div>
+             <div className="flex gap-4 items-start">
+                <div className="bg-[#f57c00] p-2 rounded-lg text-white shrink-0 font-black">S2</div>
+                <p className="text-sm"><strong><Bi en="Accuracy" zh="精准防火墙" />:</strong> <Bi en="The 'strict' part. We catch every missing accent and spelling error. This is where muscle memory is born." zh="这就是‘严厉’的部分。我们捕捉每一个重音遗漏。这是肌肉记忆诞生的地方。" /></p>
+             </div>
+             <div className="flex gap-4 items-start">
+                <div className="bg-[#78c850] p-2 rounded-lg text-white shrink-0 font-black">S3</div>
+                <p className="text-sm"><strong><Bi en="Social Goal" zh="社交博弈" />:</strong> <Bi en="Forget grammar. Can you achieve the goal? AI simulates real-world missions like 'Reject an invitation politely'." zh="忘掉语法。你能达成目标吗？AI 模拟真实任务，比如‘委婉地拒绝一个邀请’。" /></p>
+             </div>
+          </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'devlog-visual-stem-mapping',
+    slug: 'visual-stem-mapping-logic',
+    category: 'strategy',
+    isPremium: false,
+    title: {
+      en: "Stop Memorizing Tables: How Visual Stem Mapping works",
+      zh: "别去背那个表格了，我想请你用眼睛“看”出逻辑"
+    },
+    excerpt: {
+      en: "Traditional tables are cognitive overload. Our new mapping tech uses color and contrast to help you spot patterns instantly.",
+      zh: "传统的变位表是认知过载。我们全新的词根映射技术通过色彩和对比度，帮你瞬间识别模式。"
+    },
+    description: "Explaining the science behind visual stem mapping. How contrast and color coding reduce cognitive load in language learning.",
+    keywords: ['Spanish verb patterns', 'Visual language learning', 'stem mapping', 'Spanish conjugation hacks'],
+    date: 'MAR 03, 2026',
+    readTime: '5 min',
+    level: 'Beginner',
+    tags: ['Cognitive Science', 'UI/UX'],
+    content: (
+      <div className="space-y-10 pb-20 leading-relaxed text-slate-700">
+        <section className="space-y-6">
+          <div className="flex items-center gap-2 text-[#ffa600]">
+            <Dna size={24} />
+            <span className="text-xs font-black uppercase tracking-[0.3em] opacity-80">
+              <Bi en="Cognitive Design" zh="认知设计" />
+            </span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-black text-[#4b7d78] uppercase tracking-tight">
+            <Bi en="Pattern Recognition vs. Brute Force" zh="模式识别 vs. 暴力记忆" />
+          </h2>
+          <p className="text-lg">
+            <Bi 
+              en="When your brain sees a 50-cell conjugation table, it triggers a flight-or-fight response. It's too much data. We decided to hack this process."
+              zh="当你的大脑看到一张 50 格的变位表时，它会触发‘逃跑或战斗’的应激反应。数据太多了。我们决定黑掉这个过程。"
+            />
+          </p>
+        </section>
+
+        <section className="bg-white p-8 rounded-[3rem] border-4 border-[#f7f9e4] shadow-xl">
+           <div className="flex items-center gap-4 mb-6">
+              <div className="p-3 bg-slate-100 rounded-2xl text-slate-400 opacity-40"><Bi en="ROOT" zh="词根" /></div>
+              <ArrowRight className="text-slate-300" />
+              <div className="p-3 bg-orange-100 rounded-2xl text-orange-600 font-black border-2 border-orange-200"><Bi en="SUFFIX" zh="词尾" /></div>
+           </div>
+           <h3 className="text-xl font-black text-[#4b7d78] uppercase mb-4"><Bi en="The Visual Contrast Hack" zh="视觉对比度黑客" /></h3>
+           <p className="text-sm">
+             <Bi 
+               en="In our word detail view, we dim the verb root (the 'stem') to 40% opacity. It becomes the background noise. Then, we highlight the changing suffix in bright brand colors. Your eye naturally ignores the static part and focuses on the dynamic part."
+               zh="在单词详情页，我们将动词词根调暗至 40% 透明度，它变成了背景。然后，我们用明亮的品牌色高亮变化的词尾。你的眼睛会自然地忽略静态部分，专注于动态部分。"
+             />
+           </p>
+           <p className="text-sm mt-4">
+             <Bi 
+               en="This isn't just aesthetic. It reduces your cognitive load to near zero. You aren't 'learning' a word; you are watching a wave moving through the letters."
+               zh="这不仅仅是为了美观。它将你的认知负荷降低到近乎零。你不是在‘学习’一个单词，你是在观察一段在字母间流动的波浪。"
+             />
+           </p>
+        </section>
+      </div>
+    )
+  },
+  {
+    id: 'devlog-tense-sync-machine',
+    slug: 'time-machine-tense-sync',
+    category: 'grammar',
+    isPremium: false,
+    title: {
+      en: "Flipping the Time Machine: Why example sentences must dance",
+      zh: "拨动时光机：为什么例句必须随着时态“起舞”？"
+    },
+    excerpt: {
+      en: "Context is everything. When you switch to the past, you shouldn't see a present-tense story. Today, we reveal our Tense Sync Protocol.",
+      zh: "语境就是一切。当你切换到过去时，不该看到一个现在的场景。今天，我们揭秘“时态同步协议”。"
+    },
+    description: "Deep dive into contextual learning. Why synchronized example sentences are the key to mastering the Preterite and Imperfect tenses in Spanish.",
+    keywords: ['Spanish Tenses', 'Pretérito vs Imperfecto', 'Contextual language learning', 'Spanish Time Machine'],
+    date: 'MAR 05, 2026',
+    readTime: '7 min',
+    level: 'Intermediate',
+    tags: ['Grammar', 'UX Logic'],
+    content: (
+      <div className="space-y-10 pb-20 leading-relaxed text-slate-700">
+        <section className="space-y-6">
+          <div className="flex items-center gap-2 text-[#795548]">
+            <Timer size={24} />
+            <span className="text-xs font-black uppercase tracking-[0.3em] opacity-80">
+              <Bi en="Linguistic Dimension" zh="语言维度" />
+            </span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-black text-[#4b7d78] uppercase tracking-tight">
+            <Bi en="The Snapshot vs. The Movie" zh="快照 vs. 电影" />
+          </h2>
+          <p className="text-lg italic font-medium">
+            <Bi 
+              en="A word in the past tense has a different soul than in the present."
+              zh="过去时的单词，拥有与现在时完全不同的灵魂。"
+            />
+          </p>
+          <p>
+            <Bi 
+              en="The biggest hurdle in Spanish is choosing between the two past tenses. We solved this with the 'Time Machine Protocol'. When you toggle to Past (Snapshot), we force the examples to tell a completed story. When you toggle to Past (Movie), the examples describe a background or a feeling."
+              zh="西语最大的障碍是在两个过去时之间做选择。我们通过‘时光机协议’解决了这个问题。当你切换到‘过去-快照’（点动作），例句会强制讲述一个已完成的故事；当你切换到‘过去-电影’（未完成时），例句则会描述一个背景或情感。"
+            />
+          </p>
+        </section>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           <div className="bg-[#efebe9] p-6 rounded-[2.5rem] border-2 border-[#d7ccc8]">
+              <Camera className="text-[#795548] mb-3" size={24} />
+              <h4 className="font-black text-[#5d4037] uppercase text-sm mb-2">Pretérito (Snapshot)</h4>
+              <p className="text-xs italic">"Fui al cine." (I went... then it was over.)</p>
+           </div>
+           <div className="bg-[#5d4037] p-6 rounded-[2.5rem] text-white">
+              <Film className="text-white mb-3" size={24} />
+              <h4 className="font-black uppercase text-sm mb-2">Imperfecto (Movie)</h4>
+              <p className="text-xs italic opacity-80">"Iba al cine cada lunes." (I was going... as a habit.)</p>
+           </div>
+        </div>
+
+        <section className="space-y-6">
+           <h3 className="text-2xl font-black text-[#4b7d78] uppercase"><Bi en="Why synchronization matters" zh="为什么同步至关重要" /></h3>
+           <p>
+             <Bi 
+               en="Your brain anchors new words to the 'stories' it hears. If you study a past-tense form but read a present-tense example, your linguistic intuition gets fractured. We've ensured that every dial on the island is synced to give your brain a perfect, 3D image of the word's life."
+               zh="大脑会将新词锚定在它听到的‘故事’里。如果你在学过去时的变位，却读着现在时的例句，你的语感会产生裂缝。我们确保了岛屿上的每一个拨盘都是同步的，旨在为你的大脑提供关于单词生命的完美 3D 图像。"
+             />
+           </p>
+        </section>
       </div>
     )
   }

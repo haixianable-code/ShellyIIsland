@@ -152,18 +152,19 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
               <article 
                 className={`island-card-3d bg-white p-6 rounded-[3rem] border-4 border-transparent shadow-[0_15px_30px_-5px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(139,195,74,0.3)] transition-all flex flex-col justify-between group active:translate-y-2 active:shadow-none text-left relative overflow-hidden h-full min-h-[180px] bubble-button w-full ${isLocked ? 'grayscale-[0.8] opacity-80' : ''}`}
               >
+                {/* Click Overlay - Increased z-index to 30 to cover content (z-10) */}
                 <button 
                   onClick={() => handleItemClick(word)}
-                  className="absolute inset-0 z-10"
+                  className="absolute inset-0 z-30 w-full h-full cursor-pointer"
                   aria-label={isLocked ? `Unlock premium word ${word.s}` : `View details for word ${word.s}`}
                 />
                 
-                <div className="flex flex-wrap gap-2 mb-3 relative z-10">
+                <div className="flex flex-wrap gap-2 mb-3 relative z-10 pointer-events-none">
                     <span style={{ backgroundColor: theme.main }} className="px-2.5 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-sm">{getPosLabel(word)}</span>
                     {!isLocked && <span style={{ backgroundColor: theme.main }} className="px-2.5 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-sm">{word.level}</span>}
                 </div>
 
-                <div className="relative z-10 flex items-end justify-between mt-1">
+                <div className="relative z-10 flex items-end justify-between mt-1 pointer-events-none">
                   <div className="space-y-1">
                     <h3 className={`text-4xl font-black text-[#2e4d4a] tracking-tighter ${isLocked ? 'blur-[3px]' : ''}`}>{word.s}</h3>
                     <p className={`text-slate-400 font-bold text-lg ${isLocked ? 'blur-[2px]' : ''}`}>{t(`vocab.${word.id}.t`, { defaultValue: word.t })}</p>
@@ -182,7 +183,7 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
                 </div>
 
                 {isLocked && (
-                    <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px] pointer-events-none flex items-center justify-center">
+                    <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px] pointer-events-none flex items-center justify-center z-20">
                        <div className="bg-white/90 p-4 rounded-3xl shadow-xl flex items-center gap-3 border-2 border-[#ffa600]/30 transform -rotate-2">
                           <Crown size={24} className="text-[#ffa600]" />
                           <div className="text-left">
