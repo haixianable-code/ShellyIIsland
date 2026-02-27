@@ -63,7 +63,7 @@ export const useSRS = () => {
 
     const unlearnedInBlueprint = wordsInBlueprint.filter(w => !store.progress[w.id]);
     
-    return unlearnedInBlueprint.slice(0, Math.max(0, DAILY_GOAL - learnedToday.length));
+    return unlearnedInBlueprint.slice(0, DAILY_GOAL);
   }, [store.progress, store.wordMap, learnedToday, isPremium, activeBlueprintId, store.blueprints]);
 
   return {

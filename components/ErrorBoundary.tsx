@@ -14,12 +14,11 @@ interface ErrorBoundaryState {
 
 /**
  * Standard Error Boundary component for catching runtime UI crashes.
- * Inherits from React.Component as required by React for error boundaries.
+ * Inherits from Component as required by React for error boundaries.
  */
-// Fix: Directly import Component and extend it to ensure TypeScript correctly resolves inherited properties like 'state' and 'props'
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  // Fix: Using class property for state initialization to resolve property existence issues in TypeScript
-  state: ErrorBoundaryState = {
+  // Use class property initialization for state to ensure TypeScript recognizes the 'state' property correctly
+  public state: ErrorBoundaryState = {
     hasError: false
   };
 
@@ -40,7 +39,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   };
 
   public render() {
-    // Fix: Accessing inherited state and props members through 'this'
+    // Destructure from this.state and this.props after ensuring they are correctly inherited
     const { hasError } = this.state;
     const { fallback, children } = this.props;
 

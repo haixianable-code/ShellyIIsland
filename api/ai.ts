@@ -27,31 +27,31 @@ export default async function handler(req: Request) {
     const { action, payload } = await req.json() as RequestBody;
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-    // --- Action: 阶梯任务 (加速版) ---
+    // --- Action: 生成阶梯式生存任务 ---
     if (action === 'mission') {
       const { word, level, timeState } = payload;
       let prompt = "";
       
       if (level === 1) {
-        prompt = `Generate a Level 1 Spanish fill-in-the-blank question for "${word}" (${timeState}). 
-        - task_text: Sentence with "____". 
-        - subtext: 3 numbered options (1 correct, 2 wrong tenses/persons).`;
+        prompt = `Role: Spanish Coach. Target word: "${word}" (${timeState}). 
+        Task: Create a Level 1 (Recognition) survival task. 
+        Requirement: Provide a short context + a sentence with (____). Give 3 options: 1 correct, 2 tricky distractors (wrong tense/person).
+        Format: "Context: ... Pick: 1)... 2)... 3)..."`;
       } else if (level === 2) {
-        prompt = `Generate a Level 2 Spanish grammar fixing task for "${word}" (${timeState}). 
-        - task_text: A sentence with a deliberate small spelling/accent error in "${word}".
-        - subtext: Instruction to fix it.`;
+        prompt = `Role: Spanish Editor. Target word: "${word}" (${timeState}).
+        Task: Create a Level 2 (Accuracy) task.
+        Requirement: Give a Spanish sentence with a deliberate spelling or ACCENT error in "${word}". 
+        Instruction: Tell the user to fix the sentence.`;
       } else {
-        prompt = `Generate a Level 3 production goal for "${word}" (${timeState}). 
-        - task_text: A specific real-world social scenario.
-        - subtext: Brief context.`;
+        prompt = `Role: Native Speaker. Target word: "${word}" (${timeState}).
+        Task: Create a Level 3 (Real-world Production) task.
+        Requirement: Give a complex social goal (e.g. at work, job interview, dating) that requires using "${word}".`;
       }
 
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: prompt,
         config: {
-          temperature: 0.4,
-          thinkingConfig: { thinkingBudget: 0 }, // 禁用推理以获取极致速度
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
@@ -66,20 +66,26 @@ export default async function handler(req: Request) {
       return new Response(response.text, { headers: { 'Content-Type': 'application/json' } });
     }
 
-    // --- Action: 批改反馈 (加速版) ---
+    // --- Action: 深度实战批改 ---
     if (action === 'challenge') {
       const { word, sentence, contextWord, level } = payload;
       
-      const prompt = `Grade Spanish sentence. Target: "${word}". Context: "${contextWord}". User: "${sentence}".
-      Evaluation: ${level === 2 ? 'Focus on spelling/accents.' : 'Focus on naturalness.'}
-      JSON output: score (0-100), correction, explanation (short), compliment (1-2 words).`;
+      const prompt = `
+        Role: Native Spanish Linguist.
+        Evaluation Level: ${level || 3} (Level 2 focuses on spelling, Level 3 focuses on naturalness).
+        Word: "${word}"
+        Task/Context: "${contextWord}"
+        Input: "${sentence}"
+
+        Grading Rules:
+        - Level 2: Deduct significant points for missing accents (á, é, í, ó, ú) or tildes (ñ).
+        - Level 3: Score based on how "native" it sounds. If perfect but robotic, provide an "Expert Recast".
+      `;
 
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: prompt,
         config: {
-          temperature: 0.3,
-          thinkingConfig: { thinkingBudget: 0 }, // 批改任务不需要长时间思考
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
@@ -96,39 +102,9 @@ export default async function handler(req: Request) {
       return new Response(response.text, { headers: { 'Content-Type': 'application/json' } });
     }
 
-    // --- Action: 智能提示 (加速版) ---
-    if (action === 'hint') {
-      const { word, translation } = payload;
-      const prompt = `Spanish word: "${word}" (${translation}). 
-      Provide: 1. hint (usage tip), 2. mnemonics (memory hack). Short and sharp.`;
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: prompt,
-        config: {
-          temperature: 0.5,
-          thinkingConfig: { thinkingBudget: 0 },
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              hint: { type: Type.STRING },
-              mnemonics: { type: Type.STRING }
-            },
-            required: ["hint", "mnemonics"]
-          }
-        }
-      });
-      return new Response(response.text, { headers: { 'Content-Type': 'application/json' } });
-    }
-
-    // --- Action: 测试 ---
+    // --- Action: Connection Test ---
     if (action === 'test') {
-      const response = await ai.models.generateContent({ 
-        model: 'gemini-3-flash-preview', 
-        contents: "Success",
-        config: { thinkingConfig: { thinkingBudget: 0 } }
-      });
+      const response = await ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: "Success" });
       return new Response(JSON.stringify({ text: response.text }), { headers: { 'Content-Type': 'application/json' } });
     }
 

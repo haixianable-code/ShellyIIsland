@@ -56,6 +56,9 @@ interface IslandState {
   aiUsage: AIUsage;
   mnemonicUsage: AIUsage;
 
+  isSidebarCollapsed: boolean;
+  toggleSidebar: () => void;
+
   setMuted: (muted: boolean) => void;
   openModal: (modal: string, data?: any) => void;
   closeModal: () => void;
@@ -102,13 +105,17 @@ export const useIslandStore = create<IslandState>((set, get) => ({
   sessionQueue: [],
 
   blueprints: BLUEPRINTS,
-  activeBlueprintId: 'vital_existence',
+  activeBlueprintId: 'day1',
 
   trialStatus: 'none',
   trialEndsAt: null,
 
   aiUsage: { date: getTodayDateString(), count: 0 },
   mnemonicUsage: { date: getTodayDateString(), count: 0 },
+
+  isSidebarCollapsed: false,
+
+  toggleSidebar: () => set((state) => ({ isSidebarCollapsed: !state.isSidebarCollapsed })),
 
   setMuted: (muted) => {
     set({ isMuted: muted });
@@ -133,7 +140,7 @@ export const useIslandStore = create<IslandState>((set, get) => ({
     
     // 1. Sync Load (Settings & Session)
     const isMuted = localStorage.getItem('ssi_muted') === 'true';
-    const activeBlueprintId = localStorage.getItem('ssi_active_blueprint') || 'vital_existence';
+    const activeBlueprintId = localStorage.getItem('ssi_active_blueprint') || 'day1';
     
     // Restore Session Queue if page was refreshed
     let sessionQueue: Word[] = [];
@@ -303,24 +310,52 @@ export const useIslandStore = create<IslandState>((set, get) => ({
     await supabase.from('profiles').update(updates).eq('id', user.id);
   },
 
+  // AI Usage Logic
+  // Free User: 3 daily credits
+  // Premium User: 100 lifetime gift credits. Once used, falls back to 3 daily credits (unless they buy more).
   consumeAIToken: () => {
     const { profile, aiUsage } = get();
-    if (profile?.is_premium) return true;
-    if (aiUsage.count >= 3) return false;
-    const newUsage = { ...aiUsage, count: aiUsage.count + 1 };
-    set({ aiUsage: newUsage });
-    storageService.setItem('ssi_ai_usage', newUsage);
-    return true;
+    const today = getTodayDateString();
+    
+    let currentUsage = aiUsage;
+
+    // Reset daily counter if new day
+    if (aiUsage.date !== today) {
+      currentUsage = { date: today, count: 0 };
+      set({ aiUsage: currentUsage });
+    }
+
+    // 1. Check Daily Limit FIRST (3/day for everyone)
+    if (currentUsage.count < 3) {
+      const newUsage = { ...currentUsage, count: currentUsage.count + 1 };
+      set({ aiUsage: newUsage });
+      storageService.setItem('ssi_ai_usage', newUsage);
+      return true;
+    }
+
+    // 2. If Daily Limit Exceeded, Check Premium Lifetime Allowance
+    if (profile?.is_premium) {
+      const lifetimeUsed = profile.ai_lifetime_used || 0;
+      const lifetimeLimit = 100; // Gifted amount
+
+      if (lifetimeUsed < lifetimeLimit) {
+        // Consume lifetime credit
+        const newProfile = { ...profile, ai_lifetime_used: lifetimeUsed + 1 };
+        set({ profile: newProfile });
+        // Sync to Supabase if possible, but don't block
+        if (supabase && get().user) {
+             supabase.from('profiles').update({ ai_lifetime_used: lifetimeUsed + 1 }).eq('id', get().user.id).then();
+        }
+        return true;
+      }
+    }
+
+    return false;
   },
 
+  // Mnemonics share the same pool as other AI features
   consumeMnemonicToken: () => {
-    const { profile, mnemonicUsage } = get();
-    if (profile?.is_premium) return true;
-    if (mnemonicUsage.count >= 5) return false;
-    const newUsage = { ...mnemonicUsage, count: mnemonicUsage.count + 1 };
-    set({ mnemonicUsage: newUsage });
-    storageService.setItem('ssi_mnemonic_usage', newUsage);
-    return true;
+      return get().consumeAIToken();
   },
 
   startSubscriptionCheckout: async () => {

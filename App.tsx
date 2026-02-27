@@ -1,26 +1,49 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { BrowserRouter, HashRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { AppView, Word } from './types';
-import Sidebar from './components/Sidebar';
-import Dashboard from './components/Dashboard';
-import StudyView from './components/StudyView';
-import VocabularyView from './components/VocabularyView';
-import BlogView from './components/BlogView';
-import MobileSettings from './components/MobileSettings';
-import ModalManager from './components/ModalManager';
-import ErrorBoundary from './components/ErrorBoundary';
-import { AuthView } from './components/AuthView';
-import WelcomeView from './components/WelcomeView';
-import { useSRS } from './hooks/useSRS';
-import { Leaf, Loader2, Home, ShoppingBag, Menu, Newspaper } from 'lucide-react';
-import { useAuth } from './hooks/useAuth';
-import { isSupabaseConfigured, supabase } from './services/supabaseClient';
-import { initAudioSystem } from './utils/audio'; 
+import React, { useEffect, useState, useMemo } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Home, ShoppingBag, Menu, Leaf, Loader2, Newspaper } from 'lucide-react';
+import { supabase } from './services/supabaseClient';
 import { useIslandStore } from './store/useIslandStore';
+import { useAuth } from './hooks/useAuth';
+import { AppView } from './types';
+import { initAudioSystem } from './utils/audio';
+import { useSRS } from './hooks/useSRS';
 
-const AppContent: React.FC = () => {
+// Views
+import Dashboard from './components/Dashboard';
+import VocabularyView from './components/VocabularyView';
+import MobileSettings from './components/MobileSettings';
+import StudyView from './components/StudyView';
+import WelcomeView from './components/WelcomeView';
+import { AuthView } from './components/AuthView';
+import Sidebar from './components/Sidebar';
+import ErrorBoundary from './components/ErrorBoundary';
+import BlogView from './components/BlogView';
+
+const ConnectedStudyView: React.FC = () => {
+  const navigate = useNavigate();
+  const { sessionQueue, updateProgress, stats, user, activeModal, openModal } = useIslandStore();
+  const [isAuthView, setIsAuthView] = useState(false);
+
+  if (isAuthView) {
+    return <AuthView onBack={() => setIsAuthView(false)} />;
+  }
+
+  return (
+    <StudyView 
+      words={sessionQueue}
+      dailyHarvest={[]} // TODO: Add daily harvest if needed
+      onFinish={() => navigate('/')}
+      onFeedback={(id, quality) => updateProgress(id, quality)}
+      onLoginRequest={() => setIsAuthView(true)}
+      userStats={stats}
+      user={user}
+    />
+  );
+};
+
+const App: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,7 +52,8 @@ const AppContent: React.FC = () => {
     initialize, loading: islandLoading, 
     activeModal, closeModal, wordMap, progress, stats, profile,
     updateProgress, addExtraWords,
-    setSessionQueue, sessionQueue // Access session queue from store
+    setSessionQueue, sessionQueue,
+    isSidebarCollapsed // Access sidebar state
   } = useIslandStore();
 
   const [sessionVersion, setSessionVersion] = useState(0);
@@ -38,6 +62,8 @@ const AppContent: React.FC = () => {
   const [isGuest, setIsGuest] = useState(false);
   const [showAuthView, setShowAuthView] = useState(false);
   
+  const isSupabaseConfigured = !!supabase;
+
   const currentView = useMemo(() => {
     if (location.pathname.startsWith('/stories')) return AppView.BLOG;
     if (location.pathname === '/pocket') return AppView.VOCABULARY;
@@ -110,10 +136,6 @@ const AppContent: React.FC = () => {
           <Home size={20} className={currentView === AppView.DASHBOARD ? 'fill-current' : ''} />
           <span className="text-[8px] font-black uppercase">{t('ui.nav.home')}</span>
         </button>
-        <button onClick={() => navigate('/stories')} className={`flex flex-col items-center gap-1 transition-all w-14 ${currentView === AppView.BLOG ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
-          <Newspaper size={20} className={currentView === AppView.BLOG ? 'fill-current' : ''} />
-          <span className="text-[8px] font-black uppercase">{t('ui.nav.stories')}</span>
-        </button>
         <button onClick={() => navigate('/pocket')} className={`flex flex-col items-center gap-1 transition-all w-14 ${currentView === AppView.VOCABULARY ? 'text-[#ffa600]' : 'text-[#8d99ae]'}`}>
           <ShoppingBag size={20} className={currentView === AppView.VOCABULARY ? 'fill-current' : ''} />
           <span className="text-[8px] font-black uppercase">{t('ui.nav.pocket')}</span>
@@ -124,33 +146,23 @@ const AppContent: React.FC = () => {
         </button>
       </nav>
 
-      <main className="flex-1 md:ml-72 p-4 md:p-12 overflow-y-auto mb-24 md:mb-0">
-        <div className="max-w-4xl mx-auto w-full">
+      <main className={`flex-1 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'} p-4 md:p-12 overflow-y-auto mb-24 md:mb-0`}>
+        <div className="max-w-7xl mx-auto w-full">
           <ErrorBoundary>
             <Routes>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/pocket" element={<VocabularyView words={allAvailableWords} progress={progress} onWordClick={(w) => useIslandStore.getState().openModal('WORD_DETAIL', w)} onAddExtraWords={addExtraWords} onStartExtraStudy={(s) => { setSessionQueue(s); navigate('/study'); }} />} />
+              <Route path="/pocket" element={<VocabularyView />} />
+              <Route path="/menu" element={<MobileSettings />} />
+              <Route path="/study" element={<ConnectedStudyView key={`study-${sessionVersion}`} />} />
+              <Route path="/review" element={<ConnectedStudyView key={`review-${sessionVersion}`} />} />
               <Route path="/stories" element={<BlogView />} />
               <Route path="/stories/:slug" element={<BlogView />} />
-              <Route path="/menu" element={<MobileSettings user={user} stats={stats} displayName={profile?.traveler_name || 'Learner'} isSupabaseConfigured={isSupabaseConfigured} onLoginRequest={() => setShowAuthView(true)} onLogout={() => (supabase?.auth as any).signOut()} onShareAchievement={() => useIslandStore.getState().openModal('ACHIEVEMENT')} />} />
-              
-              {/* Study Views now read words directly from Store inside components or via prop pass-through */}
-              <Route path="/study" element={<div className="fixed inset-0 z-50 overflow-hidden flex flex-col bg-[#f7f9e4]"><StudyView key={`session-${sessionVersion}`} user={user} words={sessionQueue} dailyHarvest={learnedToday} onFinish={() => navigate('/')} onFeedback={updateProgress} userStats={stats} onLoginRequest={() => setShowAuthView(true)} /></div>} />
-              <Route path="/review" element={<div className="fixed inset-0 z-50 overflow-hidden flex flex-col bg-[#f7f9e4]"><StudyView key={`session-${sessionVersion}`} user={user} words={sessionQueue} dailyHarvest={learnedToday} onFinish={() => navigate('/')} onFeedback={updateProgress} userStats={stats} onLoginRequest={() => setShowAuthView(true)} /></div>} />
             </Routes>
           </ErrorBoundary>
         </div>
       </main>
-
-      <ModalManager />
     </div>
   );
-};
-
-const App: React.FC = () => {
-  const isProduction = window.location.hostname === 'ssisland.space';
-  const Router = isProduction ? BrowserRouter : HashRouter;
-  return <Router><AppContent /></Router>;
 };
 
 export default App;

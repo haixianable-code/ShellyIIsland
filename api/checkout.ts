@@ -24,10 +24,10 @@ export default async function handler(req: Request) {
     }
 
     const apiKey = process.env.LEMONSQUEEZY_API_KEY;
-    const storeId = process.env.LEMONSQUEEZY_STORE_ID;
+    const storeId = process.env.LEMONSQUEEZY_STORE_ID || '828679';
 
-    if (!apiKey || !storeId) {
-      return new Response(JSON.stringify({ error: 'Server config error' }), { status: 500 });
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: 'Server config error: Missing API Key' }), { status: 500 });
     }
 
     // 2. Create Checkout via Lemon Squeezy API

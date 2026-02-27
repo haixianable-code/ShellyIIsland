@@ -56,10 +56,12 @@ export default async function handler(req: any, res: any) {
                 .from('profiles')
                 .update({ 
                     is_premium: true,
+                    tier: 'premium', // Set tier to premium
                     subscription_id: data.id,
                     customer_id: data.attributes.customer_id,
                     variant_name: data.attributes.variant_name,
-                    premium_until: data.attributes.renews_at || null // or logic for lifetime
+                    premium_until: data.attributes.renews_at || null, // or logic for lifetime
+                    ai_lifetime_used: 0 // Reset gift usage on purchase
                 })
                 .eq('id', userId);
             

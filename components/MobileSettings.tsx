@@ -108,8 +108,8 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
         accent: 'bg-[#ffd740]', // Gold
         border: 'border-[#ffd740]',
         text: 'text-white',
-        status: 'SSI SUPPORTER',
-        stamp: 'SUPPORTER',
+        status: 'PREMIUM',
+        stamp: 'LIFETIME',
         label: 'Premium Passport',
         icon: Crown,
         iconColor: 'text-[#ffd740]',
@@ -122,8 +122,8 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
         accent: 'bg-[#78c850]', // Green
         border: 'border-[#4b7d78]',
         text: 'text-white',
-        status: t('ui.passport.citizen'),
-        stamp: 'CITIZEN',
+        status: 'FREE',
+        stamp: 'VISITOR',
         label: t('ui.passport.official_passport'),
         icon: Leaf,
         iconColor: 'text-[#78c850]',
@@ -386,7 +386,7 @@ const MobileSettings: React.FC<MobileSettingsProps> = ({
                     </div>
                     <div className="text-left">
                     <div className="text-lg font-black text-[#6a1b9a]">Toggle Premium</div>
-                    <div className="text-xs font-bold text-[#ab47bc]">Current: {isPremium ? 'PRO' : 'FREE'}</div>
+                    <div className="text-xs font-bold text-[#ab47bc]">Current: {isPremium ? 'PREMIUM' : 'FREE'}</div>
                     </div>
                 </div>
                 <ChevronRight className="text-[#ab47bc]" size={20} />

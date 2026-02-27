@@ -26,11 +26,11 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose }) => {
   };
 
   const perks = [
-    { icon: Infinity, text: t('ui.premium.perk_mnemonics'), desc: t('ui.premium.perk_mnemonics_desc') },
-    { icon: Zap, text: t('ui.premium.perk_feedback'), desc: t('ui.premium.perk_feedback_desc') },
-    { icon: Star, text: t('ui.premium.perk_badge'), desc: t('ui.premium.perk_badge_desc') },
-    { icon: Sparkles, text: t('ui.premium.perk_packs'), desc: t('ui.premium.perk_packs_desc') },
-    { icon: Heart, text: t('ui.premium.perk_dev'), desc: t('ui.premium.perk_dev_desc') }
+    { icon: Infinity, text: "Unlimited New Words", desc: "Learn as fast as you want. No daily limits." },
+    { icon: Sparkles, text: "All Vocab Packs", desc: "Slang, Business, Travel & more." },
+    { icon: Zap, text: "100 AI Credits Gift", desc: "Generate mnemonics & get AI coaching." },
+    { icon: Star, text: "Supporter Badge", desc: "Show off your island citizenship." },
+    { icon: Heart, text: "Support Development", desc: "Help us keep the island growing." }
   ];
 
   return (
@@ -51,8 +51,8 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose }) => {
                 <Crown size={56} className="text-slate-900 fill-current" />
              </div>
              <div className="space-y-1">
-                <h2 className="text-3xl font-black text-white uppercase tracking-tighter">{t('ui.premium.title')}</h2>
-                <p className="text-amber-400 font-black text-[10px] uppercase tracking-[0.3em]">{t('ui.premium.subtitle')}</p>
+                <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Island Citizenship</h2>
+                <p className="text-amber-400 font-black text-[10px] uppercase tracking-[0.3em]">Lifetime Access Pass</p>
              </div>
           </div>
         </div>
@@ -75,11 +75,11 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose }) => {
 
           <div className="bg-white p-6 rounded-[2.5rem] border-4 border-slate-100 shadow-inner flex items-center justify-between">
              <div className="flex flex-col">
-                <span className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest leading-none">{t('ui.premium.access_level')}</span>
-                <span className="text-3xl font-black text-[#4b7d78] mt-1 tracking-tighter">$4.99 <span className="text-sm opacity-40">/mo</span></span>
+                <span className="text-[10px] font-black text-[#8d99ae] uppercase tracking-widest leading-none">One-time Payment</span>
+                <span className="text-3xl font-black text-[#4b7d78] mt-1 tracking-tighter">$9.90 <span className="text-sm opacity-40">/ forever</span></span>
              </div>
              <div className="text-right">
-                <span className="bg-[#8bc34a] text-white px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm">{t('ui.premium.trial_badge')}</span>
+                <span className="bg-[#8bc34a] text-white px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm">Best Value</span>
              </div>
           </div>
 
@@ -92,21 +92,21 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose }) => {
                 {loading ? <Loader2 className="animate-spin" /> : (
                   <>
                     <ShieldCheck size={24} className="text-amber-400" />
-                    <span>{t('ui.premium.join_btn')}</span>
+                    <span>Unlock Forever</span>
                   </>
                 )}
               </button>
               
               <div className="flex items-center justify-center gap-2 opacity-60">
                  <Lock size={12} />
-                 <p className="text-[10px] font-bold text-[#8d99ae] uppercase tracking-widest">{t('ui.premium.secure_msg')}</p>
+                 <p className="text-[10px] font-bold text-[#8d99ae] uppercase tracking-widest">Secure Payment via LemonSqueezy</p>
               </div>
           </div>
         </div>
         
         <div className="bg-slate-50 p-4 border-t border-slate-100 text-center">
             <p className="text-[8px] font-bold text-slate-400 leading-relaxed max-w-[300px] mx-auto uppercase">
-               {t('ui.premium.disclaimer')}
+               No recurring fees. No hidden costs. Just pure learning.
             </p>
         </div>
       </div>
