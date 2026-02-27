@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "tsx server.ts",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -12,6 +12,7 @@
     "@google/genai": "^1.41.0",
     "@supabase/supabase-js": "^2.39.3",
     "canvas-confetti": "^1.9.4",
+    "express": "^5.2.1",
     "html2canvas": "^1.4.1",
     "i18next": "^25.8.4",
     "i18next-browser-languagedetector": "^8.2.0",
@@ -26,13 +27,16 @@
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.6.4",
+    "@types/express": "^5.0.6",
     "@types/html2canvas": "^1.0.0",
+    "@types/node": "^25.3.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.2.2",
     "vite": "^5.0.12"
   }

@@ -10,7 +10,6 @@ import { AIWordInfo } from '../services/geminiService';
 import { vocabService } from '../services/vocabService';
 import { getTodayDateString } from '../constants';
 
-const LEMON_VARIANT_ID = '828679';
 
 // Persistence Keys
 const KEY_PROGRESS = 'hola_word_srs_v4_offline';
@@ -360,12 +359,35 @@ export const useIslandStore = create<IslandState>((set, get) => ({
 
   startSubscriptionCheckout: async () => {
       const { user } = get();
-      if (!user) return; 
+      if (!user) {
+        // Ideally show a toast here, but for now we just return. 
+        // The UI should prevent this call if not logged in, or redirect to login.
+        console.warn("User not logged in");
+        return;
+      }
+      
       try {
-        const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ productId: LEMON_VARIANT_ID, userId: user.id, userEmail: user.email }) });
+        const res = await fetch('/api/checkout', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ userId: user.id, userEmail: user.email }) 
+        });
+        
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || 'Checkout failed');
+        }
+
         const data = await res.json();
-        if (data.url) window.location.href = data.url;
-      } catch (err) { alert("Checkout error"); }
+        if (data.url) {
+            window.location.href = data.url;
+        } else {
+            throw new Error('No checkout URL returned');
+        }
+      } catch (err: any) { 
+          console.error("Checkout error:", err);
+          alert(`Checkout error: ${err.message}`);
+      }
   },
 
   uploadVocabulary: async () => {
