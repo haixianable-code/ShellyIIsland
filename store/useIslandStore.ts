@@ -10,7 +10,7 @@ import { AIWordInfo } from '../services/geminiService';
 import { vocabService } from '../services/vocabService';
 import { getTodayDateString } from '../constants';
 
-const LEMON_VARIANT_ID = '384976';
+const LEMON_VARIANT_ID = '828679';
 
 // Persistence Keys
 const KEY_PROGRESS = 'hola_word_srs_v4_offline';
