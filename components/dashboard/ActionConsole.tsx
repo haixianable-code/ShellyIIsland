@@ -1,6 +1,6 @@
 
 import React, { useMemo } from 'react';
-import { ShieldAlert, Package, CheckCircle2, ArrowRight, Zap, Play } from 'lucide-react';
+import { Droplets, Sprout, CheckCircle2, ArrowRight, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { playClick } from '../../utils/sfx';
 
@@ -41,14 +41,15 @@ const ActionConsole: React.FC<ActionConsoleProps> = ({
           border: 'border-[#ffcdd2]',
           accent: 'text-[#d32f2f]',
           iconBg: 'bg-[#ff5252]',
-          icon: ShieldAlert,
-          title: t('ui.dashboard.decay_warning'),
-          subtitle: t('ui.dashboard.rescue_mission', { count: reviewCount }),
+          icon: Droplets,
+          title: t('ui.dashboard.action_defend_title'),
+          subtitle: t('ui.dashboard.action_defend_subtitle', { count: reviewCount }),
           btnBg: 'bg-[#ff5252]',
           btnShadow: 'shadow-[0_8px_0_#d32f2f]',
-          btnText: 'REPAIR SHIELD',
+          btnText: t('ui.dashboard.action_defend_btn'),
           action: onReview,
-          animation: 'animate-pulse-slow'
+          animation: 'animate-pulse-slow',
+          timeEst: Math.ceil(reviewCount * 0.5)
         };
       case 'EXPAND':
         return {
@@ -56,14 +57,15 @@ const ActionConsole: React.FC<ActionConsoleProps> = ({
           border: 'border-[#ffecb3]',
           accent: 'text-[#f57c00]',
           iconBg: 'bg-[#ffa600]',
-          icon: Package,
-          title: 'Supply Drop Arrived',
-          subtitle: t('ui.dashboard.dig_into', { count: newCount }),
+          icon: Sprout,
+          title: t('ui.dashboard.action_expand_title'),
+          subtitle: t('ui.dashboard.action_expand_subtitle', { count: newCount }),
           btnBg: 'bg-[#ffa600]',
           btnShadow: 'shadow-[0_8px_0_#e65100]',
-          btnText: 'OPEN CRATE',
+          btnText: t('ui.dashboard.action_expand_btn'),
           action: onStudy,
-          animation: 'animate-float-small'
+          animation: 'animate-float-small',
+          timeEst: Math.ceil(newCount * 0.5)
         };
       case 'SECURE':
       default:
@@ -73,18 +75,21 @@ const ActionConsole: React.FC<ActionConsoleProps> = ({
           accent: 'text-[#558b2f]',
           iconBg: 'bg-[#78c850]',
           icon: CheckCircle2,
-          title: 'Base Secure',
-          subtitle: 'All tasks complete. Freedom to explore.',
+          title: t('ui.dashboard.action_secure_title'),
+          subtitle: t('ui.dashboard.action_secure_subtitle'),
           btnBg: 'bg-[#78c850]',
           btnShadow: 'shadow-[0_8px_0_#558b2f]',
-          btnText: 'FREE EXPLORE',
+          btnText: t('ui.dashboard.action_secure_btn'),
           action: onExplore,
-          animation: ''
+          animation: '',
+          timeEst: 0
         };
     }
   }, [currentState, reviewCount, newCount, t, onReview, onStudy, onExplore]);
 
   const Icon = config.icon;
+  const { i18n } = useTranslation();
+  const isChinese = i18n.language.startsWith('zh');
 
   return (
     <div className="relative w-full max-w-xl mx-auto z-30 perspective-1000">
@@ -101,10 +106,10 @@ const ActionConsole: React.FC<ActionConsoleProps> = ({
 
         {/* Text Content */}
         <div className="space-y-2 mb-8 relative z-10">
-          <h2 className={`text-sm font-black uppercase tracking-[0.2em] ${config.accent} opacity-80`}>
+          <h2 className={`text-sm ${isChinese ? 'font-bold tracking-wide' : 'font-black tracking-[0.2em]'} uppercase ${config.accent} opacity-80`}>
             {config.title}
           </h2>
-          <h1 className={`text-3xl md:text-4xl font-black ${config.accent} leading-tight tracking-tighter`}>
+          <h1 className={`text-3xl md:text-4xl ${isChinese ? 'font-bold' : 'font-black'} ${config.accent} leading-tight tracking-tighter`}>
             {config.subtitle}
           </h1>
         </div>
@@ -112,7 +117,7 @@ const ActionConsole: React.FC<ActionConsoleProps> = ({
         {/* The Big Button */}
         <button
           onClick={() => { playClick(); config.action(); }}
-          className={`w-full max-w-xs ${config.btnBg} text-white py-5 rounded-[2.5rem] font-black text-xl ${config.btnShadow} border-4 border-white bubble-button flex items-center justify-center gap-3 relative overflow-hidden group`}
+          className={`w-full max-w-xs ${config.btnBg} text-white py-5 rounded-[2.5rem] ${isChinese ? 'font-bold' : 'font-black'} text-xl ${config.btnShadow} border-4 border-white bubble-button flex items-center justify-center gap-3 relative overflow-hidden group animate-breathe`}
         >
           <span className="relative z-10">{config.btnText}</span>
           <ArrowRight className="relative z-10 group-hover:translate-x-1 transition-transform" strokeWidth={3} />
@@ -125,17 +130,19 @@ const ActionConsole: React.FC<ActionConsoleProps> = ({
         {currentState !== 'SECURE' && (
            <div className="mt-4 flex items-center gap-2 opacity-50">
               <Zap size={12} className={config.accent} />
-              <span className={`text-[10px] font-black uppercase tracking-widest ${config.accent}`}>~8 Min Session</span>
+              <span className={`text-[10px] ${isChinese ? 'font-bold tracking-wide' : 'font-black tracking-widest'} uppercase ${config.accent}`}>
+                {t('ui.dashboard.action_time_est', { time: config.timeEst })}
+              </span>
            </div>
         )}
       </div>
 
       {/* Social Proof / Motivation below console */}
       <div className="mt-6 text-center">
-         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+         <p className={`text-[10px] font-bold text-slate-400 uppercase ${isChinese ? 'tracking-wide' : 'tracking-widest'}`}>
             {streak > 2 
-              ? `🔥 ${streak} Day Streak · You're faster than 72% of survivors.`
-              : "📉 Consistency is the only way to survive."}
+              ? t('ui.dashboard.streak_fire', { streak })
+              : t('ui.dashboard.streak_low')}
          </p>
       </div>
     </div>

@@ -52,7 +52,11 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
         if (error) throw error;
     } catch (err: any) {
         console.error("Google Auth error:", err);
-        setError(err.message);
+        let errorMsg = err.message || 'An unexpected error occurred. Please try again.';
+        if (errorMsg === 'Failed to fetch') {
+            errorMsg = 'Network error: Could not connect to the authentication server. Please check your internet connection, disable adblockers, or verify your Supabase URL configuration.';
+        }
+        setError(errorMsg);
         setGoogleLoading(false);
     }
   };
@@ -85,7 +89,11 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
       setCooldown(10);
     } catch (err: any) {
       console.error("Auth error:", err);
-      setError(err.message || 'An unexpected error occurred. Please try again.');
+      let errorMsg = err.message || 'An unexpected error occurred. Please try again.';
+      if (errorMsg === 'Failed to fetch') {
+          errorMsg = 'Network error: Could not connect to the authentication server. Please check your internet connection, disable adblockers, or verify your Supabase URL configuration.';
+      }
+      setError(errorMsg);
       setSendCodeStatus('error');
     }
   };
@@ -116,7 +124,11 @@ const AuthView: React.FC<AuthViewProps> = ({ onBack }) => {
         
     } catch (err: any) {
         console.error("OTP verification error:", err);
-        setError("Invalid or expired code. Please try again.");
+        let errorMsg = "Invalid or expired code. Please try again.";
+        if (err.message === 'Failed to fetch') {
+            errorMsg = 'Network error: Could not connect to the authentication server. Please check your internet connection or verify your Supabase URL configuration.';
+        }
+        setError(errorMsg);
         setVerifyOtpStatus('error');
         setOtp('');
     }

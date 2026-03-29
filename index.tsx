@@ -4,6 +4,14 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './i18n'; // Initialize i18n
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(err => {
+      console.log('SW registration failed: ', err);
+    });
+  });
+}
+
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {

@@ -19,7 +19,7 @@ export const useAuth = () => {
     // 2. Get Initial Session
     const getSession = async () => {
       try {
-        const { data: { session }, error } = await (supabase.auth as any).getSession();
+        const { data: { session }, error } = await (supabase!.auth as any).getSession();
         if (error) {
           console.warn("Supabase Auth Error:", error.message);
         }
@@ -36,7 +36,7 @@ export const useAuth = () => {
     getSession();
 
     // 3. Listen for changes (Sign In, Sign Out)
-    const { data: { subscription } } = (supabase.auth as any).onAuthStateChange((_event: any, session: any) => {
+    const { data: { subscription } } = (supabase!.auth as any).onAuthStateChange((_event: any, session: any) => {
       if (mounted) {
         setUser(session?.user ?? null);
         // Ensure loading stops on state change

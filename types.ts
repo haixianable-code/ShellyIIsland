@@ -82,9 +82,11 @@ export interface UserProfile {
   traveler_name: string | null;
   avatar_id: string;
   is_premium: boolean;
-  role?: 'user' | 'admin'; // <--- Added role field
+  role?: 'user' | 'admin';
   updated_at: string;
   active_blueprint_id?: string;
+  trial_ends_at?: string | null; // Added field
+  ai_lifetime_used?: number;
 }
 
 export enum AppView {

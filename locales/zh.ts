@@ -54,7 +54,21 @@ export default {
       "fluency_potential": "语言覆盖率",
       "coverage_desc": "基于 RAE 语料库频率统计",
       "official_passport": "SSI 官方认证通行证",
-      "active_mission": "当前学习任务"
+      "active_mission": "当前学习任务",
+      "action_defend_title": "浇灌幼苗",
+      "action_defend_subtitle": "有 {{count}} 棵小词苗需要水分哦 💧",
+      "action_defend_btn": "拿起水壶",
+      "action_expand_title": "播种新词",
+      "action_expand_subtitle": "海鸥送来了 {{count}} 颗新种子 🌱",
+      "action_expand_btn": "开始播种",
+      "action_secure_title": "生机盎然",
+      "action_secure_subtitle": "今天的岛务都完成啦！去海边散散步吧 🏖️",
+      "action_secure_btn": "海边漫步",
+      "action_time_est": "约 {{time}} 分钟",
+      "streak_fire": "☀️ 岛上连续 {{streak}} 天阳光明媚啦！",
+      "streak_low": "🌱 每一棵大树，都曾是一粒小小的种子。",
+      "daily_progress": "今日丰收",
+      "roadmap": "岛屿旅行手账"
     },
     "premium": {
       "title": "开启专业版",

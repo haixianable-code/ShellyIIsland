@@ -1,33 +1,26 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-export const config = {
-  runtime: 'edge',
-};
-
-export default async function handler(req: Request) {
+export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 });
+    return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
   try {
-    // 1. Get the user from the request header (sent by frontend) or body
-    // For better security, we usually validate the JWT, but for simplicity here
-    // we will trust the user_id sent from the client-side session for now, 
-    // OR ideally, validate the Authorization header if sent.
-    // Here we will use a simple approach: Frontend sends user_email or user_id.
-    
-    const { productId, userId, userEmail } = await req.json();
+    // 1. Get the user from the request body
+    const { userId, userEmail } = req.body;
 
-    if (!userId || !productId) {
-      return new Response(JSON.stringify({ error: 'Missing parameters' }), { status: 400 });
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing parameters: userId is required' });
     }
 
     const apiKey = process.env.LEMONSQUEEZY_API_KEY;
     const storeId = process.env.LEMONSQUEEZY_STORE_ID;
+    const variantId = process.env.LEMON_VARIANT_ID;
 
-    if (!apiKey || !storeId) {
-      return new Response(JSON.stringify({ error: 'Server config error: Missing API Key or Store ID' }), { status: 500 });
+    if (!apiKey || !storeId || !variantId) {
+      console.error('Missing env vars:', { apiKey: !!apiKey, storeId: !!storeId, variantId: !!variantId });
+      return res.status(500).json({ error: 'LemonSqueezy API keys are not configured. Please add LEMONSQUEEZY_API_KEY, LEMONSQUEEZY_STORE_ID, and LEMON_VARIANT_ID to your environment variables.' });
     }
 
     // 2. Create Checkout via Lemon Squeezy API
@@ -64,7 +57,7 @@ export default async function handler(req: Request) {
             variant: {
               data: {
                 type: "variants",
-                id: productId.toString()
+                id: variantId.toString()
               }
             }
           }
@@ -76,16 +69,14 @@ export default async function handler(req: Request) {
 
     if (result.errors) {
       console.error('Lemon API Error:', result.errors);
-      return new Response(JSON.stringify({ error: result.errors[0].detail }), { status: 500 });
+      return res.status(500).json({ error: result.errors[0].detail });
     }
 
     // 3. Return the checkout URL
-    return new Response(JSON.stringify({ url: result.data.attributes.url }), {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return res.status(200).json({ url: result.data.attributes.url });
 
   } catch (error: any) {
     console.error('Checkout Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return res.status(500).json({ error: error.message });
   }
 }

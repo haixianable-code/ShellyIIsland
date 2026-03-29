@@ -35,7 +35,7 @@ const AchievementShareModal: React.FC<AchievementShareModalProps> = ({ name, tot
         backgroundColor: '#fffdf5',
       });
 
-      canvas.toBlob(async (blob) => {
+      canvas.toBlob(async (blob: Blob | null) => {
         if (!blob) return;
         const file = new File([blob], 'ssi-achievement.png', { type: 'image/png' });
 

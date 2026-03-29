@@ -54,7 +54,21 @@ export default {
       "fluency_potential": "Fluency Coverage",
       "coverage_desc": "Based on RAE frequency statistics",
       "official_passport": "Verified SSI Passport",
-      "active_mission": "Active Mission"
+      "active_mission": "Active Mission",
+      "action_defend_title": "Water the Sprouts",
+      "action_defend_subtitle": "{{count}} sprouts need water today 💧",
+      "action_defend_btn": "GRAB WATERING CAN",
+      "action_expand_title": "Plant New Seeds",
+      "action_expand_subtitle": "Gulliver brought {{count}} new seeds 🌱",
+      "action_expand_btn": "START PLANTING",
+      "action_secure_title": "Garden is Thriving",
+      "action_secure_subtitle": "All chores done! Go for a walk 🏖️",
+      "action_secure_btn": "STROLL AROUND",
+      "action_time_est": "~{{time}} mins",
+      "streak_fire": "☀️ {{streak}} Days of Sunshine · Your island is blooming",
+      "streak_low": "🌱 Every big tree starts as a small seed.",
+      "daily_progress": "Daily Harvest",
+      "roadmap": "Island Guidebook"
     },
     "premium": {
       "title": "Go Pro",

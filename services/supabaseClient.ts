@@ -7,15 +7,25 @@ const env = (import.meta as any).env || {};
 const supabaseUrl = env.VITE_SUPABASE_URL;
 const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY;
 
-// Check if configuration exists
+// Check if configuration exists and is a valid URL
+const isValidUrl = (url: string) => {
+  try {
+    new URL(url);
+    return url.startsWith('http://') || url.startsWith('https://');
+  } catch (e) {
+    return false;
+  }
+};
+
 export const isSupabaseConfigured = 
   typeof supabaseUrl === 'string' && 
   supabaseUrl.length > 0 && 
+  isValidUrl(supabaseUrl) &&
   typeof supabaseAnonKey === 'string' && 
   supabaseAnonKey.length > 0;
 
 // Export client or null (Safe Fallback)
-// This prevents the app from crashing if .env.local is missing
+// This prevents the app from crashing if .env.local is missing or URL is invalid
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;

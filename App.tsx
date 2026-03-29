@@ -25,6 +25,7 @@ const ConnectedStudyView: React.FC = () => {
   const navigate = useNavigate();
   const { sessionQueue, updateProgress, stats, user, activeModal, openModal } = useIslandStore();
   const [isAuthView, setIsAuthView] = useState(false);
+  const { learnedToday } = useSRS();
 
   if (isAuthView) {
     return <AuthView onBack={() => setIsAuthView(false)} />;
@@ -33,7 +34,7 @@ const ConnectedStudyView: React.FC = () => {
   return (
     <StudyView 
       words={sessionQueue}
-      dailyHarvest={[]} // TODO: Add daily harvest if needed
+      dailyHarvest={learnedToday}
       onFinish={() => navigate('/')}
       onFeedback={(id, quality) => updateProgress(id, quality)}
       onLoginRequest={() => setIsAuthView(true)}
@@ -53,7 +54,9 @@ const App: React.FC = () => {
     activeModal, closeModal, wordMap, progress, stats, profile,
     updateProgress, addExtraWords,
     setSessionQueue, sessionQueue,
-    isSidebarCollapsed // Access sidebar state
+    isSidebarCollapsed, // Access sidebar state
+    allWords,
+    openModal
   } = useIslandStore();
 
   const [sessionVersion, setSessionVersion] = useState(0);
@@ -151,8 +154,26 @@ const App: React.FC = () => {
           <ErrorBoundary>
             <Routes>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/pocket" element={<VocabularyView />} />
-              <Route path="/menu" element={<MobileSettings />} />
+              <Route path="/pocket" element={
+                <VocabularyView 
+                  words={allWords} 
+                  progress={progress} 
+                  onWordClick={(word) => openModal('WORD_DETAIL', { wordId: word.id })} 
+                  onAddExtraWords={addExtraWords}
+                  onStartExtraStudy={(words) => { setSessionQueue(words); navigate('/study'); }}
+                />
+              } />
+              <Route path="/menu" element={
+                <MobileSettings 
+                  user={user}
+                  stats={stats}
+                  displayName={profile?.traveler_name || user?.email?.split('@')[0] || 'Learner'}
+                  isSupabaseConfigured={isSupabaseConfigured}
+                  onLogout={() => (supabase?.auth as any).signOut().then(() => window.location.reload())}
+                  onLoginRequest={() => setShowAuthView(true)}
+                  onShareAchievement={() => openModal('ACHIEVEMENT')}
+                />
+              } />
               <Route path="/study" element={<ConnectedStudyView key={`study-${sessionVersion}`} />} />
               <Route path="/review" element={<ConnectedStudyView key={`review-${sessionVersion}`} />} />
               <Route path="/stories" element={<BlogView />} />

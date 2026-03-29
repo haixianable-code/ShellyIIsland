@@ -19,7 +19,21 @@
       "island_quiet": "岛屿很宁静...",
       "crate_msg": "所有家务都做完了！瞧，一个补给箱被冲上了岸。",
       "open_crate": "打开补给箱 (+10)",
-      "slang_title": "岛屿俚语！"
+      "slang_title": "岛屿俚语！",
+      "action_defend_title": "浇灌幼苗",
+      "action_defend_subtitle": "有 {{count}} 棵小词苗需要水分哦 💧",
+      "action_defend_btn": "拿起水壶",
+      "action_expand_title": "播种新词",
+      "action_expand_subtitle": "海鸥送来了 {{count}} 颗新种子 🌱",
+      "action_expand_btn": "开始播种",
+      "action_secure_title": "生机盎然",
+      "action_secure_subtitle": "今天的岛务都完成啦！去海边散散步吧 🏖️",
+      "action_secure_btn": "海边漫步",
+      "action_time_est": "约 {{time}} 分钟",
+      "streak_fire": "☀️ 岛上连续 {{streak}} 天阳光明媚啦！",
+      "streak_low": "🌱 每一棵大树，都曾是一粒小小的种子。",
+      "daily_progress": "今日丰收",
+      "roadmap": "岛屿旅行手账"
     },
     "actions": {
       "save_forever": "永久保存进度",

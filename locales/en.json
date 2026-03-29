@@ -19,7 +19,21 @@
       "island_quiet": "The Island is Quiet...",
       "crate_msg": "All chores are done! But look, a crate of supplies washed ashore.",
       "open_crate": "Open Supply Crate (+10)",
-      "slang_title": "Island Slang!"
+      "slang_title": "Island Slang!",
+      "action_defend_title": "Water the Sprouts",
+      "action_defend_subtitle": "{{count}} sprouts need water today 💧",
+      "action_defend_btn": "GRAB WATERING CAN",
+      "action_expand_title": "Plant New Seeds",
+      "action_expand_subtitle": "Gulliver brought {{count}} new seeds 🌱",
+      "action_expand_btn": "START PLANTING",
+      "action_secure_title": "Garden is Thriving",
+      "action_secure_subtitle": "All chores done! Go for a walk 🏖️",
+      "action_secure_btn": "STROLL AROUND",
+      "action_time_est": "~{{time}} mins",
+      "streak_fire": "☀️ {{streak}} Days of Sunshine · Your island is blooming",
+      "streak_low": "🌱 Every big tree starts as a small seed.",
+      "daily_progress": "Daily Harvest",
+      "roadmap": "Island Guidebook"
     },
     "actions": {
       "save_forever": "Save Progress Forever",

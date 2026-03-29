@@ -118,7 +118,7 @@ const SummaryView: React.FC<SummaryViewProps> = ({ dailyHarvest, totalLearned, s
     await new Promise(resolve => setTimeout(resolve, 200));
     try {
       const canvas = await html2canvas(captureRef.current, { scale: 2, useCORS: true, backgroundColor: '#f7f9e4', logging: false });
-      canvas.toBlob(async (blob) => {
+      canvas.toBlob(async (blob: Blob | null) => {
         if (!blob) { setIsGenerating(false); setIsCapturing(false); return; }
         const file = new File([blob], 'shelly-harvest.png', { type: 'image/png' });
         if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {

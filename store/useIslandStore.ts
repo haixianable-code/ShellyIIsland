@@ -10,7 +10,6 @@ import { AIWordInfo } from '../services/geminiService';
 import { vocabService } from '../services/vocabService';
 import { getTodayDateString } from '../constants';
 
-
 // Persistence Keys
 const KEY_PROGRESS = 'hola_word_srs_v4_offline';
 const KEY_STATS = 'hola_user_stats_v1_offline';
@@ -150,17 +149,8 @@ export const useIslandStore = create<IslandState>((set, get) => ({
       console.warn("Failed to restore session queue", e);
     }
 
-    // Trial Logic
-    const storedTrialStatus = localStorage.getItem('ssi_trial_status') as 'none'|'active'|'expired' || 'none';
-    const storedTrialEnd = localStorage.getItem('ssi_trial_end');
-    let trialEndsAt = storedTrialEnd ? parseInt(storedTrialEnd) : null;
-    let trialStatus = storedTrialStatus;
-
-    if (trialStatus === 'active' && trialEndsAt && Date.now() > trialEndsAt) {
-      trialStatus = 'expired';
-      localStorage.setItem('ssi_trial_status', 'expired');
-    }
-
+    // Trial Logic - REMOVED (Moved to backend/profile)
+    
     const today = getTodayDateString();
     let aiUsage = storageService.getItem('ssi_ai_usage', { date: today, count: 0 });
     let mnemonicUsage = storageService.getItem('ssi_mnemonic_usage', { date: today, count: 0 });
@@ -168,7 +158,7 @@ export const useIslandStore = create<IslandState>((set, get) => ({
     if (aiUsage.date !== today) aiUsage = { date: today, count: 0 };
     if (mnemonicUsage.date !== today) mnemonicUsage = { date: today, count: 0 };
 
-    set({ isMuted, aiUsage, mnemonicUsage, activeBlueprintId, trialStatus, trialEndsAt, sessionQueue });
+    set({ isMuted, aiUsage, mnemonicUsage, activeBlueprintId, sessionQueue });
 
     try {
         // 2. Fetch Vocabulary (Cloud First, Local Fallback)
@@ -208,11 +198,22 @@ export const useIslandStore = create<IslandState>((set, get) => ({
                     if (!error) profile = newProfile;
                 }
                 
-                if (profile && trialStatus === 'active') {
-                  profile.is_premium = true;
+                // Handle Trial Status from Profile
+                let trialStatus: 'none' | 'active' | 'expired' = 'none';
+                let trialEndsAt: number | null = null;
+
+                if (profile?.trial_ends_at) {
+                    trialEndsAt = new Date(profile.trial_ends_at).getTime();
+                    if (Date.now() > trialEndsAt) {
+                        trialStatus = 'expired';
+                    } else {
+                        trialStatus = 'active';
+                        profile.is_premium = true; // Force premium if trial active
+                    }
                 }
 
-                set({ profile });
+                set({ profile, trialStatus, trialEndsAt });
+
                 const { data: cloudProgress } = await supabase.from('user_word_choices').select('*').eq('user_id', user.id);
                 if (cloudProgress && cloudProgress.length > 0) {
                     const cloudMap: ProgressMap = {};
@@ -233,9 +234,7 @@ export const useIslandStore = create<IslandState>((set, get) => ({
                 set({ syncStatus: 'error' });
             }
         } else {
-            if (trialStatus === 'active') {
-               set({ profile: { is_premium: true } as any });
-            }
+            // Guest or no user - no trial unless we want to support guest trials (not requested)
         }
     } catch (error) {
         console.error("Initialization Failed:", error);
@@ -248,25 +247,6 @@ export const useIslandStore = create<IslandState>((set, get) => ({
       localStorage.clear(); 
       sessionStorage.clear();
       window.location.reload(); 
-  },
-
-  activateTrial: () => {
-    const duration = 3 * 24 * 60 * 60 * 1000;
-    const endsAt = Date.now() + duration;
-    localStorage.setItem('ssi_trial_status', 'active');
-    localStorage.setItem('ssi_trial_end', endsAt.toString());
-    const { profile } = get();
-    const updatedProfile = profile ? { ...profile, is_premium: true } : { is_premium: true } as any;
-    set({ trialStatus: 'active', trialEndsAt: endsAt, profile: updatedProfile });
-  },
-
-  checkTrialStatus: () => {
-    const { trialStatus, trialEndsAt, profile } = get();
-    if (trialStatus === 'active' && trialEndsAt && Date.now() > trialEndsAt) {
-        localStorage.setItem('ssi_trial_status', 'expired');
-        const updatedProfile = profile ? { ...profile, is_premium: false } : null;
-        set({ trialStatus: 'expired', profile: updatedProfile });
-    }
   },
 
   updateProgress: async (wordId, quality) => {
@@ -360,34 +340,65 @@ export const useIslandStore = create<IslandState>((set, get) => ({
   startSubscriptionCheckout: async () => {
       const { user } = get();
       if (!user) {
-        // Ideally show a toast here, but for now we just return. 
-        // The UI should prevent this call if not logged in, or redirect to login.
-        console.warn("User not logged in");
-        return;
+          alert("Please login first");
+          return;
       }
-      
+      set({ loading: true });
       try {
         const res = await fetch('/api/checkout', { 
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' }, 
             body: JSON.stringify({ userId: user.id, userEmail: user.email }) 
         });
-        
-        if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.error || 'Checkout failed');
-        }
-
         const data = await res.json();
         if (data.url) {
-            window.location.href = data.url;
+            // Open in a new tab to avoid iframe restrictions in the preview environment
+            const newWindow = window.open(data.url, '_blank');
+            if (!newWindow) {
+                alert("Popup blocked! Please allow popups for this site to proceed to checkout.");
+            }
         } else {
-            throw new Error('No checkout URL returned');
+            throw new Error(data.error || "No URL returned");
         }
       } catch (err: any) { 
-          console.error("Checkout error:", err);
-          alert(`Checkout error: ${err.message}`);
+          console.error(err);
+          alert("Checkout error: " + err.message + "\n\nPlease ensure you have configured the LemonSqueezy API keys in your environment variables."); 
+      } finally {
+          set({ loading: false });
       }
+  },
+
+  activateTrial: async () => {
+    const { user } = get();
+    if (!user || !supabase) return;
+    
+    const duration = 3 * 24 * 60 * 60 * 1000;
+    const endsAt = new Date(Date.now() + duration).toISOString();
+    
+    const { error } = await supabase.from('profiles').update({ trial_ends_at: endsAt, is_premium: true }).eq('id', user.id);
+    
+    if (!error) {
+        set((state) => ({ 
+            profile: state.profile ? { ...state.profile, trial_ends_at: endsAt, is_premium: true } : null,
+            trialStatus: 'active',
+            trialEndsAt: Date.now() + duration
+        }));
+    }
+  },
+
+  checkTrialStatus: () => {
+    const { profile } = get();
+    if (profile?.trial_ends_at) {
+        const endsAt = new Date(profile.trial_ends_at).getTime();
+        if (Date.now() > endsAt) {
+            set((state) => ({ 
+                trialStatus: 'expired',
+                profile: state.profile ? { ...state.profile, is_premium: false } : null
+            }));
+        } else {
+            set({ trialStatus: 'active', trialEndsAt: endsAt });
+        }
+    }
   },
 
   uploadVocabulary: async () => {

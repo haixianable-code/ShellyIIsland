@@ -3,36 +3,23 @@ import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 import { Buffer } from 'buffer';
 
-// Webhooks usually need Node.js runtime for raw body handling and crypto
-export const config = {
-  api: {
-    bodyParser: false, // We need raw body for signature verification
-  },
-};
-
-// Helper to read raw body
-async function getRawBody(readable: any): Promise<Buffer> {
-  const chunks = [];
-  for await (const chunk of readable) {
-    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-  }
-  return Buffer.concat(chunks);
-}
-
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
   try {
-    const rawBody = await getRawBody(req);
+    const rawBody = req.body;
     const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
     const hmac = crypto.createHmac('sha256', secret || '');
     const digest = Buffer.from(hmac.update(rawBody).digest('hex'), 'utf8');
-    const signature = Buffer.from(req.headers['x-signature'] || '', 'utf8');
+    
+    const signatureHeader = req.headers['x-signature'];
+    const signatureStr = Array.isArray(signatureHeader) ? signatureHeader[0] : signatureHeader || '';
+    const signature = Buffer.from(signatureStr, 'utf8');
 
     // 1. Verify Signature (Security Check)
-    if (!crypto.timingSafeEqual(digest, signature)) {
+    if (digest.length !== signature.length || !crypto.timingSafeEqual(digest, signature)) {
       return res.status(401).json({ message: 'Invalid signature' });
     }
 
@@ -51,6 +38,10 @@ export default async function handler(req: any, res: any) {
     if (eventName === 'order_created' || eventName === 'subscription_created') {
         const userId = customData?.user_id;
         if (userId) {
+            // Handle Lifetime Logic: if renews_at is null, set premium_until to a sentinel value
+            const renewsAt = data.attributes.renews_at;
+            const premiumUntil = renewsAt ? renewsAt : '9999-12-31T23:59:59Z';
+
             // Update User Profile
             const { error } = await supabase
                 .from('profiles')
@@ -60,7 +51,7 @@ export default async function handler(req: any, res: any) {
                     subscription_id: data.id,
                     customer_id: data.attributes.customer_id,
                     variant_name: data.attributes.variant_name,
-                    premium_until: data.attributes.renews_at || null, // or logic for lifetime
+                    premium_until: premiumUntil,
                     ai_lifetime_used: 0 // Reset gift usage on purchase
                 })
                 .eq('id', userId);

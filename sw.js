@@ -42,6 +42,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Only cache GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
@@ -54,9 +59,14 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       })
-      .catch(() => {
+      .catch((error) => {
         // Fallback to cache if network fails
-        return caches.match(event.request);
+        return caches.match(event.request).then((cachedResponse) => {
+            if (cachedResponse) {
+                return cachedResponse;
+            }
+            throw error; // Propagate the original error if not in cache
+        });
       })
   );
 });
