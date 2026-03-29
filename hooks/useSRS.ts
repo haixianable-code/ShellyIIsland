@@ -66,6 +66,25 @@ export const useSRS = () => {
     return unlearnedInBlueprint.slice(0, DAILY_GOAL);
   }, [store.progress, store.wordMap, learnedToday, isPremium, activeBlueprintId, store.blueprints]);
 
+  // 获取需要巩固的弱项词汇 (SRS level <= 2)
+  const weakWords = useMemo<Word[]>(() => {
+    return (Object.entries(store.progress) as [string, SRSData][])
+      .filter(([_, data]) => data.level <= 2)
+      .map(([id]) => store.wordMap.get(id))
+      .filter((w): w is Word => w !== undefined);
+  }, [store.progress, store.wordMap]);
+
+  // 获取下一个蓝图的单词
+  const nextBlueprintWords = useMemo<Word[]>(() => {
+    const currentIndex = store.blueprints.findIndex(b => b.id === activeBlueprintId);
+    const nextBlueprint = store.blueprints[currentIndex + 1];
+    if (!nextBlueprint) return [];
+    return nextBlueprint.wordIds
+      .map(id => store.wordMap.get(id))
+      .filter((w): w is Word => w !== undefined)
+      .filter(w => !store.progress[w.id]);
+  }, [store.blueprints, activeBlueprintId, store.progress, store.wordMap]);
+
   return {
     progress: store.progress,
     allAvailableWords,
@@ -77,5 +96,7 @@ export const useSRS = () => {
     activeBlueprint: store.blueprints.find(b => b.id === activeBlueprintId),
     loadingSrs: store.loading,
     syncStatus: store.syncStatus,
+    weakWords,
+    nextBlueprintWords,
   };
 };

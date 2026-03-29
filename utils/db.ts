@@ -8,17 +8,41 @@ const DB_VERSION = 1;
  */
 export const initDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    if (typeof indexedDB === 'undefined') {
+      return reject(new Error('IndexedDB not supported'));
+    }
+    
+    // Add a timeout to prevent hanging in restricted iframe environments
+    const timeoutId = setTimeout(() => {
+        reject(new Error('IndexedDB open timeout'));
+    }, 3000);
 
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
+    try {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
-    };
+        request.onerror = () => {
+            clearTimeout(timeoutId);
+            reject(request.error);
+        };
+        request.onsuccess = () => {
+            clearTimeout(timeoutId);
+            resolve(request.result);
+        };
+        request.onblocked = () => {
+            clearTimeout(timeoutId);
+            reject(new Error('IndexedDB blocked'));
+        };
+
+        request.onupgradeneeded = (event) => {
+            const db = (event.target as IDBOpenDBRequest).result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME);
+            }
+        };
+    } catch (e) {
+        clearTimeout(timeoutId);
+        reject(e);
+    }
   });
 };
 
@@ -29,11 +53,23 @@ export const getVal = async <T>(key: string): Promise<T | undefined> => {
   try {
     const db = await initDB();
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const store = tx.objectStore(STORE_NAME);
-      const request = store.get(key);
-      request.onsuccess = () => resolve(request.result as T);
-      request.onerror = () => reject(request.error);
+      const timeoutId = setTimeout(() => reject(new Error('IDB get timeout')), 3000);
+      try {
+          const tx = db.transaction(STORE_NAME, 'readonly');
+          const store = tx.objectStore(STORE_NAME);
+          const request = store.get(key);
+          request.onsuccess = () => {
+              clearTimeout(timeoutId);
+              resolve(request.result as T);
+          };
+          request.onerror = () => {
+              clearTimeout(timeoutId);
+              reject(request.error);
+          };
+      } catch (e) {
+          clearTimeout(timeoutId);
+          reject(e);
+      }
     });
   } catch (e) {
     console.error('IDB Get Error:', e);
@@ -48,11 +84,23 @@ export const setVal = async (key: string, value: any): Promise<void> => {
   try {
     const db = await initDB();
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
-      const request = store.put(value, key);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+      const timeoutId = setTimeout(() => reject(new Error('IDB set timeout')), 3000);
+      try {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          const store = tx.objectStore(STORE_NAME);
+          const request = store.put(value, key);
+          request.onsuccess = () => {
+              clearTimeout(timeoutId);
+              resolve();
+          };
+          request.onerror = () => {
+              clearTimeout(timeoutId);
+              reject(request.error);
+          };
+      } catch (e) {
+          clearTimeout(timeoutId);
+          reject(e);
+      }
     });
   } catch (e) {
     console.error('IDB Set Error:', e);
@@ -66,11 +114,23 @@ export const delVal = async (key: string): Promise<void> => {
   try {
     const db = await initDB();
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
-      const request = store.delete(key);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+      const timeoutId = setTimeout(() => reject(new Error('IDB delete timeout')), 3000);
+      try {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          const store = tx.objectStore(STORE_NAME);
+          const request = store.delete(key);
+          request.onsuccess = () => {
+              clearTimeout(timeoutId);
+              resolve();
+          };
+          request.onerror = () => {
+              clearTimeout(timeoutId);
+              reject(request.error);
+          };
+      } catch (e) {
+          clearTimeout(timeoutId);
+          reject(e);
+      }
     });
   } catch (e) {
     console.error('IDB Delete Error:', e);

@@ -134,6 +134,7 @@ export const useIslandStore = create<IslandState>((set, get) => ({
   },
 
   initialize: async (user) => {
+    console.log("Initialize started", { user });
     set({ loading: true, user });
     
     // 1. Sync Load (Settings & Session)
@@ -161,8 +162,10 @@ export const useIslandStore = create<IslandState>((set, get) => ({
     set({ isMuted, aiUsage, mnemonicUsage, activeBlueprintId, sessionQueue });
 
     try {
+        console.log("Fetching vocabulary...");
         // 2. Fetch Vocabulary (Cloud First, Local Fallback)
         const words = await vocabService.getAllWords();
+        console.log(`Fetched ${words.length} words.`);
         const wordMap = new Map<string, Word>();
         const wordsByTopic: Record<string, string[]> = {};
         const wordsByLevel: Record<string, string[]> = {};
@@ -179,22 +182,33 @@ export const useIslandStore = create<IslandState>((set, get) => ({
 
         set({ allWords: words, wordMap, wordsByTopic, wordsByLevel });
 
+        console.log("Loading from IndexedDB...");
         // 3. Async Load (Heavy Data) from IndexedDB
         const [progress, stats, aiCache] = await Promise.all([
             storageService.getItemAsync(KEY_PROGRESS, {}, ProgressMapSchema),
             storageService.getItemAsync(KEY_STATS, { current_streak: 0, last_activity_date: new Date().toISOString(), total_words_learned: 0 }, UserStatsSchema),
             storageService.getItemAsync(KEY_AI_CACHE, {})
         ]);
+        console.log("Loaded from IndexedDB.");
 
         set({ progress, stats, aiCache });
 
         // 4. Supabase Sync (if user)
         if (user && supabase) {
+            console.log("Syncing with Supabase...");
             set({ syncStatus: 'syncing' });
             try {
-                let { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+                // Helper to add timeout to Supabase queries
+                const withTimeout = <T>(promise: Promise<T>, ms = 5000): Promise<T> => {
+                    const timeout = new Promise<T>((_, reject) => 
+                        setTimeout(() => reject(new Error('Supabase query timeout')), ms)
+                    );
+                    return Promise.race([promise, timeout]);
+                };
+
+                let { data: profile } = await withTimeout(supabase.from('profiles').select('*').eq('id', user.id).single()) as any;
                 if (!profile) {
-                    const { data: newProfile, error } = await supabase.from('profiles').upsert({ id: user.id }).select().single();
+                    const { data: newProfile, error } = await withTimeout(supabase.from('profiles').upsert({ id: user.id }).select().single()) as any;
                     if (!error) profile = newProfile;
                 }
                 
@@ -214,7 +228,7 @@ export const useIslandStore = create<IslandState>((set, get) => ({
 
                 set({ profile, trialStatus, trialEndsAt });
 
-                const { data: cloudProgress } = await supabase.from('user_word_choices').select('*').eq('user_id', user.id);
+                const { data: cloudProgress } = await withTimeout(supabase.from('user_word_choices').select('*').eq('user_id', user.id)) as any;
                 if (cloudProgress && cloudProgress.length > 0) {
                     const cloudMap: ProgressMap = {};
                     cloudProgress.forEach((row: any) => {
@@ -229,16 +243,19 @@ export const useIslandStore = create<IslandState>((set, get) => ({
                     storageService.setItemAsync(KEY_STATS, mergedStats);
                 }
                 set({ syncStatus: 'synced' });
+                console.log("Supabase sync complete.");
             } catch (e) {
                 console.error("Sync error", e);
                 set({ syncStatus: 'error' });
             }
         } else {
             // Guest or no user - no trial unless we want to support guest trials (not requested)
+            console.log("No user, skipping Supabase sync.");
         }
     } catch (error) {
         console.error("Initialization Failed:", error);
     } finally {
+        console.log("Initialize finished.");
         set({ loading: false });
     }
   },

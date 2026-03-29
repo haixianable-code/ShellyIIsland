@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useIslandStore } from '../store/useIslandStore';
 import WordDetailModal from './WordDetailModal';
 import StreakModal from './StreakModal';
@@ -8,17 +9,38 @@ import ProfileEntryModal from './ProfileEntryModal';
 import ReturningWelcomeModal from './ReturningWelcomeModal';
 import AchievementShareModal from './AchievementShareModal';
 import SubscriptionModal from './SubscriptionModal';
+import DeepLearningModal from './DeepLearningModal';
 import { useSRS } from '../hooks/useSRS';
 
 const ModalManager: React.FC = () => {
+  const navigate = useNavigate();
   const { activeModal, modalData, closeModal, stats, progress, updateProfile } = useIslandStore();
-  const { learnedToday, learnedWords, reviewWords, newWordsForToday } = useSRS();
+  const { learnedToday, learnedWords, reviewWords, newWordsForToday, weakWords, nextBlueprintWords } = useSRS();
 
   if (!activeModal) return null;
 
   switch (activeModal) {
     case 'WORD_DETAIL':
       return <WordDetailModal word={modalData} onClose={closeModal} />;
+    
+    case 'DEEP_LEARNING':
+      return (
+        <DeepLearningModal 
+          weakWords={weakWords}
+          nextBlueprintWords={nextBlueprintWords}
+          onClose={closeModal}
+          onAdvance={(words) => {
+            useIslandStore.getState().setSessionQueue(words);
+            navigate('/study');
+            closeModal();
+          }}
+          onConsolidate={(words) => {
+            useIslandStore.getState().setSessionQueue(words);
+            navigate('/review');
+            closeModal();
+          }}
+        />
+      );
     
     case 'STREAK':
       return <StreakModal streak={stats.current_streak} words={learnedWords} onClose={closeModal} />;

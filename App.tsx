@@ -105,6 +105,17 @@ const App: React.FC = () => {
          navigate('/review');
        }
        closeModal();
+    } else if (activeModal === 'DEEP_LEARNING_ADVANCE') {
+       // This will be triggered by DeepLearningModal
+       // We need to pass the words to sessionQueue. 
+       // The modal will set the sessionQueue via store before triggering this.
+       setSessionVersion(v => v + 1);
+       navigate('/study');
+       closeModal();
+    } else if (activeModal === 'DEEP_LEARNING_CONSOLIDATE') {
+       setSessionVersion(v => v + 1);
+       navigate('/review');
+       closeModal();
     }
   }, [activeModal, newWordsForToday, reviewWords, navigate, closeModal, setSessionQueue]);
 

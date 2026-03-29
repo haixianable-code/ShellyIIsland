@@ -7,29 +7,42 @@ export const useAuth = () => {
   const [authChecking, setAuthChecking] = useState(true);
 
   useEffect(() => {
+    console.log("useAuth: Initializing...");
     // 1. Safety Check: If Supabase isn't configured, stop immediately.
     // This ensures local-only mode works instantly.
     if (!isSupabaseConfigured || !supabase) {
+      console.log("useAuth: Supabase not configured, skipping auth check.");
       setAuthChecking(false);
       return;
     }
 
     let mounted = true;
 
-    // 2. Get Initial Session
+    // 2. Get Initial Session with Timeout
     const getSession = async () => {
+      console.log("useAuth: Getting initial session...");
       try {
-        const { data: { session }, error } = await (supabase!.auth as any).getSession();
+        // Add a 5-second timeout to prevent hanging
+        const sessionPromise = (supabase!.auth as any).getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Supabase getSession timeout')), 5000)
+        );
+        
+        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        
         if (error) {
           console.warn("Supabase Auth Error:", error.message);
         }
         if (mounted) {
+          console.log("useAuth: Session retrieved", { user: session?.user });
           setUser(session?.user ?? null);
           setAuthChecking(false);
         }
       } catch (err) {
         console.error("Unexpected Auth Error:", err);
-        if (mounted) setAuthChecking(false);
+        if (mounted) {
+            setAuthChecking(false);
+        }
       }
     };
 

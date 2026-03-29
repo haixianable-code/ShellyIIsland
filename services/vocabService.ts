@@ -63,9 +63,13 @@ export const vocabService = {
     if (!supabase) return this.getLocalWords();
 
     try {
-      const { data, error } = await supabase
-        .from(TABLE)
-        .select('*');
+      // Add a 5-second timeout to prevent hanging
+      const fetchPromise = supabase.from(TABLE).select('*');
+      const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Supabase fetch timeout')), 5000)
+      );
+      
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
 
       if (error) throw error;
 

@@ -89,7 +89,7 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
   };
 
   return (
-    <div className="space-y-8 animate-fadeIn pb-24 md:pb-12 relative">
+    <div className="space-y-12 animate-fadeIn pb-24 md:pb-12 relative">
       <SEO 
         title="My Pocket - Vocabulary Collection"
         description="Review and manage your grown Spanish vocabulary seeds. Track your mastery levels and filter by topic."
@@ -115,88 +115,69 @@ const VocabularyView: React.FC<VocabularyViewProps> = ({ words, progress, onWord
         </div>
       </header>
 
-      <section className="relative z-10" aria-label="Vocabulary expansion pack">
+      {/* Official Expansion Packs Section */}
+      <section className="relative z-10" aria-label="Official Expansion Packs">
+        <h2 className="text-2xl font-black text-[#4b7d78] mb-6">{t('ui.pocket.expansion_packs')}</h2>
         <WordExpansionPack availableCount={unlearnedExtra.length} onExplore={() => { playClick(); setIsModalOpen(true); }} />
       </section>
         
-      <section className="relative group z-20 max-w-2xl" aria-label="Search and filter vocabulary">
-        <div className="absolute left-6 top-1/2 -translate-y-1/2 bg-[#8bc34a] p-2.5 rounded-2xl shadow-sm border-2 border-white z-10" aria-hidden="true">
-          <Search className="text-white" size={20} strokeWidth={3} />
+      {/* My Vocabulary Section */}
+      <section className="relative z-10" aria-label="My Vocabulary">
+        <h2 className="text-2xl font-black text-[#4b7d78] mb-6">{t('ui.pocket.my_vocabulary')}</h2>
+        <div className="relative group z-20 max-w-2xl mb-8">
+            <div className="absolute left-6 top-1/2 -translate-y-1/2 bg-[#8bc34a] p-2.5 rounded-2xl shadow-sm border-2 border-white z-10" aria-hidden="true">
+            <Search className="text-white" size={20} strokeWidth={3} />
+            </div>
+            <label htmlFor="vocab-search" className="sr-only">Search your vocabulary</label>
+            <input 
+            id="vocab-search"
+            type="text" 
+            placeholder={t('ui.actions.search')} 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-20 pr-8 py-6 bg-white border-4 border-[#e0d9b4] rounded-[3rem] w-full shadow-[0_10px_0_rgba(224,217,180,0.4)] focus:outline-none focus:border-[#8bc34a] focus:ring-8 focus:ring-[#8bc34a]/20 transition-all font-black text-[#4b7d78] text-xl placeholder:text-slate-300"
+            />
         </div>
-        <label htmlFor="vocab-search" className="sr-only">Search your vocabulary</label>
-        <input 
-          id="vocab-search"
-          type="text" 
-          placeholder={t('ui.actions.search')} 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-20 pr-8 py-6 bg-white border-4 border-[#e0d9b4] rounded-[3rem] w-full shadow-[0_10px_0_rgba(224,217,180,0.4)] focus:outline-none focus:border-[#8bc34a] focus:ring-8 focus:ring-[#8bc34a]/20 transition-all font-black text-[#4b7d78] text-xl placeholder:text-slate-300"
-        />
-      </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10" aria-label="Vocabulary results list">
-        {filteredWords.map((word) => {
-          const srs = progress[word.id];
-          const hasProgress = !!srs;
-          const level = srs?.level || 0;
-          const { icon: StageIcon, color, bg } = getGrowthIcon(level);
-          const theme = getTypeTheme(word);
-
-          // Paywall logic check
-          const parentPack = VOCABULARY_DATA.find(p => p.words.some(w => w.id === word.id));
-          const isPremiumWord = parentPack && parentPack.id !== 'day1';
-          const isLocked = !hasProgress && !isPremium && isPremiumWord;
-          
-          return (
-            <LazyCard key={word.id}>
-              <article 
-                className={`island-card-3d bg-white p-6 rounded-[3rem] border-4 border-transparent shadow-[0_15px_30px_-5px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(139,195,74,0.3)] transition-all flex flex-col justify-between group active:translate-y-2 active:shadow-none text-left relative overflow-hidden h-full min-h-[180px] bubble-button w-full ${isLocked ? 'grayscale-[0.8] opacity-80' : ''}`}
-              >
-                {/* Click Overlay - Increased z-index to 30 to cover content (z-10) */}
-                <button 
-                  onClick={() => handleItemClick(word)}
-                  className="absolute inset-0 z-30 w-full h-full cursor-pointer"
-                  aria-label={isLocked ? `Unlock premium word ${word.s}` : `View details for word ${word.s}`}
-                />
-                
-                <div className="flex flex-wrap gap-2 mb-3 relative z-10 pointer-events-none">
-                    <span style={{ backgroundColor: theme.main }} className="px-2.5 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-sm">{getPosLabel(word)}</span>
-                    {!isLocked && <span style={{ backgroundColor: theme.main }} className="px-2.5 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-sm">{word.level}</span>}
-                </div>
-
-                <div className="relative z-10 flex items-end justify-between mt-1 pointer-events-none">
-                  <div className="space-y-1">
-                    <h3 className={`text-4xl font-black text-[#2e4d4a] tracking-tighter ${isLocked ? 'blur-[3px]' : ''}`}>{word.s}</h3>
-                    <p className={`text-slate-400 font-bold text-lg ${isLocked ? 'blur-[2px]' : ''}`}>{t(`vocab.${word.id}.t`, { defaultValue: word.t })}</p>
-                  </div>
-                  
-                  {isLocked ? (
-                    <div className="bg-[#ffa600]/10 p-3 rounded-2xl border-2 border-[#ffa600]/20 flex flex-col items-center">
-                       <Lock size={20} className="text-[#ffa600]" />
-                       <span className="text-[7px] font-black text-[#ffa600] uppercase mt-1">Supporter</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {filteredWords.map((word) => {
+            const srs = progress[word.id];
+            const hasProgress = !!srs;
+            const level = srs?.level || 0;
+            const { icon: StageIcon, color, bg } = getGrowthIcon(level);
+            const theme = getTypeTheme(word);
+            
+            return (
+                <LazyCard key={word.id}>
+                <article 
+                    className={`island-card-3d bg-white p-6 rounded-[3rem] border-4 border-transparent shadow-[0_15px_30px_-5px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(139,195,74,0.3)] transition-all flex flex-col justify-between group active:translate-y-2 active:shadow-none text-left relative overflow-hidden h-full min-h-[180px] bubble-button w-full`}
+                >
+                    <button 
+                    onClick={() => handleItemClick(word)}
+                    className="absolute inset-0 z-30 w-full h-full cursor-pointer"
+                    aria-label={`View details for word ${word.s}`}
+                    />
+                    
+                    <div className="flex flex-wrap gap-2 mb-3 relative z-10 pointer-events-none">
+                        <span style={{ backgroundColor: theme.main }} className="px-2.5 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-sm">{getPosLabel(word)}</span>
+                        <span style={{ backgroundColor: theme.main }} className="px-2.5 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest shadow-sm">{word.level}</span>
                     </div>
-                  ) : (
+
+                    <div className="relative z-10 flex items-end justify-between mt-1 pointer-events-none">
+                    <div className="space-y-1">
+                        <h3 className={`text-4xl font-black text-[#2e4d4a] tracking-tighter`}>{word.s}</h3>
+                        <p className={`text-slate-400 font-bold text-lg`}>{t(`vocab.${word.id}.t`, { defaultValue: word.t })}</p>
+                    </div>
+                    
                     <div className={`flex flex-col items-center gap-1 p-2 rounded-2xl ${bg}`} aria-label={`Mastery Level ${level}`}>
-                      <StageIcon size={20} className={color} aria-hidden="true" />
+                        <StageIcon size={20} className={color} aria-hidden="true" />
                     </div>
-                  )}
-                </div>
-
-                {isLocked && (
-                    <div className="absolute inset-0 bg-white/20 backdrop-blur-[1px] pointer-events-none flex items-center justify-center z-20">
-                       <div className="bg-white/90 p-4 rounded-3xl shadow-xl flex items-center gap-3 border-2 border-[#ffa600]/30 transform -rotate-2">
-                          <Crown size={24} className="text-[#ffa600]" />
-                          <div className="text-left">
-                             <p className="text-[9px] font-black text-[#4b7d78] uppercase leading-none">Premium Content</p>
-                             <p className="text-[8px] font-bold text-[#8d99ae] uppercase tracking-widest">Tap to Unlock</p>
-                          </div>
-                       </div>
                     </div>
-                )}
-              </article>
-            </LazyCard>
-          );
-        })}
+                </article>
+                </LazyCard>
+            );
+            })}
+        </div>
       </section>
 
       {isModalOpen && <ExpansionModal availableWords={unlearnedExtra} onClose={() => setIsModalOpen(false)} onAddWords={onAddExtraWords} onStudyNow={onStartExtraStudy} />}

@@ -57,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, user, displayNa
             </div>
         </div>
         {!isSidebarCollapsed && (
-            <div className="mt-3 text-lg font-black text-[#4b7d78] tracking-tight uppercase animate-fadeIn whitespace-nowrap overflow-hidden">SS Spanish</div>
+            <div className="mt-3 text-lg font-black text-[#4b7d78] tracking-tight uppercase animate-fadeIn whitespace-nowrap overflow-hidden">SSIsland</div>
         )}
       </header>
 

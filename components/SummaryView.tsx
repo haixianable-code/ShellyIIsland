@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { getTypeTheme } from '../utils/theme';
 import { 
   Share2, Leaf, ArrowRight,
-  Flame, Loader2
+  Loader2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playFanfare, playClick } from '../utils/sfx';
@@ -15,9 +15,7 @@ import html2canvas from 'html2canvas';
 import { useIslandStore } from '../store/useIslandStore';
 
 // Sub-components (Story Interceptors)
-import GiftUnboxing from './summary/GiftUnboxing';
 import TrialCountdown from './summary/TrialCountdown';
-import CliffHanger from './summary/CliffHanger';
 
 const WordPill: React.FC<{ word: Word; index: number; forceVisible: boolean }> = ({ word, index, forceVisible }) => {
   const { t } = useTranslation();
@@ -63,30 +61,11 @@ const SummaryView: React.FC<SummaryViewProps> = ({ dailyHarvest, totalLearned, s
     checkTrialStatus();
 
     // 2. Determine Initial View State
-    const determineState = () => {
-        // Scenario A: Day 1 (or small streak) + No Trial + No Premium -> GIFT
-        // Using streak <= 2 to be generous
-        if (streak > 0 && streak <= 2 && trialStatus === 'none' && !profile?.is_premium) {
-            return 'gift';
-        }
-        
-        // Scenario C: Expired Trial -> CLIFF
-        // Check if explicitly expired in this session
-        if (trialStatus === 'expired') {
-            return 'cliff';
-        }
-
-        // Default: Standard Summary
-        return 'summary';
-    };
-
-    const nextState = determineState();
-    setViewState(nextState);
+    // We are removing the gift and cliff hanger logic for now to simplify the flow
+    setViewState('summary');
 
     // If standard summary, play effects immediately
-    if (nextState === 'summary') {
-        triggerSummaryEffects();
-    }
+    triggerSummaryEffects();
 
   }, [streak, trialStatus, profile?.is_premium, checkTrialStatus]);
 
@@ -100,14 +79,6 @@ const SummaryView: React.FC<SummaryViewProps> = ({ dailyHarvest, totalLearned, s
       if (Date.now() < end) requestAnimationFrame(frame);
     };
     frame();
-  };
-
-  const handleGiftOpened = () => {
-      activateTrial(); // Update store state
-      setTimeout(() => {
-          setViewState('summary'); // Transition to summary
-          triggerSummaryEffects(); // Play confetti
-      }, 1500); // Wait for confetti from GiftUnboxing to settle slightly
   };
 
   const handleShare = async () => {
@@ -134,22 +105,6 @@ const SummaryView: React.FC<SummaryViewProps> = ({ dailyHarvest, totalLearned, s
   // --- RENDER LOGIC ---
 
   if (viewState === 'loading') return null;
-
-  if (viewState === 'gift') {
-      return (
-          <div className="flex-1 flex flex-col items-center justify-center h-[100dvh] bg-[#f7f9e4] p-4">
-              <GiftUnboxing onOpen={handleGiftOpened} />
-          </div>
-      );
-  }
-
-  if (viewState === 'cliff') {
-      return (
-          <div className="flex-1 flex flex-col items-center justify-center h-[100dvh] bg-[#f7f9e4] p-4">
-              <CliffHanger />
-          </div>
-      );
-  }
 
   // Standard Summary (includes Trial Countdown if active)
   return (
@@ -179,7 +134,7 @@ const SummaryView: React.FC<SummaryViewProps> = ({ dailyHarvest, totalLearned, s
       </div>
       <div className="w-full max-w-lg mt-4 space-y-3 px-2 relative z-50">
         <button onClick={handleShare} disabled={isGenerating} className="w-full bg-[#ffa600] text-white py-4 md:py-5 rounded-3xl font-black text-lg shadow-[0_6px_0_#e65100] border-2 md:border-4 border-white bubble-button flex items-center justify-center gap-2.5 hover:bg-[#ffb74d] transition-all disabled:opacity-70">{isGenerating ? <Loader2 className="animate-spin" size={20} /> : <Share2 size={20} />}<span>{isGenerating ? t('ui.actions.generating') : t('ui.actions.share_harvest')}</span></button>
-        <button onClick={onFinish} className="w-full bg-white text-[#4b7d78] py-3.5 rounded-2xl font-black text-base transition-all active:scale-95 flex items-center justify-center gap-2 border-2 border-transparent hover:border-[#e0d9b4] shadow-sm uppercase tracking-tight"><ArrowRight size={18} /><span>{t('ui.actions.continue_learning')}</span></button>
+        <button onClick={onFinish} className="w-full bg-white text-[#4b7d78] py-3.5 rounded-2xl font-black text-base transition-all active:scale-95 flex items-center justify-center gap-2 border-2 border-transparent hover:border-[#e0d9b4] shadow-sm uppercase tracking-tight"><ArrowRight size={18} /><span>{t('ui.actions.return_to_base', 'Return to Base')}</span></button>
       </div>
     </div>
   );
