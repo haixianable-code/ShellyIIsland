@@ -3,7 +3,7 @@ export default {
   "ui": {
     "nav": {
       "home": "Base Camp",
-      "pocket": "Inventory",
+      "pocket": "Word Bank",
       "menu": "Identity",
       "passport": "Passport",
       "stories": "Intel"

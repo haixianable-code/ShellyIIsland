@@ -10,5 +10,4 @@ export const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
 // Aggregated Data Exports
 export { VOCABULARY_DATA } from './data/courseData';
-export { EXTRA_CANDIDATES } from './data/expansionData';
 export { ISLAND_SLANG } from './data/slangData';

@@ -21,7 +21,8 @@ const ModalManager: React.FC = () => {
 
   switch (activeModal) {
     case 'WORD_DETAIL':
-      return <WordDetailModal word={modalData} onClose={closeModal} />;
+      const word = useIslandStore.getState().wordMap.get(modalData?.id || modalData?.wordId);
+      return word ? <WordDetailModal word={word} onClose={closeModal} /> : null;
     
     case 'DEEP_LEARNING':
       return (

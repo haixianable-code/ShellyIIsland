@@ -3,7 +3,7 @@ export default {
   "ui": {
     "nav": {
       "home": "基地大厅",
-      "pocket": "物资库",
+      "pocket": "单词库",
       "menu": "身份卡",
       "passport": "档案",
       "stories": "情报局"

@@ -14,7 +14,7 @@ export interface WordNuance {
   note: string; 
 }
 
-export type WordLevel = 'A1' | 'A2' | 'B1';
+export type WordLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
 export type WordTopic = 'travel' | 'food' | 'work' | 'nature' | 'daily' | 'feelings' | 'society' | 'abstract' | 'tech' | 'art' | 'grammar' | 'time' | 'social' | 'body' | 'life' | 'quantity' | 'science';
 
 export interface Word {
@@ -24,7 +24,6 @@ export interface Word {
   level: WordLevel; 
   topic: WordTopic; 
   type: 'verb' | 'adj' | 'noun' | 'misc';
-  category?: string; 
   reg?: boolean; 
   forms?: string; 
   ant?: string; 
@@ -34,6 +33,9 @@ export interface Word {
   examples: WordExample[]; 
   nounNotes: string; 
   blueprintId?: string; 
+  category?: string;
+  tags?: string[];
+  frequencyRank?: number;
   // Time Machine Capabilities
   tense_forms?: {
     past?: string;      // Pretérito Indefinido (Snapshot)
@@ -54,6 +56,8 @@ export interface Blueprint {
   title: { en: string; zh: string };
   icon: string; 
   description: { en: string; zh: string };
+  purpose: { en: string; zh: string }; // New field
+  previewTopics: { en: string[]; zh: string[] }; // New field
   isPremium: boolean;
   wordIds: string[];
   coverage: number; // 贡献的语言覆盖率百分比 (0-100)

@@ -45,14 +45,14 @@ export const useSRS = () => {
   // 计算当前蓝图的进度
   const blueprintProgress = useMemo(() => {
     const blueprint = store.blueprints.find(b => b.id === activeBlueprintId);
-    if (!blueprint) return 0;
+    if (!blueprint || !blueprint.wordIds) return 0;
     const learnedInBlueprint = blueprint.wordIds.filter(id => !!store.progress[id]).length;
     return Math.round((learnedInBlueprint / blueprint.wordIds.length) * 100);
   }, [store.progress, activeBlueprintId, store.blueprints]);
 
   const newWordsForToday = useMemo<Word[]>(() => {
     const activeBlueprint = store.blueprints.find(b => b.id === activeBlueprintId);
-    if (!activeBlueprint) return [];
+    if (!activeBlueprint || !activeBlueprint.wordIds) return [];
 
     // 限制：如果是非会员且蓝图是高级的，无法开始新学习
     if (!isPremium && activeBlueprint.isPremium) return [];
@@ -78,7 +78,7 @@ export const useSRS = () => {
   const nextBlueprintWords = useMemo<Word[]>(() => {
     const currentIndex = store.blueprints.findIndex(b => b.id === activeBlueprintId);
     const nextBlueprint = store.blueprints[currentIndex + 1];
-    if (!nextBlueprint) return [];
+    if (!nextBlueprint || !nextBlueprint.wordIds) return [];
     return nextBlueprint.wordIds
       .map(id => store.wordMap.get(id))
       .filter((w): w is Word => w !== undefined)

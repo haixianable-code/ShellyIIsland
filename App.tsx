@@ -20,6 +20,7 @@ import { AuthView } from './components/AuthView';
 import Sidebar from './components/Sidebar';
 import ErrorBoundary from './components/ErrorBoundary';
 import BlogView from './components/BlogView';
+import ModalManager from './components/ModalManager';
 
 const ConnectedStudyView: React.FC = () => {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ const App: React.FC = () => {
   const { 
     initialize, loading: islandLoading, 
     activeModal, closeModal, wordMap, progress, stats, profile,
-    updateProgress, addExtraWords,
+    updateProgress,
     setSessionQueue, sessionQueue,
     isSidebarCollapsed, // Access sidebar state
     allWords,
@@ -169,9 +170,7 @@ const App: React.FC = () => {
                 <VocabularyView 
                   words={allWords} 
                   progress={progress} 
-                  onWordClick={(word) => openModal('WORD_DETAIL', { wordId: word.id })} 
-                  onAddExtraWords={addExtraWords}
-                  onStartExtraStudy={(words) => { setSessionQueue(words); navigate('/study'); }}
+                  onWordClick={(word) => openModal('WORD_DETAIL', word)} 
                 />
               } />
               <Route path="/menu" element={
@@ -193,6 +192,7 @@ const App: React.FC = () => {
           </ErrorBoundary>
         </div>
       </main>
+      <ModalManager />
     </div>
   );
 };

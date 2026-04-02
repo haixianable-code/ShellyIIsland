@@ -31,7 +31,7 @@ const ActionConsole: React.FC<ActionConsoleProps> = ({
   const isLearn = !isReview && newCount > 0;
 
   const title = activeBlueprint ? (isChinese ? activeBlueprint.title.zh : activeBlueprint.title.en) : 'Unknown Sector';
-  const desc = activeBlueprint ? (isChinese ? activeBlueprint.desc.zh : activeBlueprint.desc.en) : '';
+  const desc = activeBlueprint ? (isChinese ? activeBlueprint.description.zh : activeBlueprint.description.en) : '';
 
   return (
     <div className="relative w-full max-w-2xl mx-auto z-30">

@@ -10,8 +10,28 @@ import { playClick } from '../utils/sfx';
 
 // ─── Helpers ────────────────────────────────────────────────
 const pct = (learned: number, total: number) => total === 0 ? 0 : Math.round((learned / total) * 100);
-const phaseLabel = (p: number) => ['Survival', 'Social', 'Logic', 'Fluency'][p] ?? `Phase ${p}`;
+const phaseLabel = (p: number, isZh: boolean) => {
+  const en = ['Core Foundations', 'Daily & Survival', 'Advanced Contexts', 'Fluency & Nuance'];
+  const zh = ['核心基础 (免费)', '日常与生存', '进阶与探索', '流利与细节'];
+  return (isZh ? zh[p] : en[p]) ?? `Phase ${p}`;
+};
 const phaseAccent = (p: number) => (['#d4a843', '#5a9e6f', '#4a8ab5', '#9b72b0'] as const)[p] ?? '#888';
+
+// ─── Global Progress ──────────────────────────────────────────
+const GlobalProgress: React.FC<{ totalLearned: number; totalTarget: number }> = ({ totalLearned, totalTarget }) => {
+  const p = Math.min(100, Math.round((totalLearned / totalTarget) * 100));
+  return (
+    <div className="px-4 py-3 bg-white/50 rounded-2xl mb-6">
+      <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+        <span>Global Progress</span>
+        <span>{totalLearned} / {totalTarget} words</span>
+      </div>
+      <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+        <div className="h-full bg-[#5a9e6f] transition-all duration-500" style={{ width: `${p}%` }} />
+      </div>
+    </div>
+  );
+};
 
 // ─── Blueprint Row ──────────────────────────────────────────────
 const BpRow: React.FC<{
@@ -26,6 +46,8 @@ const BpRow: React.FC<{
   const total = bp.wordIds.length;
   const p = pct(learned, total);
   const accent = phaseAccent(bp.phase);
+  const { i18n } = useTranslation();
+  const isZh = i18n.language.startsWith('zh');
 
   return (
     <button
@@ -53,7 +75,13 @@ const BpRow: React.FC<{
             <span className={`text-sm font-black truncate ${isActive ? 'text-[#2d4a47]' : 'text-slate-600'}`}>{bp.title.zh || bp.title.en}</span>
             <span className="text-[10px] font-bold text-slate-400 tabular-nums">{learned} / {total}</span>
           </div>
-          {isActive && <span className="inline-block text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full text-white mt-1" style={{ background: accent }}>active</span>}
+          {isActive && <p className="text-[10px] text-slate-500 mt-0.5">{isZh ? bp.purpose.zh : bp.purpose.en}</p>}
+          {isLocked && bp.previewTopics && bp.previewTopics.en.length > 0 && (
+            <p className="text-[10px] text-slate-400 mt-0.5 italic">
+              {isZh ? '解锁预告: ' : 'Unlock preview: '}
+              {isZh ? bp.previewTopics.zh.join(', ') : bp.previewTopics.en.join(', ')}
+            </p>
+          )}
         </div>
       </div>
     </button>
@@ -84,6 +112,9 @@ const Dashboard: React.FC = () => {
 
   const CtaIcon = cta.icon;
 
+  const activeBp = blueprints.find(bp => bp.id === activeBlueprintId);
+  const nextBp = blueprints.find(bp => bp.phase === (activeBp?.phase || 0) && bp.id !== activeBlueprintId && !progress[bp.wordIds[0]]);
+
   return (
     <div className="min-h-screen pb-24 md:pb-12 bg-[#f7f9e4]">
       <SEO title="Dashboard" description="Your Spanish learning overview." url="https://ssisland.space/" />
@@ -94,6 +125,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 pt-8 space-y-8 animate-fadeIn">
+        <GlobalProgress totalLearned={stats.total_words_learned} totalTarget={1292} />
         <div className="flex items-end justify-between">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-[#4b7d78]/60 mb-1">Lv.{level} · {name}</p>
@@ -138,7 +170,7 @@ const Dashboard: React.FC = () => {
           <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400 px-1">{isChinese ? '学习路线' : 'Learning path'}</p>
           {phases.map(({ phase, bps }) => (
             <div key={phase} className="space-y-2">
-              <h3 className="text-sm font-black uppercase tracking-widest px-1 mb-3" style={{ color: phaseAccent(phase) }}>{phaseLabel(phase)}</h3>
+              <h3 className="text-sm font-black uppercase tracking-widest px-1 mb-3" style={{ color: phaseAccent(phase) }}>{phaseLabel(phase, isChinese)}</h3>
               <div className="space-y-1">
                 {bps.map(bp => (
                   <BpRow

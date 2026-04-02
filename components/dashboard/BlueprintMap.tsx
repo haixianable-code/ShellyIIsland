@@ -84,8 +84,10 @@ const BlueprintMap: React.FC<BlueprintMapProps> = ({
         let phaseLearned = 0;
         let phaseTotal = 0;
         phaseBlueprints.forEach(bp => {
-            phaseLearned += bp.wordIds.filter(id => !!progress[id]).length;
-            phaseTotal += bp.wordIds.length;
+            if (bp.wordIds) {
+              phaseLearned += bp.wordIds.filter(id => !!progress[id]).length;
+              phaseTotal += bp.wordIds.length;
+            }
         });
         const phasePercent = phaseTotal > 0 ? Math.round((phaseLearned / phaseTotal) * 100) : 0;
 
@@ -149,8 +151,8 @@ const BlueprintMap: React.FC<BlueprintMapProps> = ({
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 md:gap-4 pl-2 md:pl-16 pr-2 py-2 animate-fadeIn">
                 {phases[phase].map((bp) => {
                   const isActive = activeId === bp.id;
-                  const learnedCount = bp.wordIds.filter(id => !!progress[id]).length;
-                  const totalCount = bp.wordIds.length;
+                  const learnedCount = bp.wordIds ? bp.wordIds.filter(id => !!progress[id]).length : 0;
+                  const totalCount = bp.wordIds ? bp.wordIds.length : 1;
                   const percent = Math.round((learnedCount / totalCount) * 100);
                   const isCompleted = percent === 100;
                   
